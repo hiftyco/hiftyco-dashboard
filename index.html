@@ -5,377 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hifty Co - Trading Dashboard</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a1a2e 100%);
-            min-height: 100vh;
-            color: #e6edf3;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        header {
-            text-align: center;
-            padding: 40px 0;
-        }
-        
-        h1 {
-            font-size: 3.5rem;
-            background: linear-gradient(90deg, #f7931a, #ff6b6b, #f7931a);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 3s linear infinite;
-        }
-        
-        @keyframes shimmer {
-            to { background-position: 200% center; }
-        }
-        
-        .tagline {
-            color: #8b949e;
-            margin-top: 10px;
-            font-size: 1.2rem;
-        }
-        
-        .last-updated {
-            color: #666;
-            font-size: 0.85rem;
-            margin-top: 5px;
-        }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-        }
-        
-        .card {
-            background: rgba(22, 27, 34, 0.8);
-            border-radius: 16px;
-            padding: 25px;
-            border: 1px solid rgba(240, 246, 252, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .card h2 {
-            color: #f7931a;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: linear-gradient(90deg, #f7931a, #ff6b6b);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin: 5px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(247, 147, 26, 0.4);
-        }
-        
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .status {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        
-        .status.online { 
-            background: #00ff88; 
-            box-shadow: 0 0 10px #00ff88;
-        }
-        .status.offline { background: #ff4444; }
-        
-        .output {
-            background: #0d1117;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.85rem;
-            max-height: 250px;
-            overflow-y: auto;
-            margin-top: 15px;
-            white-space: pre-wrap;
-            border: 1px solid rgba(240, 246, 252, 0.1);
-        }
-        
-        .output.show { display: block; }
-        
-        .crypto-prices {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .price-box {
-            background: rgba(247, 147, 26, 0.1);
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid rgba(247, 147, 26, 0.2);
-        }
-        
-        .price-box .symbol {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-        }
-        
-        .price-box .price {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #fff;
-        }
-        
-        .price-box .change {
-            font-size: 0.85rem;
-            margin-top: 5px;
-        }
-        
-        .price-box .change.positive { color: #00ff88; }
-        .price-box .change.negative { color: #ff4444; }
-        
-        .fear-greed-meter {
-            margin: 20px 0;
-        }
-        
-        .meter-bar {
-            height: 30px;
-            background: linear-gradient(90deg, 
-                #ff4444 0%, 
-                #ff8844 25%, 
-                #ffff44 50%, 
-                #88ff44 75%, 
-                #00ff88 100%
-            );
-            border-radius: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .meter-indicator {
-            position: absolute;
-            width: 4px;
-            height: 100%;
-            background: #fff;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 0 10px #fff;
-            transition: left 0.5s ease;
-        }
-        
-        .meter-label {
-            text-align: center;
-            margin-top: 10px;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        .sentiment-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 15px;
-        }
-        
-        .badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        
-        .badge.fear { background: rgba(255, 68, 68, 0.2); color: #ff4444; }
-        .badge.greed { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
-        .badge.neutral { background: rgba(255, 255, 68, 0.2); color: #ffff44; }
-        
-        .levels-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .level-box {
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .level-box.support {
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid rgba(0, 255, 136, 0.3);
-        }
-        
-        .level-box.resistance {
-            background: rgba(255, 68, 68, 0.1);
-            border: 1px solid rgba(255, 68, 68, 0.3);
-        }
-        
-        .level-box .label {
-            font-size: 0.8rem;
-            color: #8b949e;
-            margin-bottom: 5px;
-        }
-        
-        .level-box .value {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-        
-        .cron-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .cron-list li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border: 1px solid rgba(240, 246, 252, 0.05);
-        }
-        
-        .cron-list .job-name {
-            font-weight: 500;
-        }
-        
-        .cron-list .job-time {
-            color: #8b949e;
-            font-size: 0.9rem;
-        }
-        
-        .cron-list .job-status {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #00ff88;
-        }
-        
-        .tips-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .tips-list li {
-            padding: 12px 15px;
-            background: rgba(247, 147, 26, 0.05);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 3px solid #f7931a;
-        }
-        
-        .tips-list .tip-title {
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 5px;
-        }
-        
-        .tips-list .tip-text {
-            font-size: 0.9rem;
-            color: #8b949e;
-        }
-        
-        .edu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        
-        .edu-card {
-            background: rgba(255,255,255,0.03);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(240, 246, 252, 0.05);
-        }
-        
-        .edu-card h4 {
-            color: #f7931a;
-            margin-bottom: 8px;
-            font-size: 1rem;
-        }
-        
-        .edu-card p {
-            font-size: 0.85rem;
-            color: #8b949e;
-            line-height: 1.5;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            border-top: 1px solid rgba(240, 246, 252, 0.1);
-            margin-top: 40px;
-        }
-        
-        .rules {
-            background: rgba(247, 147, 26, 0.1);
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 10px;
-        }
-        
-        .rules ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .rules li {
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            font-size: 0.95rem;
-        }
-        
-        .rules li:last-child { border: none; }
-        
-        .loading {
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-        
-        @media (max-width: 768px) {
-            h1 { font-size: 2.5rem; }
-            .grid { grid-template-columns: 1fr; }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0d0d1a 0%, #1a1a2e 100%); min-height: 100vh; color: #fff; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; padding: 40px 0; }
+        h1 { font-size: 3rem; background: linear-gradient(90deg, #f7931a,6b); - #ff6bwebkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .tagline { color: #888; margin-top: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 40px; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; border: 1px solid rgba(255,255,255,0.1); }
+        .card h2 { color: #f7931a; margin-bottom: 20px; font-size: 1.3rem; }
+        .price-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .price-row:last-child { border: none; }
+        .coin { font-weight: bold; font-size: 1.1rem; }
+        .price { font-size: 1.2rem; }
+        .positive { color: #00ff88; }
+        .negative { color: #ff4444; }
+        .fear-meter { width: 100%; height: 30px; background: linear-gradient(to right, #ff4444, #ffaa00, #00ff88, #ffaa00, #ff4444); border-radius: 15px; position: relative; margin: 15px 0; }
+        .fear-indicator { position: absolute; top: -5px; width: 4px; height: 40px; background: #fff; border-radius: 2px; transition: left 0.5s; }
+        .fear-value { font-size: 2rem; font-weight: bold; text-align: center; }
+        .levels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .level { background: rgba(247,147,26,0.1); padding: 15px; border-radius: 8px; text-align: center; }
+        .level-label { font-size: 0.8rem; color: #888; }
+        .level-value { font-size: 1.2rem; color: #f7931a; font-weight: bold; }
+        .rules-list { list-style: none; }
+        .rules-list li { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .btn { display: inline-block; padding: 12px 24px; background: linear-gradient(90deg, #f7931a, #ff6b6b); color: #fff; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; margin: 5px; }
+        .status-dot { display: inline-block; width: 8px; height: 8px; background: #00ff88; border-radius: 50%; margin-right: 8px; }
+        footer { text-align: center; padding: 40px; color: #666; }
+        .timestamp { text-align: center; color: #666; font-size: 0.8rem; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -383,352 +40,180 @@
         <header>
             <h1>₿ Hifty Co</h1>
             <p class="tagline">Trading Dashboard | 1% Trader Mindset</p>
-            <p class="last-updated" id="last-updated">Last updated: Loading...</p>
         </header>
         
         <div class="grid">
-            <!-- Live Prices -->
             <div class="card">
                 <h2>💰 Live Crypto Prices</h2>
-                <div class="crypto-prices">
-                    <div class="price-box">
-                        <div class="symbol">₿</div>
-                        <div class="price" id="btc-price">--</div>
-                        <div class="change" id="btc-change">--</div>
-                    </div>
-                    <div class="price-box">
-                        <div class="symbol">Ξ</div>
-                        <div class="price" id="eth-price">--</div>
-                        <div class="change" id="eth-change">--</div>
-                    </div>
+                <div class="price-row">
+                    <span class="coin">₿ BTC</span>
+                    <span class="price" id="btc-price">Loading...</span>
                 </div>
-                <button class="btn" onclick="refreshMarket()">🔄 Refresh Prices</button>
+                <div class="price-row">
+                    <span class="coin">Ξ ETH</span>
+                    <span class="price" id="eth-price">Loading...</span>
+                </div>
             </div>
             
-            <!-- Fear & Greed -->
             <div class="card">
                 <h2>😱 Fear & Greed Index</h2>
-                <div class="fear-greed-meter">
-                    <div class="meter-bar">
-                        <div class="meter-indicator" id="meter-indicator" style="left: 50%;"></div>
-                    </div>
-                    <div class="meter-label" id="fg-value">--</div>
+                <div class="fear-value" id="fear-value">Loading...</div>
+                <div class="fear-meter">
+                    <div class="fear-indicator" id="fear-indicator" style="left: 14%;"></div>
                 </div>
-                <div class="sentiment-badges" id="sentiment-badges">
-                    <span class="badge loading">Loading...</span>
-                </div>
-                <p style="margin-top: 15px; font-size: 0.85rem; color: #8b949e;">
-                    <strong>Analysis:</strong> <span id="fg-analysis">Loading market sentiment...</span>
-                </p>
+                <p style="text-align: center; color: #888;" id="fear-sentiment">Loading...</p>
             </div>
             
-            <!-- Support/Resistance -->
             <div class="card">
                 <h2>📊 BTC Support & Resistance</h2>
                 <div class="levels-grid">
-                    <div class="level-box resistance">
-                        <div class="label">Resistance 1</div>
-                        <div class="value" id="res-1">--</div>
+                    <div class="level">
+                        <div class="level-label">Resistance 2</div>
+                        <div class="level-value" id="r2">--</div>
                     </div>
-                    <div class="level-box resistance">
-                        <div class="label">Resistance 2</div>
-                        <div class="value" id="res-2">--</div>
+                    <div class="level">
+                        <div class="level-label">Resistance 1</div>
+                        <div class="level-value" id="r1">--</div>
                     </div>
-                    <div class="level-box support">
-                        <div class="label">Support 1</div>
-                        <div class="value" id="sup-1">--</div>
+                    <div class="level">
+                        <div class="level-label">Support 1</div>
+                        <div class="level-value" id="s1">--</div>
                     </div>
-                    <div class="level-box support">
-                        <div class="label">Support 2</div>
-                        <div class="value" id="sup-2">--</div>
+                    <div class="level">
+                        <div class="level-label">Support 2</div>
+                        <div class="level-value" id="s2">--</div>
                     </div>
                 </div>
-                <p style="margin-top: 15px; font-size: 0.8rem; color: #666;">
-                    * Based on recent price action and key levels
+            </div>
+            
+            <div class="card">
+                <h2>⏰ Cron Jobs</h2>
+                <ul class="rules-list">
+                    <li><span class="status-dot"></span>Daily Research - 7:00 AM</li>
+                    <li><span class="status-dot"></span>Morning Briefing - 8:00 AM</li>
+                    <li><span class="status-dot"></span>System Check - 8:00 AM</li>
+                    <li><span class="status-dot"></span>Weather - 8:00 AM</li>
+                    <li><span class="status-dot"></span>Weekly Analysis - Mon 8 AM</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="grid" style="margin-top: 20px;">
+            <div class="card">
+                <h2>📈 7 Trading Rules</h2>
+                <ul class="rules-list">
+                    <li>1️⃣ RSI ≤30 (LONG) | ≥70 (SHORT)</li>
+                    <li>2️⃣ Follow the trend</li>
+                    <li>3️⃣ Ratio 2:1 to 3:1</li>
+                    <li>4️⃣ SET and FORGET</li>
+                    <li>5️⃣ No revenge trading</li>
+                    <li>6️⃣ Size winners, cut losers</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h2>💡 Today's Signal</h2>
+                <p id="trading-signal" style="font-size: 1.1rem; line-height: 1.6;">
+                    Loading market data...
                 </p>
             </div>
-            
-            <!-- Cron Jobs -->
-            <div class="card">
-                <h2>⏰ Cron Jobs Schedule</h2>
-                <ul class="cron-list">
-                    <li>
-                        <span class="job-name">📊 Daily Research</span>
-                        <span class="job-time">7:00 AM</span>
-                        <div class="job-status"></div>
-                    </li>
-                    <li>
-                        <span class="job-name">☀️ Morning Briefing</span>
-                        <span class="job-time">8:00 AM</span>
-                        <div class="job-status"></div>
-                    </li>
-                    <li>
-                        <span class="job-name">💻 System Check</span>
-                        <span class="job-time">8:00 AM</span>
-                        <div class="job-status"></div>
-                    </li>
-                    <li>
-                        <span class="job-name">🌤️ Weather Report</span>
-                        <span class="job-time">8:00 AM</span>
-                        <div class="job-status"></div>
-                    </li>
-                    <li>
-                        <span class="job-name">📈 Weekly Analysis</span>
-                        <span class="job-time">Monday 8:00 AM</span>
-                        <div class="job-status"></div>
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Trading Rules -->
-            <div class="card">
-                <h2>📈 Trading Rules</h2>
-                <div class="rules">
-                    <ul>
-                        <li>1️⃣ <strong>RSI ≤30</strong> = LONG | <strong>RSI ≥70</strong> = SHORT</li>
-                        <li>2️⃣ Trend is your friend - follow the trend</li>
-                        <li>3️⃣ Risk:Reward ratio <strong>2:1 to 3:1</strong> minimum</li>
-                        <li>4️⃣ SET and FORGET - don't micromanage</li>
-                        <li>5️⃣ <strong>NO revenge trading</strong> after losses</li>
-                        <li>6️⃣ Size winners, cut losers quickly</li>
-                        <li>7️⃣ Only trade <strong>high liquidity</strong> pairs</li>
-                        <li>8️⃣ Never risk more than <strong>2% per trade</strong></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- Trading Tips -->
-            <div class="card">
-                <h2>💡 Trading Tips</h2>
-                <ul class="tips-list">
-                    <li>
-                        <div class="tip-title">🎯 Patience Pays</div>
-                        <div class="tip-text">Wait for setups. The best trades find you when you stop forcing.</div>
-                    </li>
-                    <li>
-                        <div class="tip-title">📉 Fade the Extremes</div>
-                        <div class="tip-text">When Fear & Greed hits extreme levels (0-25 or 75-100), look for reversals.</div>
-                    </li>
-                    <li>
-                        <div class="tip-title">🔑 Volume is Key</div>
-                        <div class="tip-text">Trade with volume. Low volume = weak moves that fade.</div>
-                    </li>
-                    <li>
-                        <div class="tip-title">⏰ Time Your Entries</div>
-                        <div class="tip-text">Wait for the retest of broken levels. Don't chase.</div>
-                    </li>
-                    <li>
-                        <div class="tip-title">🔥 Today's Signal: Extreme Fear (14)</div>
-                        <div class="tip-text">Index at 14/100 = Extreme Fear. Historically, this zone marks accumulation. Look for RSI oversold + bullish divergence for entries.</div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        
-        <!-- Educational Section -->
-        <div class="card" style="margin-top: 20px;">
-            <h2>📚 Educational Content</h2>
-            <div class="edu-grid">
-                <div class="edu-card">
-                    <h4>📊 RSI Indicator</h4>
-                    <p>Relative Strength Index measures momentum. <strong>RSI <30</strong> = oversold (buy), <strong>RSI >70</strong> = overbought (sell).</p>
-                </div>
-                <div class="edu-card">
-                    <h4>📈 Support & Resistance</h4>
-                    <p>Support is a price floor where buying pressure emerges. Resistance is a ceiling where selling pressure increases.</p>
-                </div>
-                <div class="edu-card">
-                    <h4>🎭 Fear & Greed</h4>
-                    <p>Extreme fear (0-25) often signals buying opportunities. Extreme greed (75-100) often precedes corrections.</p>
-                </div>
-                <div class="edu-card">
-                    <h4>📉 Risk:Reward Ratio</h4>
-                    <p>Always aim for 2:1 or higher. Risk $100 to make $200+. This makes you profitable even with 40% win rate.</p>
-                </div>
-                <div class="edu-card">
-                    <h4>🕐 Time Frames</h4>
-                    <p>Use higher time frames (4H, Daily) for direction, lower (1H, 15m) for entry timing.</p>
-                </div>
-                <div class="edu-card">
-                    <h4>💰 Position Sizing</h4>
-                    <p>Never risk more than 2% of account on single trade. Protect capital above all.</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Latest Research -->
-        <div class="card" style="margin-top: 20px;">
-            <h2>📝 Latest Research - March 1, 2026</h2>
-            <div class="output show" id="research-output">
-MARKET UPDATE: Fear & Greed Index at 14 (Extreme Fear) - Strong Buy Signal
-
-📊 Today's Analysis:
-• Fear & Greed at 14/100 = Extreme Fear
-• Historical context: Values below 25 often precede recoveries
-• Market sentiment at extremes - potential accumulation zone
-
-🎯 Action Items:
-1. Watch for RSI oversold (RSI <30) on BTC for long entries
-2. Look for bullish divergence on lower timeframes
-3. Key support zones: see S/R card above
-4. Don't chase - wait for retests and confirmations
-
-💡 Tip: Extreme fear + oversold RSI = high probability setup. Risk:Reward 2:1+.
-
-📅 Next: Monitor for sentiment shift toward "Fear" (25-45) for confirmation.</div>
         </div>
         
         <footer>
             <p>Powered by Ollie & MintyTrades | 1% Trader Mission 🚀</p>
-            <p style="margin-top: 10px; font-size: 0.8rem; color: #555;">
-                System Status: <span class="status online"></span> All Systems Operational
-            </p>
+            <p class="timestamp" id="last-updated">Last updated: --</p>
         </footer>
     </div>
     
     <script>
-        let btcPrice = 0;
-        
-        async function refreshMarket() {
-            // Reset to loading state
-            document.getElementById('btc-price').textContent = 'Loading...';
-            document.getElementById('eth-price').textContent = 'Loading...';
-            document.getElementById('btc-change').textContent = '--';
-            document.getElementById('eth-change').textContent = '--';
-            document.getElementById('fg-value').textContent = 'Loading...';
-            
+        // Fetch crypto prices
+        async function fetchPrices() {
             try {
-                // Fetch BTC & ETH prices from CoinGecko - add custom User-Agent to avoid rate limiting
-                const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true', {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
+                const data = await res.json();
                 
-                if (!priceRes.ok) throw new Error('CoinGecko API error: ' + priceRes.status);
+                const btc = data.bitcoin;
+                const eth = data.ethereum;
                 
-                const priceData = await priceRes.json();
+                document.getElementById('btc-price').innerHTML = 
+                    '$' + btc.usd.toLocaleString() + 
+                    ' <span class="' + (btc.usd_24h_change >= 0 ? 'positive' : 'negative') + '">' + 
+                    (btc.usd_24h_change >= 0 ? '↑' : '↓') + 
+                    Math.abs(btc.usd_24h_change).toFixed(2) + '%</span>';
                 
-                btcPrice = priceData.bitcoin.usd;
-                const ethPrice = priceData.ethereum.usd;
-                const btcChange = priceData.bitcoin.usd_24h_change;
-                const ethChange = priceData.ethereum.usd_24h_change;
+                document.getElementById('eth-price').innerHTML = 
+                    '$' + eth.usd.toLocaleString() + 
+                    ' <span class="' + (eth.usd_24h_change >= 0 ? 'positive' : 'negative') + '">' + 
+                    (eth.usd_24h_change >= 0 ? '↑' : '↓') + 
+                    Math.abs(eth.usd_24h_change).toFixed(2) + '%</span>';
                 
-                document.getElementById('btc-price').textContent = '$' + btcPrice.toLocaleString();
-                document.getElementById('eth-price').textContent = '$' + ethPrice.toLocaleString();
-                
-                const btcChangeEl = document.getElementById('btc-change');
-                btcChangeEl.textContent = (btcChange >= 0 ? '+' : '') + btcChange.toFixed(2) + '% (24h)';
-                btcChangeEl.className = 'change ' + (btcChange >= 0 ? 'positive' : 'negative');
-                
-                const ethChangeEl = document.getElementById('eth-change');
-                ethChangeEl.textContent = (ethChange >= 0 ? '+' : '') + ethChange.toFixed(2) + '% (24h)';
-                ethChangeEl.className = 'change ' + (ethChange >= 0 ? 'positive' : 'negative');
-                
-                // Calculate S/R levels after getting BTC price
-                calculateLevels(btcPrice);
+                // Calculate support/resistance
+                const btcPrice = btc.usd;
+                document.getElementById('r2').innerText = '$' + Math.round(btcPrice * 1.05).toLocaleString();
+                document.getElementById('r1').innerText = '$' + Math.round(btcPrice * 1.02).toLocaleString();
+                document.getElementById('s1').innerText = '$' + Math.round(btcPrice * 0.98).toLocaleString();
+                document.getElementById('s2').innerText = '$' + Math.round(btcPrice * 0.95).toLocaleString();
                 
             } catch (e) {
                 console.error('Price fetch error:', e);
-                document.getElementById('btc-price').textContent = 'API Error';
-                document.getElementById('eth-price').textContent = 'API Error';
-                document.getElementById('btc-change').textContent = 'Check connection';
-                // Use fallback price for demo
-                calculateLevels(85000);
+                document.getElementById('btc-price').innerText = 'Error';
+                document.getElementById('eth-price').innerText = 'Error';
             }
-            
+        }
+        
+        // Fetch Fear & Greed
+        async function fetchFearGreed() {
             try {
-                // Fetch Fear & Greed Index - use the proper API endpoint
-                const fgRes = await fetch('https://api.alternative.me/fng/');
+                const res = await fetch('https://alternative.me/crypto/fear-and-greed-index/');
+                const text = await res.text();
+                const match = text.match(/(\d+)/);
+                const value = match ? parseInt(match[1]) : 25;
                 
-                if (!fgRes.ok) throw new Error('Fear & Greed API error: ' + fgRes.status);
+                document.getElementById('fear-value').innerText = value + '/100';
+                document.getElementById('fear-indicator').style.left = value + '%';
                 
-                const fgData = await fgRes.json();
+                let sentiment = '';
+                if (value <= 25) { sentiment = '🔴 Extreme Fear - BUY ZONE'; }
+                else if (value <= 45) { sentiment = '🟠 Fear - Buying Opportunity'; }
+                else if (value <= 55) { sentiment = '🟡 Neutral - Follow Rules'; }
+                else if (value <= 75) { sentiment = '🟢 Greed - Caution'; }
+                else { sentiment = '🔴 Extreme Greed - SELL ZONE'; }
                 
-                if (!fgData.data || !fgData.data[0]) {
-                    throw new Error('Invalid Fear & Greed data');
-                }
+                document.getElementById('fear-sentiment').innerText = sentiment;
                 
-                const fgValue = parseInt(fgData.data[0].value);
-                const fgLabel = fgData.data[0].value_classification;
-                
-                document.getElementById('fg-value').textContent = fgValue + ' - ' + fgLabel;
-                document.getElementById('meter-indicator').style.left = fgValue + '%';
-                
-                // Update badges
-                const badges = document.getElementById('sentiment-badges');
-                badges.innerHTML = '';
-                
-                const badgeClass = fgValue < 35 ? 'fear' : (fgValue > 65 ? 'greed' : 'neutral');
-                const badgeLabel = fgValue < 35 ? 'Bearish' : (fgValue > 65 ? 'Bullish' : 'Neutral');
-                badges.innerHTML += '<span class="badge ' + badgeClass + '">' + badgeLabel + '</span>';
-                
-                let extremeLabel;
-                if (fgValue < 25) extremeLabel = 'Extreme Fear';
-                else if (fgValue > 75) extremeLabel = 'Extreme Greed';
-                else if (fgValue < 35) extremeLabel = 'Fear';
-                else if (fgValue > 65) extremeLabel = 'Greed';
-                else extremeLabel = 'Neutral';
-                
-                badges.innerHTML += '<span class="badge ' + (fgValue < 25 ? 'fear' : (fgValue > 75 ? 'greed' : 'neutral')) + '">' + extremeLabel + '</span>';
-                
-                // Analysis text
-                const analysis = document.getElementById('fg-analysis');
-                if (fgValue < 25) {
-                    analysis.textContent = 'Extreme fear - potential buying opportunity. Market may be oversold. Historical data suggests this could be an accumulation zone.';
-                } else if (fgValue < 35) {
-                    analysis.textContent = 'Fear prevailing - cautious but could present entry points for patient traders. Look for oversold RSI conditions.';
-                } else if (fgValue < 45) {
-                    analysis.textContent = 'Slight fear in market - careful positioning recommended. Wait for clearer signals.';
-                } else if (fgValue < 55) {
-                    analysis.textContent = 'Neutral sentiment - no clear directional bias. Wait for setups and confirmations.';
-                } else if (fgValue < 65) {
-                    analysis.textContent = 'Slight greed building - markets rising. Don\'t chase, wait for pullbacks.';
-                } else if (fgValue < 75) {
-                    analysis.textContent = 'Greed building - elevated prices but still room. Consider taking partial profits.';
+                // Trading signal
+                let signal = '';
+                if (value <= 25) {
+                    signal = '🟢 BUY ZONE - Extreme Fear!\nWatch for RSI ≤30 for LONG entries.\nMarket sentiment at extremes = potential bottom.';
+                } else if (value <= 45) {
+                    signal = '🟡 FEAR - Good buying opportunity.\nLook for RSI oversold signals.';
+                } else if (value >= 75) {
+                    signal = '🔴 CAUTION - Extreme Greed!\nConsider taking profits.';
                 } else {
-                    analysis.textContent = 'Extreme greed - elevated risk. Consider taking profits or tightening stops. Historical tops often coincide with extreme greed.';
+                    signal = '🟡 NEUTRAL - Follow your rules.\nWait for RSI 30/70 signal.';
                 }
+                
+                document.getElementById('trading-signal').innerText = signal;
                 
             } catch (e) {
-                console.error('Fear/Greed fetch error:', e);
-                document.getElementById('fg-value').textContent = 'API Error';
-                document.getElementById('fg-analysis').textContent = 'Unable to load Fear & Greed data. Check connection.';
-                document.getElementById('meter-indicator').style.left = '50%';
-                document.getElementById('sentiment-badges').innerHTML = '<span class="badge neutral">Data Unavailable</span>';
+                console.error('Fear & Greed error:', e);
+                document.getElementById('fear-value').innerText = 'Error';
             }
-            
-            // Update timestamp
+        }
+        
+        // Update timestamp
+        function updateTimestamp() {
             const now = new Date();
-            document.getElementById('last-updated').textContent = 'Last updated: ' + now.toLocaleString() + ' UTC';
+            document.getElementById('last-updated').innerText = 'Last updated: ' + now.toLocaleString();
         }
         
-        function calculateLevels(price) {
-            if (!price || price <= 0) return;
-            
-            // Smart S/R calculation based on BTC price
-            const res2 = Math.round((price * 1.08) / 500) * 500;
-            const res1 = Math.round((price * 1.04) / 500) * 500;
-            const sup1 = Math.round((price * 0.96) / 500) * 500;
-            const sup2 = Math.round((price * 0.92) / 500) * 500;
-            
-            document.getElementById('res-1').textContent = '$' + res1.toLocaleString();
-            document.getElementById('res-2').textContent = '$' + res2.toLocaleString();
-            document.getElementById('sup-1').textContent = '$' + sup1.toLocaleString();
-            document.getElementById('sup-2').textContent = '$' + sup2.toLocaleString();
-        }
+        // Initialize
+        fetchPrices();
+        fetchFearGreed();
+        updateTimestamp();
         
-        function loadResearch() {
-            // Static content already in HTML - kept for compatibility
-            console.log('Research loaded (static content)');
-        }
-        
-        // Load on start
-        refreshMarket();
-        loadResearch();
-        
-        // Auto-refresh every 60 seconds
-        setInterval(refreshMarket, 60000);
+        // Refresh every 60 seconds
+        setInterval(() => { fetchPrices(); fetchFearGreed(); updateTimestamp(); }, 60000);
     </script>
 </body>
 </html>
