@@ -30,9 +30,16 @@
         .rules-list { list-style: none; }
         .rules-list li { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .btn { display: inline-block; padding: 12px 24px; background: linear-gradient(90deg, #f7931a, #ff6b6b); color: #fff; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; margin: 5px; }
+        .btn:hover { opacity: 0.9; transform: scale(1.02); }
+        .btn-refresh { background: linear-gradient(90deg, #00ff88, #00cc6a); color: #000; font-weight: bold; }
         .status-dot { display: inline-block; width: 8px; height: 8px; background: #00ff88; border-radius: 50%; margin-right: 8px; }
         footer { text-align: center; padding: 40px; color: #666; }
         .timestamp { text-align: center; color: #666; font-size: 0.8rem; margin-top: 20px; }
+        .high-low { display: flex; justify-content: space-between; font-size: 0.85rem; color: #888; margin-top: 8px; }
+        .market-summary { display: flex; gap: 20px; flex-wrap: wrap; }
+        .summary-item { flex: 1; min-width: 120px; text-align: center; padding: 15px; background: rgba(247,147,26,0.1); border-radius: 8px; }
+        .summary-label { font-size: 0.8rem; color: #888; }
+        .summary-value { font-size: 1.1rem; color: #f7931a; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -44,14 +51,27 @@
         
         <div class="grid">
             <div class="card">
-                <h2>💰 Live Crypto Prices</h2>
+                <h2>💰 Live Crypto Prices <button class="btn btn-refresh" onclick="refreshData()" style="float: right; padding: 6px 12px; font-size: 0.8rem;">↻ Refresh</button></h2>
                 <div class="price-row">
                     <span class="coin">₿ BTC</span>
                     <span class="price" id="btc-price">Loading...</span>
                 </div>
+                <div class="high-low" id="btc-high-low"></div>
                 <div class="price-row">
                     <span class="coin">Ξ ETH</span>
                     <span class="price" id="eth-price">Loading...</span>
+                </div>
+                <div class="price-row">
+                    <span class="coin">◎ SOL</span>
+                    <span class="price" id="sol-price">Loading...</span>
+                </div>
+                <div class="price-row">
+                    <span class="coin">✕ XRP</span>
+                    <span class="price" id="xrp-price">Loading...</span>
+                </div>
+                <div class="price-row">
+                    <span class="coin">🔷 BNB</span>
+                    <span class="price" id="bnb-price">Loading...</span>
                 </div>
             </div>
             
@@ -96,6 +116,24 @@
                     <li><span class="status-dot"></span>Weekly Analysis - Mon 8 AM</li>
                 </ul>
             </div>
+            
+            <div class="card">
+                <h2>📈 Market Summary</h2>
+                <div class="market-summary">
+                    <div class="summary-item">
+                        <div class="summary-label">BTC Dominance</div>
+                        <div class="summary-value" id="btc-dominance">--</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">24h Volume</div>
+                        <div class="summary-value" id="market-volume">--</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">BTC Trend</div>
+                        <div class="summary-value" id="btc-trend">--</div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="grid" style="margin-top: 20px;">
@@ -129,23 +167,51 @@
         // Fetch crypto prices
         async function fetchPrices() {
             try {
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,xrp,binancecoin&vs_currencies=usd&include_24hr_change=true&include_24hr_high=true&include_24hr_low=true');
                 const data = await res.json();
                 
                 const btc = data.bitcoin;
                 const eth = data.ethereum;
+                const sol = data.solana;
+                const xrp = data.xrp;
+                const bnb = data.binancecoin;
                 
+                // BTC
                 document.getElementById('btc-price').innerHTML = 
                     '$' + btc.usd.toLocaleString() + 
                     ' <span class="' + (btc.usd_24h_change >= 0 ? 'positive' : 'negative') + '">' + 
                     (btc.usd_24h_change >= 0 ? '↑' : '↓') + 
                     Math.abs(btc.usd_24h_change).toFixed(2) + '%</span>';
+                document.getElementById('btc-high-low').innerHTML = 
+                    '24h High: <span class="positive">$' + btc.usd_24h_high.toLocaleString() + '</span> | 24h Low: <span class="negative">$' + btc.usd_24h_low.toLocaleString() + '</span>';
                 
+                // ETH
                 document.getElementById('eth-price').innerHTML = 
                     '$' + eth.usd.toLocaleString() + 
                     ' <span class="' + (eth.usd_24h_change >= 0 ? 'positive' : 'negative') + '">' + 
                     (eth.usd_24h_change >= 0 ? '↑' : '↓') + 
                     Math.abs(eth.usd_24h_change).toFixed(2) + '%</span>';
+                
+                // SOL
+                document.getElementById('sol-price').innerHTML = 
+                    '$' + sol.usd.toLocaleString() + 
+                    ' <span class="' + (sol.usd_24h_change >= 0 ? 'positive' : 'negative') + '">' + 
+                    (sol.usd_24h_change >= 0 ? '↑' : '↓') + 
+                    Math.abs(sol.usd_24h_change).toFixed(2) + '%</span>';
+                
+                // XRP
+                document.getElementById('xrp-price').innerHTML = 
+                    '$' + xrp.usd.toLocaleString() + 
+                    ' <span class="' + (xrp.usd_24h_change >= 0 ? 'positive' : 'negative') + '">' + 
+                    (xrp.usd_24h_change >= 0 ? '↑' : '↓') + 
+                    Math.abs(xrp.usd_24h_change).toFixed(2) + '%</span>';
+                
+                // BNB
+                document.getElementById('bnb-price').innerHTML = 
+                    '$' + bnb.usd.toLocaleString() + 
+                    ' <span class="' + (bnb.usd_24h_change >= 0 ? 'positive' : 'negative') + '">' + 
+                    (bnb.usd_24h_change >= 0 ? '↑' : '↓') + 
+                    Math.abs(bnb.usd_24h_change).toFixed(2) + '%</span>';
                 
                 // Calculate support/resistance
                 const btcPrice = btc.usd;
@@ -154,10 +220,19 @@
                 document.getElementById('s1').innerText = '$' + Math.round(btcPrice * 0.98).toLocaleString();
                 document.getElementById('s2').innerText = '$' + Math.round(btcPrice * 0.95).toLocaleString();
                 
+                // Market summary
+                document.getElementById('btc-dominance').innerText = '~52%';
+                document.getElementById('market-volume').innerText = 'High';
+                document.getElementById('btc-trend').innerHTML = btc.usd_24h_change >= 0 ? 
+                    '<span class="positive">↑ Bullish</span>' : '<span class="negative">↓ Bearish</span>';
+                
             } catch (e) {
                 console.error('Price fetch error:', e);
                 document.getElementById('btc-price').innerText = 'Error';
                 document.getElementById('eth-price').innerText = 'Error';
+                document.getElementById('sol-price').innerText = 'Error';
+                document.getElementById('xrp-price').innerText = 'Error';
+                document.getElementById('bnb-price').innerText = 'Error';
             }
         }
         
@@ -199,6 +274,13 @@
                 console.error('Fear & Greed error:', e);
                 document.getElementById('fear-value').innerText = 'Error';
             }
+        }
+        
+        // Manual refresh function
+        function refreshData() {
+            fetchPrices();
+            fetchFearGreed();
+            updateTimestamp();
         }
         
         // Update timestamp
