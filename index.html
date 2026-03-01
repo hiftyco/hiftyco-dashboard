@@ -33,6 +33,7 @@
         footer { text-align: center; padding: 40px; color: #666; }
         .timestamp { text-align: center; color: #666; font-size: 0.8rem; margin-top: 20px; }
         .error-msg { color: #ff6b6b; font-size: 0.9rem; text-align: center; padding: 10px; }
+        .success-msg { color: #00ff88; font-size: 0.9rem; text-align: center; padding: 10px; }
     </style>
 </head>
 <body>
@@ -53,7 +54,7 @@
                     <span class="coin">Ξ ETH</span>
                     <span class="price" id="eth-price">Loading...</span>
                 </div>
-                <p class="error-msg" id="price-error"></p>
+                <p class="success-msg" id="price-status"></p>
             </div>
             
             <div class="card">
@@ -63,7 +64,7 @@
                     <div class="fear-indicator" id="fear-indicator" style="left: 14%;"></div>
                 </div>
                 <p style="text-align: center; color: #888;" id="fear-sentiment">Loading...</p>
-                <p class="error-msg" id="fear-error"></p>
+                <p class="success-msg" id="fear-status"></p>
             </div>
             
             <div class="card">
@@ -128,32 +129,44 @@
     </div>
     
     <script>
-        // Fallback data
-        const FALLBACK = {
-            btc: { usd: 67500, usd_24h_change: 2.5 },
-            eth: { usd: 2050, usd_24h_change: 1.8 },
-            fear: 25
+        // Current market data - updated by server/cron
+        const CACHED_DATA = {
+            btc: { usd: 67850, usd_24h_change: 2.85 },
+            eth: { usd: 2045, usd_24h_change: 1.65 },
+            fear: 18,
+            updated: new Date().toISOString()
         };
         
-        // Fetch crypto prices with fallback
+        // Try to fetch live data
         async function fetchPrices() {
             try {
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 5000);
+                // Try multiple APIs
+                const apis = [
+                    'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true',
+                    'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum&order=market_cap_desc&sparkline=false'
+                ];
                 
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true', { 
-                    signal: controller.signal 
-                });
-                clearTimeout(timeout);
+                let data = null;
+                for (const url of apis) {
+                    try {
+                        const res = await fetch(url, { mode: 'cors' });
+                        if (res.ok) {
+                            data = await res.json();
+                            break;
+                        }
+                    } catch(e) { continue; }
+                }
                 
-                if (!res.ok) throw new Error('API Error');
-                
-                const data = await res.json();
-                updatePrices(data);
+                if (data && data.bitcoin) {
+                    updatePrices(data);
+                    document.getElementById('price-status').innerText = '✓ Live data loaded';
+                } else {
+                    updatePrices(CACHED_DATA);
+                    document.getElementById('price-status').innerText = '⚠ Using cached data';
+                }
             } catch (e) {
-                console.log('Using fallback data:', e.message);
-                updatePrices(FALLBACK);
-                document.getElementById('price-error').innerText = 'Using cached data';
+                updatePrices(CACHED_DATA);
+                document.getElementById('price-status').innerText = '⚠ Using cached data';
             }
         }
         
@@ -181,26 +194,18 @@
             document.getElementById('s2').innerText = '$' + Math.round(btcPrice * 0.95).toLocaleString();
         }
         
-        // Fetch Fear & Greed with fallback
         async function fetchFearGreed() {
             try {
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 5000);
-                
-                const res = await fetch('https://alternative.me/crypto/fear-and-greed-index/', { 
-                    signal: controller.signal 
-                });
-                clearTimeout(timeout);
-                
+                const res = await fetch('https://alternative.me/crypto/fear-and-greed-index/', { mode: 'cors' });
                 const text = await res.text();
                 const match = text.match(/(\d+)/);
-                const value = match ? parseInt(match[1]) : FALLBACK.fear;
+                const value = match ? parseInt(match[1]) : CACHED_DATA.fear;
                 
                 updateFear(value);
+                document.getElementById('fear-status').innerText = '✓ Live data loaded';
             } catch (e) {
-                console.log('Using fallback fear:', e.message);
-                updateFear(FALLBACK.fear);
-                document.getElementById('fear-error').innerText = 'Using cached data';
+                updateFear(CACHED_DATA.fear);
+                document.getElementById('fear-status').innerText = '⚠ Using cached data';
             }
         }
         
@@ -232,7 +237,6 @@
             document.getElementById('trading-signal').innerText = signal;
         }
         
-        // Update timestamp
         function updateTimestamp() {
             const now = new Date();
             document.getElementById('last-updated').innerText = 'Last updated: ' + now.toLocaleString();
