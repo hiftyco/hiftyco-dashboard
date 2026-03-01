@@ -590,9 +590,19 @@ MARKET UPDATE: Fear & Greed Index at 14 (Extreme Fear) - Strong Buy Signal
         let btcPrice = 0;
         
         async function refreshMarket() {
+            // Reset to loading state
+            document.getElementById('btc-price').textContent = 'Loading...';
+            document.getElementById('eth-price').textContent = 'Loading...';
+            document.getElementById('btc-change').textContent = '--';
+            document.getElementById('eth-change').textContent = '--';
+            document.getElementById('fg-value').textContent = 'Loading...';
+            
             try {
-                // Fetch BTC & ETH prices
+                // Fetch BTC & ETH prices from CoinGecko
                 const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
+                
+                if (!priceRes.ok) throw new Error('CoinGecko API error: ' + priceRes.status);
+                
                 const priceData = await priceRes.json();
                 
                 btcPrice = priceData.bitcoin.usd;
@@ -611,28 +621,32 @@ MARKET UPDATE: Fear & Greed Index at 14 (Extreme Fear) - Strong Buy Signal
                 ethChangeEl.textContent = (ethChange >= 0 ? '+' : '') + ethChange.toFixed(2) + '% (24h)';
                 ethChangeEl.className = 'change ' + (ethChange >= 0 ? 'positive' : 'negative');
                 
-                // Calculate S/R levels
+                // Calculate S/R levels after getting BTC price
                 calculateLevels(btcPrice);
                 
             } catch (e) {
                 console.error('Price fetch error:', e);
-                document.getElementById('btc-price').textContent = 'Error';
+                document.getElementById('btc-price').textContent = 'API Error';
+                document.getElementById('eth-price').textContent = 'API Error';
+                document.getElementById('btc-change').textContent = 'Check connection';
+                // Use fallback price for demo
+                calculateLevels(85000);
             }
             
             try {
-                // Fetch Fear & Greed
-                const fgRes = await fetch('https://alternative.me/crypto/fear-and-greed-index/');
-                const fgHtml = await fgRes.text();
+                // Fetch Fear & Greed Index - use the proper API endpoint
+                const fgRes = await fetch('https://alternative.me/crypto/api/fear-and-greed-index.php');
                 
-                // Parse the JSON from the page
-                const jsonMatch = fgHtml.match(/data-enzyme-id="[^"]*value[^"]*">(\d+)<\/span>/);
-                const labelMatch = fgHtml.match(/data-enzyme-id="[^"]*label[^"]*">([^<]+)<\/span>/);
+                if (!fgRes.ok) throw new Error('Fear & Greed API error: ' + fgRes.status);
                 
-                let fgValue = 25;
-                let fgLabel = 'Extreme Fear';
+                const fgData = await fgRes.json();
                 
-                if (jsonMatch) fgValue = parseInt(jsonMatch[1]);
-                if (labelMatch) fgLabel = labelMatch[1].trim();
+                if (!fgData.data || !fgData.data[0]) {
+                    throw new Error('Invalid Fear & Greed data');
+                }
+                
+                const fgValue = parseInt(fgData.data[0].value);
+                const fgLabel = fgData.data[0].value_classification;
                 
                 document.getElementById('fg-value').textContent = fgValue + ' - ' + fgLabel;
                 document.getElementById('meter-indicator').style.left = fgValue + '%';
@@ -643,26 +657,41 @@ MARKET UPDATE: Fear & Greed Index at 14 (Extreme Fear) - Strong Buy Signal
                 
                 const badgeClass = fgValue < 35 ? 'fear' : (fgValue > 65 ? 'greed' : 'neutral');
                 const badgeLabel = fgValue < 35 ? 'Bearish' : (fgValue > 65 ? 'Bullish' : 'Neutral');
-                badges.innerHTML += `<span class="badge ${badgeClass}">${badgeLabel}</span>`;
-                badges.innerHTML += `<span class="badge ${fgValue < 25 ? 'fear' : 'neutral'}">${fgValue < 25 ? 'Extreme' : fgValue > 75 ? 'Extreme' : 'Moderate'}</span>`;
+                badges.innerHTML += '<span class="badge ' + badgeClass + '">' + badgeLabel + '</span>';
+                
+                let extremeLabel;
+                if (fgValue < 25) extremeLabel = 'Extreme Fear';
+                else if (fgValue > 75) extremeLabel = 'Extreme Greed';
+                else if (fgValue < 35) extremeLabel = 'Fear';
+                else if (fgValue > 65) extremeLabel = 'Greed';
+                else extremeLabel = 'Neutral';
+                
+                badges.innerHTML += '<span class="badge ' + (fgValue < 25 ? 'fear' : (fgValue > 75 ? 'greed' : 'neutral')) + '">' + extremeLabel + '</span>';
                 
                 // Analysis text
                 const analysis = document.getElementById('fg-analysis');
                 if (fgValue < 25) {
-                    analysis.textContent = 'Extreme fear - potential buying opportunity. Market may be oversold.';
+                    analysis.textContent = 'Extreme fear - potential buying opportunity. Market may be oversold. Historical data suggests this could be an accumulation zone.';
+                } else if (fgValue < 35) {
+                    analysis.textContent = 'Fear prevailing - cautious but could present entry points for patient traders. Look for oversold RSI conditions.';
                 } else if (fgValue < 45) {
-                    analysis.textContent = 'Fear prevailing - cautious but could present entry points for patient traders.';
+                    analysis.textContent = 'Slight fear in market - careful positioning recommended. Wait for clearer signals.';
                 } else if (fgValue < 55) {
-                    analysis.textContent = 'Neutral sentiment - no clear directional bias. Wait for setups.';
+                    analysis.textContent = 'Neutral sentiment - no clear directional bias. Wait for setups and confirmations.';
+                } else if (fgValue < 65) {
+                    analysis.textContent = 'Slight greed building - markets rising. Don\'t chase, wait for pullbacks.';
                 } else if (fgValue < 75) {
-                    analysis.textContent = 'Greed building - markets rising but caution advised. Don't chase.';
+                    analysis.textContent = 'Greed building - elevated prices but still room. Consider taking partial profits.';
                 } else {
-                    analysis.textContent = 'Extreme greed - elevated risk. Consider taking profits or tightening stops.';
+                    analysis.textContent = 'Extreme greed - elevated risk. Consider taking profits or tightening stops. Historical tops often coincide with extreme greed.';
                 }
                 
             } catch (e) {
                 console.error('Fear/Greed fetch error:', e);
-                document.getElementById('fg-value').textContent = 'Error';
+                document.getElementById('fg-value').textContent = 'API Error';
+                document.getElementById('fg-analysis').textContent = 'Unable to load Fear & Greed data. Check connection.';
+                document.getElementById('meter-indicator').style.left = '50%';
+                document.getElementById('sentiment-badges').innerHTML = '<span class="badge neutral">Data Unavailable</span>';
             }
             
             // Update timestamp
@@ -671,13 +700,13 @@ MARKET UPDATE: Fear & Greed Index at 14 (Extreme Fear) - Strong Buy Signal
         }
         
         function calculateLevels(price) {
-            if (!price) return;
+            if (!price || price <= 0) return;
             
-            // Simple S/R calculation based on price
-            const res2 = Math.round(price * 1.08 / 100) * 100;  // ~8% above
-            const res1 = Math.round(price * 1.04 / 100) * 100;  // ~4% above
-            const sup1 = Math.round(price * 0.96 / 100) * 100;  // ~4% below
-            const sup2 = Math.round(price * 0.92 / 100) * 100;  // ~8% below
+            // Smart S/R calculation based on BTC price
+            const res2 = Math.round((price * 1.08) / 500) * 500;
+            const res1 = Math.round((price * 1.04) / 500) * 500;
+            const sup1 = Math.round((price * 0.96) / 500) * 500;
+            const sup2 = Math.round((price * 0.92) / 500) * 500;
             
             document.getElementById('res-1').textContent = '$' + res1.toLocaleString();
             document.getElementById('res-2').textContent = '$' + res2.toLocaleString();
@@ -685,28 +714,9 @@ MARKET UPDATE: Fear & Greed Index at 14 (Extreme Fear) - Strong Buy Signal
             document.getElementById('sup-2').textContent = '$' + sup2.toLocaleString();
         }
         
-        async function runJob(job) {
-            const output = document.getElementById('job-output');
-            output.classList.add('show');
-            output.textContent = 'Running ' + job + '...';
-            
-            try {
-                const res = await fetch('/api/' + job);
-                const data = await res.json();
-                output.textContent = data.success ? data.output : data.error;
-            } catch (e) {
-                output.textContent = 'Error: ' + e.message;
-            }
-        }
-        
-        async function loadResearch() {
-            try {
-                const res = await fetch('/api/research/latest');
-                const data = await res.json();
-                document.getElementById('research-output').textContent = data.success ? data.content : 'No research found. Run Daily Research to generate content.';
-            } catch (e) {
-                document.getElementById('research-output').textContent = 'Enable server for live research. Static mode active.';
-            }
+        function loadResearch() {
+            // Static content already in HTML - kept for compatibility
+            console.log('Research loaded (static content)');
         }
         
         // Load on start
