@@ -635,7 +635,7 @@ MARKET UPDATE: Fear & Greed Index at 14 (Extreme Fear) - Strong Buy Signal
             
             try {
                 // Fetch Fear & Greed Index - use the proper API endpoint
-                const fgRes = await fetch('https://alternative.me/crypto/api/fear-and-greed-index.php');
+                const fgRes = await fetch('https://api.alternative.me/fng/');
                 
                 if (!fgRes.ok) throw new Error('Fear & Greed API error: ' + fgRes.status);
                 
