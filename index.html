@@ -598,8 +598,12 @@ MARKET UPDATE: Fear & Greed Index at 14 (Extreme Fear) - Strong Buy Signal
             document.getElementById('fg-value').textContent = 'Loading...';
             
             try {
-                // Fetch BTC & ETH prices from CoinGecko
-                const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
+                // Fetch BTC & ETH prices from CoinGecko - add custom User-Agent to avoid rate limiting
+                const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
                 
                 if (!priceRes.ok) throw new Error('CoinGecko API error: ' + priceRes.status);
                 
