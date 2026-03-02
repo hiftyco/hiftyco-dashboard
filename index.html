@@ -1033,7 +1033,7 @@
         
         async function fetchData() {
             try {
-                const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24h_change=true');
+                const priceRes = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24h_change=true');
                 const priceData = await priceRes.json();
                 
                 if (priceData.bitcoin) {
@@ -1075,16 +1075,16 @@
             const eth = data.ethereum || FALLBACK.eth;
             const sol = data.solana || FALLBACK.sol;
             
-            document.getElementById('btc-price').textContent = '$' + Math.round(btc.usd).toLocaleString();
+            document.getElementById('btc-price').textContent = '$' + Math.round(btc.usd || 67000).toLocaleString();
             document.getElementById('btc-change').textContent = (btc.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(btc.usd_24h_change || 0).toFixed(2) + '%';
             document.getElementById('btc-change').className = 'price-change ' + (btc.usd_24h_change >= 0 ? 'positive' : 'negative');
             
-            document.getElementById('eth-price').textContent = '$' + Math.round(eth.usd).toLocaleString();
+            document.getElementById('eth-price').textContent = '$' + Math.round(eth.usd || 2050).toLocaleString();
             document.getElementById('eth-change').textContent = (eth.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(eth.usd_24h_change || 0).toFixed(2) + '%';
             document.getElementById('eth-change').className = 'price-change ' + (eth.usd_24h_change >= 0 ? 'positive' : 'negative');
             
             // Additional coins
-            document.getElementById('sol-price').textContent = '$' + Math.round(sol.usd).toLocaleString();
+            document.getElementById('sol-price').textContent = '$' + Math.round(sol.usd || 84).toLocaleString();
             document.getElementById('sol-change').textContent = (sol.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(sol.usd_24h_change || 0).toFixed(2) + '%';
             document.getElementById('sol-change').className = 'price-change ' + (sol.usd_24h_change >= 0 ? 'positive' : 'negative');
             
