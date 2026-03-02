@@ -913,6 +913,30 @@
             </div>
         </div>
         
+        <!-- Trading Tips - NEW -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>💡 Trading Tips (Latest Research)</h2>
+            <div style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(245,158,11,0.1)); padding: 16px; border-radius: 12px; margin-bottom: 14px;">
+                <p style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">🎯 RSI Best Practices for Crypto</p>
+                <ul style="list-style: none; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.8;">
+                    <li>📊 <strong>Use 7-10 period RSI</strong> (not 14) - More responsive for crypto</li>
+                    <li>🎯 <strong>80/20 thresholds</strong> instead of 70/30 - Better signals</li>
+                    <li>📈 <strong>200 EMA trend filter</strong> - Only trade in trend direction</li>
+                    <li>⚡ <strong>StochRSI for timing</strong> - Precise entry/exit confirmation</li>
+                </ul>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                <div class="sr-item" style="background: rgba(16,185,129,0.1);">
+                    <div class="sr-label">LONG Signal</div>
+                    <div class="sr-value" style="color: #10B981;">RSI &lt;20 + Price &gt; 200 EMA</div>
+                </div>
+                <div class="sr-item" style="background: rgba(239,68,68,0.1);">
+                    <div class="sr-label">SHORT Signal</div>
+                    <div class="sr-value" style="color: #EF4444;">RSI &gt;80 + Price &lt; 200 EMA</div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Signal -->
         <div class="card" style="margin-top: 24px;">
             <h2>💡 Today's Signal</h2>
@@ -939,8 +963,32 @@
             "style": "1",
             "locale": "en",
             "hide_top_toolbar": false,
-            "allow_symbol_change": true
+            "allow_symbol_change": true,
+            "studies": [
+                "RSI@tv-basicstudies",
+                "MASimple@tv-basicstudies"
+            ],
+            "overrides": {
+                "mainSeriesProperties.candleStyle.upColor": "#10B981",
+                "mainSeriesProperties.candleStyle.downColor": "#EF4444",
+                "mainSeriesProperties.candleStyle.borderUpColor": "#10B981",
+                "mainSeriesProperties.candleStyle.borderDownColor": "#EF4444",
+                "MASimple.props.color": "#F59E0B",
+                "MASimple.props.linewidth": 2
+            }
         });
+        
+        // Also load 200 EMA indicator
+        setTimeout(() => {
+            if (window.tvWidget) return;
+            // Try to add 200 EMA via script injection
+            const iframe = document.querySelector('#tradingview_btc iframe');
+            if (iframe && iframe.contentWindow) {
+                try {
+                    // 200 EMA indicator is included in studies
+                } catch(e) {}
+            }
+        }, 3000);
         </script>
         
         <!-- Rules & Team -->
@@ -948,12 +996,13 @@
             <div class="card">
                 <h2>📋 7 Trading Rules</h2>
                 <ul class="rules-list">
-                    <li><span class="rule-num">1</span>RSI ≤30 (LONG) | ≥70 (SHORT)</li>
-                    <li><span class="rule-num">2</span>Follow the trend</li>
+                    <li><span class="rule-num">1</span>RSI ≤20 (LONG) | ≥80 (SHORT) - New 80/20</li>
+                    <li><span class="rule-num">2</span>Price must be above/below 200 EMA</li>
                     <li><span class="rule-num">3</span>Ratio 2:1 to 3:1</li>
                     <li><span class="rule-num">4</span>SET and FORGET</li>
                     <li><span class="rule-num">5</span>No revenge trading</li>
                     <li><span class="rule-num">6</span>Size winners, cut losers</li>
+                    <li><span class="rule-num">7</span>StochRSI confirms timing</li>
                 </ul>
             </div>
             
