@@ -913,9 +913,16 @@
             </div>
         </div>
         
-        <!-- NEW: More Coins -->
+        <!-- Crypto Prices -->
         <div class="card" style="margin-top: 24px;">
-            <h2>🪙 More Coins</h2>
+            <h2>🪙 Crypto Prices</h2>
+            <div class="price-item">
+                <span class="coin-name">₿ Bitcoin</span>
+                <span>
+                    <span class="price-value" id="btc2-price">---</span>
+                    <span class="price-change" id="btc2-change">---</span>
+                </span>
+            </div>
             <div class="price-item">
                 <span class="coin-name">◎ Solana</span>
                 <span>
@@ -924,17 +931,10 @@
                 </span>
             </div>
             <div class="price-item">
-                <span class="coin-name">◈ BNB</span>
+                <span class="coin-name">Ξ Ethereum</span>
                 <span>
-                    <span class="price-value" id="bnb-price">---</span>
-                    <span class="price-change" id="bnb-change">---</span>
-                </span>
-            </div>
-            <div class="price-item">
-                <span class="coin-name">◎ XRP</span>
-                <span>
-                    <span class="price-value" id="xrp-price">---</span>
-                    <span class="price-change" id="xrp-change">---</span>
+                    <span class="price-value" id="eth2-price">---</span>
+                    <span class="price-change" id="eth2-change">---</span>
                 </span>
             </div>
         </div>
@@ -1027,15 +1027,13 @@
             btc: { usd: 67850, usd_24h_change: 2.5 },
             eth: { usd: 2045, usd_24h_change: 1.2 },
             sol: { usd: 145, usd_24h_change: 3.2 },
-            bnb: { usd: 580, usd_24h_change: 1.5 },
-            xrp: { usd: 0.52, usd_24h_change:0.8 },
              fear: 18,
             rsi: 45
         };
         
         async function fetchData() {
             try {
-                const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,xrp&vs_currencies=usd&include_24h_change=true');
+                const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24h_change=true');
                 const priceData = await priceRes.json();
                 
                 if (priceData.bitcoin) {
@@ -1076,8 +1074,6 @@
             const btc = data.bitcoin || FALLBACK.btc;
             const eth = data.ethereum || FALLBACK.eth;
             const sol = data.solana || FALLBACK.sol;
-            const bnb = data.binancecoin || FALLBACK.bnb;
-            const xrp = data.xrp || FALLBACK.xrp;
             
             document.getElementById('btc-price').textContent = '$' + Math.round(btc.usd).toLocaleString();
             document.getElementById('btc-change').textContent = (btc.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(btc.usd_24h_change || 0).toFixed(2) + '%';
@@ -1092,13 +1088,7 @@
             document.getElementById('sol-change').textContent = (sol.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(sol.usd_24h_change || 0).toFixed(2) + '%';
             document.getElementById('sol-change').className = 'price-change ' + (sol.usd_24h_change >= 0 ? 'positive' : 'negative');
             
-            document.getElementById('bnb-price').textContent = '$' + Math.round(bnb.usd).toLocaleString();
-            document.getElementById('bnb-change').textContent = (bnb.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(bnb.usd_24h_change || 0).toFixed(2) + '%';
-            document.getElementById('bnb-change').className = 'price-change ' + (bnb.usd_24h_change >= 0 ? 'positive' : 'negative');
             
-            document.getElementById('xrp-price').textContent = '$' + xrp.usd.toFixed(3);
-            document.getElementById('xrp-change').textContent = (xrp.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(xrp.usd_24h_change || 0).toFixed(2) + '%';
-            document.getElementById('xrp-change').className = 'price-change ' + (xrp.usd_24h_change >= 0 ? 'positive' : 'negative');
             
             const price = btc.usd || 67000;
             document.getElementById('r2').textContent = '$' + Math.round(price * 1.05).toLocaleString();
