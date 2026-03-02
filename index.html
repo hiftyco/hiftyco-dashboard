@@ -107,7 +107,213 @@
         .card:nth-child(3) { animation-delay: 0.15s; }
         .card:nth-child(4) { animation-delay: 0.2s; }
         .card:nth-child(5) { animation-delay: 0.25s; }
-        .card:nth-child(6) { animation-delay: 0.3s; }
+        .card:nth-child(8) { animation-delay: 0.35s; }
+        .card:nth-child(9) { animation-delay: 0.4s; }
+        .card:nth-child(10) { animation-delay: 0.45s; }
+        
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 14px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #F8FAFC;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent), #EF4444);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245,158,11,0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #64748B, #475569);
+        }
+        
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            width: auto;
+        }
+        
+        /* Results */
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 0.9rem;
+        }
+        
+        .result-row:last-child { border: none; }
+        
+        .result-label {
+            color: var(--text-secondary);
+        }
+        
+        .result-value {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .result-value.positive { color: var(--success); }
+        .result-value.negative { color: var(--danger); }
+        
+        /* Performance */
+        .perf-stat {
+            text-align: center;
+            padding: 16px 8px;
+            background: #F8FAFC;
+            border-radius: 12px;
+        }
+        
+        .perf-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .perf-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        
+        .rsi-meter {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        
+        .rsi-meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10B981, #F59E0B, #EF4444);
+            transition: width 0.5s ease;
+        }
+        
+        /* News */
+        .news-item {
+            padding: 14px 0;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        
+        .news-item:last-child { border: none; }
+        
+        .news-headline {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .news-meta {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+        
+        /* Trade Logger */
+        .trade-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 14px;
+        }
+        
+        .trade-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #F8FAFC;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .trade-item .direction {
+            font-weight: 600;
+        }
+        
+        .trade-item .direction.long { color: var(--success); }
+        .trade-item .direction.short { color: var(--danger); }
+        
+        .trade-item .pnl {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Alerts */
+        .alert-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        
+        .alert-status {
+            padding: 14px;
+            background: #F8FAFC;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .alert-status.active {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid var(--success);
+        }
+        
+        .alert-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .alert-dot.active { background: var(--success); }
+        .alert-dot.inactive { background: #CBD5E1; }
         
         .card h2 {
             font-size: 0.8rem;
@@ -585,6 +791,127 @@
             </div>
         </div>
         
+        <!-- NEW: Position Size Calculator -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>🧮 Position Size Calculator</h2>
+            <div class="form-group">
+                <label>Account Balance ($)</label>
+                <input type="number" id="calc-balance" placeholder="10000" value="10000">
+            </div>
+            <div class="form-group">
+                <label>Risk %</label>
+                <input type="number" id="calc-risk" placeholder="2" value="2" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Entry Price ($)</label>
+                <input type="number" id="calc-entry" placeholder="67000" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Stop Loss ($)</label>
+                <input type="number" id="calc-sl" placeholder="65000" step="0.01">
+            </div>
+            <button class="btn" onclick="calculatePosition()">Calculate Position</button>
+            <div id="calc-results" style="margin-top: 16px;">
+                <div class="result-row">
+                    <span class="result-label">Position Size</span>
+                    <span class="result-value" id="result-size">--</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Potential Loss</span>
+                    <span class="result-value negative" id="result-loss">--</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Potential Profit (2:1)</span>
+                    <span class="result-value positive" id="result-profit">--</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW: Performance Dashboard -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📊 Performance Dashboard</h2>
+            <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px;">
+                <div class="perf-stat">
+                    <div class="perf-value" id="perf-winrate">100%</div>
+                    <div class="perf-label">Win Rate</div>
+                </div>
+                <div class="perf-stat">
+                    <div class="perf-value" id="perf-rsi">33%</div>
+                    <div class="perf-label">RSI Compliance</div>
+                    <div class="rsi-meter"><div class="rsi-meter-fill" id="rsi-meter-fill" style="width: 33%;"></div></div>
+                </div>
+            </div>
+            <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                <div class="perf-stat">
+                    <div class="perf-value" id="perf-tf">4H</div>
+                    <div class="perf-label">Best Timeframe</div>
+                </div>
+                <div class="perf-stat">
+                    <div class="perf-value" id="perf-today">+$450</div>
+                    <div class="perf-label">Today's P&L</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW: News Feed -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📰 Latest Market News</h2>
+            <div id="news-feed">
+                <div class="news-item">
+                    <div class="news-headline">Bitcoin surges past $67K as institutional demand continues</div>
+                    <div class="news-meta">CryptoNews • 2h ago</div>
+                </div>
+                <div class="news-item">
+                    <div class="news-headline">Fed signals potential rate cuts in upcoming meetings</div>
+                    <div class="news-meta">Markets • 4h ago</div>
+                </div>
+                <div class="news-item">
+                    <div class="news-headline">Ethereum ETF inflows hit new weekly record</div>
+                    <div class="news-meta">CryptoNews • 6h ago</div>
+                </div>
+            </div>
+            <p class="status" id="news-status">📰 Curated headlines</p>
+        </div>
+        
+        <!-- NEW: Quick Trade Logger -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📝 Quick Trade Logger</h2>
+            <div class="form-group">
+                <label>Entry Price ($)</label>
+                <input type="number" id="trade-entry" placeholder="67000" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Exit Price ($)</label>
+                <input type="number" id="trade-exit" placeholder="68000" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Direction</label>
+                <select id="trade-direction">
+                    <option value="long">LONG ↗</option>
+                    <option value="short">SHORT ↘</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>RSI at Entry</label>
+                <input type="number" id="trade-rsi" placeholder="28" step="1">
+            </div>
+            <button class="btn" onclick="saveTrade()">Save Trade</button>
+            <div class="trade-list" id="trade-list"></div>
+        </div>
+        
+        <!-- NEW: Alerts Section -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>🔔 RSI Alerts</h2>
+            <div class="alert-buttons">
+                <button class="btn btn-small" id="alert-30" onclick="toggleAlert(30)">RSI 30 Alert</button>
+                <button class="btn btn-small btn-secondary" id="alert-70" onclick="toggleAlert(70)">RSI 70 Alert</button>
+            </div>
+            <div class="alert-status" id="alert-status">
+                <span class="alert-dot inactive"></span>
+                <span id="alert-text">No alerts active</span>
+            </div>
+        </div>
+        
         <!-- Signal -->
         <div class="card" style="margin-top: 24px;">
             <h2>💡 Today's Signal</h2>
@@ -797,6 +1124,176 @@
         fetchData();
         // Refresh every 30 seconds for real-time data (Fast & Precision!)
         setInterval(fetchData, 30000);
+        
+        // === NEW FEATURES: Position Size Calculator ===
+        function calculatePosition() {
+            const balance = parseFloat(document.getElementById('calc-balance').value) || 10000;
+            const riskPct = parseFloat(document.getElementById('calc-risk').value) || 2;
+            const entry = parseFloat(document.getElementById('calc-entry').value);
+            const sl = parseFloat(document.getElementById('calc-sl').value);
+            
+            if (!entry || !sl || entry === sl) {
+                alert('Please enter valid Entry and Stop Loss prices (must be different)');
+                return;
+            }
+            
+            const riskAmount = balance * (riskPct / 100);
+            const priceDiff = Math.abs(entry - sl);
+            const positionSize = riskAmount / priceDiff;
+            const positionValue = positionSize * entry;
+            
+            const riskPerCoin = priceDiff;
+            const profit2r = riskPerCoin * 2;
+            const potentialProfit = positionSize * profit2r;
+            const potentialLoss = positionSize * riskPerCoin;
+            
+            document.getElementById('result-size').textContent = positionSize.toFixed(4) + ' BTC';
+            document.getElementById('result-loss').textContent = '-$' + potentialLoss.toFixed(2);
+            document.getElementById('result-profit').textContent = '+$' + potentialProfit.toFixed(2);
+        }
+        
+        // === Performance Dashboard ===
+        function updatePerformance() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            
+            if (trades.length > 0) {
+                const wins = trades.filter(t => t.pnl > 0).length;
+                const winRate = Math.round((wins / trades.length) * 100);
+                document.getElementById('perf-winrate').textContent = winRate + '%';
+                document.getElementById('kpi-winrate').textContent = winRate + '%';
+                
+                const rsiCompliant = trades.filter(t => t.rsi <= 30 || t.rsi >= 70).length;
+                const rsiCompliance = Math.round((rsiCompliant / trades.length) * 100);
+                document.getElementById('perf-rsi').textContent = rsiCompliance + '%';
+                document.getElementById('kpi-rsi').textContent = rsiCompliance + '%';
+                document.getElementById('rsi-meter-fill').style.width = rsiCompliance + '%';
+                
+                const totalPnl = trades.reduce((sum, t) => sum + t.pnl, 0);
+                document.getElementById('perf-today').textContent = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(0);
+                document.getElementById('kpi-pnl').textContent = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(0);
+            }
+        }
+        
+        // === Quick Trade Logger ===
+        function saveTrade() {
+            const entry = parseFloat(document.getElementById('trade-entry').value);
+            const exit = parseFloat(document.getElementById('trade-exit').value);
+            const direction = document.getElementById('trade-direction').value;
+            const rsi = parseFloat(document.getElementById('trade-rsi').value) || 0;
+            
+            if (!entry || !exit) {
+                alert('Please enter Entry and Exit prices');
+                return;
+            }
+            
+            let pnl;
+            if (direction === 'long') {
+                pnl = exit - entry;
+            } else {
+                pnl = entry - exit;
+            }
+            
+            const trade = {
+                entry,
+                exit,
+                direction,
+                rsi,
+                pnl,
+                date: new Date().toISOString()
+            };
+            
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            trades.unshift(trade);
+            localStorage.setItem('hifty-trades', JSON.stringify(trades));
+            
+            renderTrades();
+            updatePerformance();
+            
+            // Clear form
+            document.getElementById('trade-entry').value = '';
+            document.getElementById('trade-exit').value = '';
+            document.getElementById('trade-rsi').value = '';
+        }
+        
+        function renderTrades() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            const container = document.getElementById('trade-list');
+            
+            if (trades.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No trades logged yet</p>';
+                return;
+            }
+            
+            container.innerHTML = trades.slice(0, 5).map(t => `
+                <div class="trade-item">
+                    <div>
+                        <span class="direction ${t.direction}">${t.direction.toUpperCase()}</span>
+                        <span style="color: var(--text-secondary); margin-left: 8px;">@ $${t.entry.toFixed(0)}</span>
+                    </div>
+                    <span class="pnl ${t.pnl >= 0 ? 'positive' : 'negative'}">${t.pnl >= 0 ? '+' : ''}$${t.pnl.toFixed(2)}</span>
+                </div>
+            `).join('');
+        }
+        
+        // === Alerts Section ===
+        const alerts = { rsi30: false, rsi70: false };
+        
+        function toggleAlert(level) {
+            const btn = document.getElementById('alert-' + level);
+            
+            if (level === 30) {
+                alerts.rsi30 = !alerts.rsi30;
+                btn.style.background = alerts.rsi30 ? 'var(--success)' : '';
+                btn.textContent = alerts.rsi30 ? '✓ RSI 30 ON' : 'RSI 30 Alert';
+            } else {
+                alerts.rsi70 = !alerts.rsi70;
+                btn.style.background = alerts.rsi70 ? 'var(--danger)' : '';
+                btn.textContent = alerts.rsi70 ? '✓ RSI 70 ON' : 'RSI 70 Alert';
+            }
+            
+            updateAlertStatus();
+            
+            // Save to localStorage
+            localStorage.setItem('hifty-alerts', JSON.stringify(alerts));
+        }
+        
+        function updateAlertStatus() {
+            const statusEl = document.getElementById('alert-status');
+            const textEl = document.getElementById('alert-text');
+            
+            if (alerts.rsi30 || alerts.rsi70) {
+                statusEl.className = 'alert-status active';
+                const active = [];
+                if (alerts.rsi30) active.push('RSI 30');
+                if (alerts.rsi70) active.push('RSI 70');
+                textEl.innerHTML = '<span class="alert-dot active"></span>Watching: ' + active.join(' & ');
+            } else {
+                statusEl.className = 'alert-status';
+                textEl.innerHTML = '<span class="alert-dot inactive"></span>No alerts active';
+            }
+        }
+        
+        function checkAlerts(rsi) {
+            if (alerts.rsi30 && rsi <= 30) {
+                alert('🔔 RSI 30 Alert! RSI is now ' + rsi + ' - BUY SIGNAL!');
+            }
+            if (alerts.rsi70 && rsi >= 70) {
+                alert('🔔 RSI 70 Alert! RSI is now ' + rsi + ' - SELL SIGNAL!');
+            }
+        }
+        
+        // === Initialize ===
+        updatePerformance();
+        renderTrades();
+        
+        // Load saved alerts
+        const savedAlerts = JSON.parse(localStorage.getItem('hifty-alerts'));
+        if (savedAlerts) {
+            Object.assign(alerts, savedAlerts);
+            if (alerts.rsi30) document.getElementById('alert-30').textContent = '✓ RSI 30 ON';
+            if (alerts.rsi70) document.getElementById('alert-70').textContent = '✓ RSI 70 ON';
+            updateAlertStatus();
+        }
     </script>
 </body>
 </html>
