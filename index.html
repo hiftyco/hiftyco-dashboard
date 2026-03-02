@@ -1033,7 +1033,7 @@
         
         async function fetchData() {
             try {
-                const priceRes = await fetch('https://api.coingecko.com/raw?url=' + encodeURIComponent('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24h_change=true');
+                const priceRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24h_change=true');
                 const priceData = await priceRes.json();
                 
                 if (priceData.bitcoin) {
