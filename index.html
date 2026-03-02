@@ -36,8 +36,10 @@
             overflow-x: hidden;
         }
         
-        /* Blockchain Animation */
-        .blockchain-bg {
+        /* Interactive Blockchain Particles */
+        /* Interactive Particles *\/
+        .particles-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+        .particles-container {
             position: fixed;
             top: 0;
             left: 0;
@@ -45,49 +47,11 @@
             height: 100%;
             pointer-events: none;
             z-index: -1;
-            overflow: hidden;
         }
         
-        .block {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: rgba(245, 158, 11, 0.3);
-            border-radius: 2px;
-            animation: float 15s infinite ease-in-out;
-        }
-        
-        .block:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 12s; }
-        .block:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 14s; }
-        .block:nth-child(3) { left: 30%; animation-delay: 4s; animation-duration: 11s; }
-        .block:nth-child(4) { left: 40%; animation-delay: 1s; animation-duration: 13s; }
-        .block:nth-child(5) { left: 50%; animation-delay: 3s; animation-duration: 15s; }
-        .block:nth-child(6) { left: 60%; animation-delay: 5s; animation-duration: 12s; }
-        .block:nth-child(7) { left: 70%; animation-delay: 2s; animation-duration: 14s; }
-        .block:nth-child(8) { left: 80%; animation-delay: 4s; animation-duration: 11s; }
-        .block:nth-child(9) { left: 90%; animation-delay: 1s; animation-duration: 13s; }
-        
-        @keyframes float {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
-        }
-        
-        /* Skate Motion */
-        .skate-bg {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            font-size: 3rem;
-            animation: skate 8s infinite ease-in-out;
-            z-index: -1;
-            opacity: 0.15;
-        }
-        
-        @keyframes skate {
-            0%, 100% { transform: translateX(0) rotate(-5deg); }
-            50% { transform: translateX(30px) rotate(5deg); }
+        canvas#particles {
+            width: 100%;
+            height: 100%;
         }
         
         /* Glow effects */
@@ -714,33 +678,20 @@
     </style>
 </head>
 <body>
-    <!-- Blockchain Animation -->
-    <div class="blockchain-bg">
-        <div class="block"></div>
-        <div class="block"></div>
-        <div class="block"></div>
-        <div class="block"></div>
-        <div class="block"></div>
-        <div class="block"></div>
-        <div class="block"></div>
-        <div class="block"></div>
-        <div class="block"></div>
+    <div class="particles-container">
+        <canvas id="particles"></canvas>
     </div>
-    <!-- Skate Motion -->
-    <div class="skate-bg">🛹</div>
     <div class="container">
         <!-- Hero -->
         <div class="hero">
             <h1>₿ Hifty Co</h1>
             <p>Trading Dashboard • 1% Trader Mindset</p>
-        </div>
         
         <!-- Credos -->
         <div class="credo">
             <p>✨ "Teamwork makes the dream work! We can do this!" ✨</p>
             <p style="margin-top: 8px; font-size: 0.9rem;">⚡ "Cura et Celeritas" - Fast and Precision ⚡</p>
             <p style="margin-top: 8px; font-size: 0.85rem;">🎯 "With Integrity, we combine Teamwork and Speed to achieve Precision"</p>
-        </div>
         
         <!-- Main Grid -->
         <div class="grid">
@@ -753,23 +704,19 @@
                         <span class="price-value" id="btc-price">---</span>
                         <span class="price-change" id="btc-change">---</span>
                     </span>
-                </div>
                 <div class="price-item">
                     <span class="coin-name">Ξ Ethereum</span>
                     <span>
                         <span class="price-value" id="eth-price">---</span>
                         <span class="price-change" id="eth-change">---</span>
                     </span>
-                </div>
                 <div class="price-item">
                     <span class="coin-name">◎ Solana</span>
                     <span>
                         <span class="price-value" id="sol-price">---</span>
                         <span class="price-change" id="sol-change">---</span>
                     </span>
-                </div>
                 <p class="status" id="price-status">Loading...</p>
-            </div>
             
             <!-- RSI -->
             <div class="card">
@@ -780,103 +727,46 @@
                             <div class="rsi-inner">
                                 <span class="rsi-value" id="rsi-value">--</span>
                                 <span class="rsi-label">RSI</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="rsi-signal" id="rsi-signal">Loading...</div>
-                </div>
-            </div>
             
             <!-- Fear & Greed -->
             <div class="card">
                 <h2>😱 Fear & Greed</h2>
-                <div class="fear-value" id="fear-value">--</div>
                 <div class="fear-bar">
-                    <div class="fear-indicator" id="fear-indicator" style="left: 50%;"></div>
-                </div>
                 <div class="fear-labels">
                     <span>Fear</span>
                     <span>Neutral</span>
                     <span>Greed</span>
-                </div>
                 <p style="text-align: center; margin-top: 12px; color: var(--text-secondary); font-size: 0.85rem;" id="fear-sentiment">Loading...</p>
                 <p class="status" id="fear-status">Loading...</p>
-            </div>
             
             <!-- Trend -->
             <div class="card">
                 <h2>📈 Trend Direction</h2>
                 <div class="trend-grid">
                     <div class="trend-item">
-                        <div class="trend-arrow" id="trend-1h">⬆</div>
-                        <div class="trend-label">1H</div>
-                    </div>
                     <div class="trend-item">
-                        <div class="trend-arrow" id="trend-4h">⬆</div>
-                        <div class="trend-label">4H</div>
-                    </div>
                     <div class="trend-item">
-                        <div class="trend-arrow" id="trend-1d">⬆</div>
-                        <div class="trend-label">1D</div>
-                    </div>
-                </div>
                 <p style="text-align: center; margin-top: 12px; color: var(--text-secondary); font-size: 0.85rem;" id="trend-signal">Loading...</p>
-            </div>
             
             <!-- S/R -->
             <div class="card">
                 <h2>🎯 Support & Resistance</h2>
                 <div class="sr-grid">
                     <div class="sr-item">
-                        <div class="sr-label">Resistance 2</div>
-                        <div class="sr-value" id="r2">---</div>
-                    </div>
                     <div class="sr-item">
-                        <div class="sr-label">Resistance 1</div>
-                        <div class="sr-value" id="r1">---</div>
-                    </div>
                     <div class="sr-item">
-                        <div class="sr-label">Support 1</div>
-                        <div class="sr-value" id="s1">---</div>
-                    </div>
                     <div class="sr-item">
-                        <div class="sr-label">Support 2</div>
-                        <div class="sr-value" id="s2">---</div>
-                    </div>
-                </div>
-            </div>
             
             <!-- KPIs -->
             <div class="card">
                 <h2>📉 Trading KPIs</h2>
                 <div class="kpi-grid">
                     <div class="kpi-item">
-                        <div class="kpi-value" id="kpi-winrate">100%</div>
-                        <div class="kpi-label">Win Rate</div>
-                    </div>
                     <div class="kpi-item">
-                        <div class="kpi-value" id="kpi-trades">3</div>
-                        <div class="kpi-label">Trades</div>
-                    </div>
                     <div class="kpi-item">
-                        <div class="kpi-value" id="kpi-pnl">+$7,395</div>
-                        <div class="kpi-label">Total P&L</div>
-                    </div>
                     <div class="kpi-item">
-                        <div class="kpi-value" id="kpi-rsi">33%</div>
-                        <div class="kpi-label">RSI Compliance</div>
-                    </div>
                     <div class="kpi-item">
-                        <div class="kpi-value" id="kpi-avg">+$2,465</div>
-                        <div class="kpi-label">Avg Win</div>
-                    </div>
                     <div class="kpi-item">
-                        <div class="kpi-value" id="kpi-ratio">2:1</div>
-                        <div class="kpi-label">Avg Ratio</div>
-                    </div>
-                </div>
-            </div>
-        </div>
         
         <!-- NEW: Position Size Calculator -->
         <div class="card" style="margin-top: 24px;">
@@ -884,81 +774,45 @@
             <div class="form-group">
                 <label>Account Balance ($)</label>
                 <input type="number" id="calc-balance" placeholder="10000" value="10000">
-            </div>
             <div class="form-group">
                 <label>Risk %</label>
                 <input type="number" id="calc-risk" placeholder="2" value="2" step="0.1">
-            </div>
             <div class="form-group">
                 <label>Entry Price ($)</label>
                 <input type="number" id="calc-entry" placeholder="67000" step="0.01">
-            </div>
             <div class="form-group">
                 <label>Stop Loss ($)</label>
                 <input type="number" id="calc-sl" placeholder="65000" step="0.01">
-            </div>
             <button class="btn" onclick="calculatePosition()">Calculate Position</button>
             <div id="calc-results" style="margin-top: 16px;">
                 <div class="result-row">
                     <span class="result-label">Position Size</span>
                     <span class="result-value" id="result-size">--</span>
-                </div>
                 <div class="result-row">
                     <span class="result-label">Potential Loss</span>
                     <span class="result-value negative" id="result-loss">--</span>
-                </div>
                 <div class="result-row">
                     <span class="result-label">Potential Profit (2:1)</span>
                     <span class="result-value positive" id="result-profit">--</span>
-                </div>
-            </div>
-        </div>
         
         <!-- NEW: Performance Dashboard -->
         <div class="card" style="margin-top: 24px;">
             <h2>📊 Performance Dashboard</h2>
             <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px;">
                 <div class="perf-stat">
-                    <div class="perf-value" id="perf-winrate">100%</div>
-                    <div class="perf-label">Win Rate</div>
-                </div>
                 <div class="perf-stat">
-                    <div class="perf-value" id="perf-rsi">33%</div>
-                    <div class="perf-label">RSI Compliance</div>
-                    <div class="rsi-meter"><div class="rsi-meter-fill" id="rsi-meter-fill" style="width: 33%;"></div></div>
-                </div>
-            </div>
             <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px;">
                 <div class="perf-stat">
-                    <div class="perf-value" id="perf-tf">4H</div>
-                    <div class="perf-label">Best Timeframe</div>
-                </div>
                 <div class="perf-stat">
-                    <div class="perf-value" id="perf-today">+$450</div>
-                    <div class="perf-label">Today's P&L</div>
-                </div>
-            </div>
-        </div>
         
         <!-- NEW: News Feed -->
         <div class="card" style="margin-top: 24px;">
             <h2>📰 Latest Market News</h2>
             <div id="news-feed">
                 <div class="news-item">
-                    <div class="news-headline">Bitcoin surges past $67K as institutional demand continues</div>
-                    <div class="news-meta">CryptoNews • 2h ago</div>
-                </div>
                 <div class="news-item">
-                    <div class="news-headline">Fed signals potential rate cuts in upcoming meetings</div>
-                    <div class="news-meta">Markets • 4h ago</div>
-                </div>
                 <div class="news-item">
-                    <div class="news-headline">Ethereum ETF inflows hit new weekly record</div>
-                    <div class="news-meta">CryptoNews • 6h ago</div>
-                </div>
-            </div>
             <p class="status" id="news-status">📰 Curated headlines</p>
-        </div>
         
         <!-- NEW: Quick Trade Logger -->
         <div class="card" style="margin-top: 24px;">
@@ -966,25 +820,19 @@
             <div class="form-group">
                 <label>Entry Price ($)</label>
                 <input type="number" id="trade-entry" placeholder="67000" step="0.01">
-            </div>
             <div class="form-group">
                 <label>Exit Price ($)</label>
                 <input type="number" id="trade-exit" placeholder="68000" step="0.01">
-            </div>
             <div class="form-group">
                 <label>Direction</label>
                 <select id="trade-direction">
                     <option value="long">LONG ↗</option>
                     <option value="short">SHORT ↘</option>
                 </select>
-            </div>
             <div class="form-group">
                 <label>RSI at Entry</label>
                 <input type="number" id="trade-rsi" placeholder="28" step="1">
-            </div>
             <button class="btn" onclick="saveTrade()">Save Trade</button>
-            <div class="trade-list" id="trade-list"></div>
-        </div>
         
         <!-- NEW: Alerts Section -->
         <div class="card" style="margin-top: 24px;">
@@ -992,12 +840,9 @@
             <div class="alert-buttons">
                 <button class="btn btn-small" id="alert-30" onclick="toggleAlert(30)">RSI 30 Alert</button>
                 <button class="btn btn-small btn-secondary" id="alert-70" onclick="toggleAlert(70)">RSI 70 Alert</button>
-            </div>
             <div class="alert-status" id="alert-status">
                 <span class="alert-dot inactive"></span>
                 <span id="alert-text">No alerts active</span>
-            </div>
-        </div>
         
         <!-- Trading Tips - NEW -->
         <div class="card" style="margin-top: 24px;">
@@ -1010,32 +855,19 @@
                     <li>📈 <strong>200 EMA trend filter</strong> - Only trade in trend direction</li>
                     <li>⚡ <strong>StochRSI for timing</strong> - Precise entry/exit confirmation</li>
                 </ul>
-            </div>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
                 <div class="sr-item" style="background: rgba(16,185,129,0.1);">
-                    <div class="sr-label">LONG Signal</div>
-                    <div class="sr-value" style="color: #10B981;">RSI &lt;20 + Price &gt; 200 EMA</div>
-                </div>
                 <div class="sr-item" style="background: rgba(239,68,68,0.1);">
-                    <div class="sr-label">SHORT Signal</div>
-                    <div class="sr-value" style="color: #EF4444;">RSI &gt;80 + Price &lt; 200 EMA</div>
-                </div>
-            </div>
-        </div>
         
         <!-- Signal -->
         <div class="card" style="margin-top: 24px;">
             <h2>💡 Today's Signal</h2>
             <div class="signal-box" id="signal-box">
                 Loading market data...
-            </div>
-        </div>
         
         <!-- Chart -->
         <div class="card" style="margin-top: 24px;">
             <h2>📈 BTC Price Chart</h2>
-            <div id="tradingview_btc"></div>
-        </div>
         
         <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
         <script type="text/javascript">
@@ -1082,46 +914,21 @@
                     <li><span class="rule-num">6</span>Size winners, cut losers</li>
                     <li><span class="rule-num">7</span>StochRSI confirms timing</li>
                 </ul>
-            </div>
             
             <div class="card">
                 <h2>👥 Our Team</h2>
                 <div class="team-grid">
                     <div class="team-member">
-                        <div class="team-avatar">🤖</div>
-                        <div class="team-name">Ollie</div>
-                        <div class="team-role">Chief of Command</div>
-                    </div>
                     <div class="team-member">
-                        <div class="team-avatar">📊</div>
-                        <div class="team-name">MintyTrades</div>
-                        <div class="team-role">Trading Research</div>
-                    </div>
                     <div class="team-member">
-                        <div class="team-avatar">💻</div>
-                        <div class="team-name">HiftyCodes</div>
-                        <div class="team-role">Website Dev</div>
-                    </div>
                     <div class="team-member">
-                        <div class="team-avatar">📈</div>
-                        <div class="team-name">HiftyAnalyst</div>
-                        <div class="team-role">Data Analysis</div>
-                    </div>
                     <div class="team-member">
-                        <div class="team-avatar">🛡️</div>
-                        <div class="team-name">HiftyRiskMgr</div>
-                        <div class="team-role">Risk Management</div>
-                    </div>
-                </div>
-            </div>
-        </div>
         
         <!-- Footer -->
         <footer>
             <p>Powered by Ollie & Team • 1% Trader Mission 🚀</p>
             <p style="margin-top: 6px;" id="last-updated">Last updated: --</p>
         </footer>
-    </div>
     
     <script>
         const FALLBACK = {
@@ -1374,9 +1181,7 @@
                     <div>
                         <span class="direction ${t.direction}">${t.direction.toUpperCase()}</span>
                         <span style="color: var(--text-secondary); margin-left: 8px;">@ $${t.entry.toFixed(0)}</span>
-                    </div>
                     <span class="pnl ${t.pnl >= 0 ? 'positive' : 'negative'}">${t.pnl >= 0 ? '+' : ''}$${t.pnl.toFixed(2)}</span>
-                </div>
             `).join('');
         }
         
@@ -1439,6 +1244,91 @@
             if (alerts.rsi70) document.getElementById('alert-70').textContent = '✓ RSI 70 ON';
             updateAlertStatus();
         }
+        
+        // === Interactive Blockchain Particles ===
+        function initParticles() {
+            const canvas = document.getElementById('particles');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const particles = [];
+            const particleCount = 40;
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.8,
+                    vy: (Math.random() - 0.5) * 0.8,
+                    size: Math.random() * 3 + 2
+                });
+            }
+            
+            let mouseX = canvas.width / 2;
+            let mouseY = canvas.height / 2;
+            
+            canvas.parentElement.style.pointerEvents = 'auto';
+            canvas.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach((p, i) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    
+                    const dx = mouseX - p.x;
+                    const dy = mouseY - p.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 150) {
+                        p.x -= dx * 0.015;
+                        p.y -= dy * 0.015;
+                    }
+                    
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.y > canvas.height) p.y = 0;
+                    
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(247, 147, 26, 0.5)';
+                    ctx.fill();
+                    
+                    // Blockchain links
+                    particles.forEach((p2, j) => {
+                        if (i === j) return;
+                        const dx2 = p.x - p2.x;
+                        const dy2 = p.y - p2.y;
+                        const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+                        
+                        if (dist2 < 100) {
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.strokeStyle = `rgba(247, 147, 26, ${0.25 * (1 - dist2/100)})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    });
+                });
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+        
+        initParticles();
     </script>
 </body>
 </html>
