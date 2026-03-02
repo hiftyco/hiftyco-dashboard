@@ -34,6 +34,18 @@
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             transition: background 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+        }
+        
+        /* Blockchain Particle Background */
+        #particles-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
         }
         
         /* Dark Mode (default) */
@@ -704,6 +716,8 @@
     </style>
 </head>
 <body>
+    <!-- Blockchain Particle Background -->
+    <canvas id="particles-bg"></canvas>
     <!-- Theme Toggle -->
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">🌙</button>
     <div class="container">
@@ -1121,7 +1135,7 @@
         async function fetchData() {
             try {
                 // Use CryptoCompare API (free, no API key needed)
-                const priceRes = await fetch('https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,SOL&tsyms=USD');
+                const priceRes = await fetch('https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=USD');
                 const priceData = await priceRes.json();
                 
                 if (priceData.BTC) {
