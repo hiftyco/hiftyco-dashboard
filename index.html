@@ -11,13 +11,13 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --bg-start: #E8F4F8;
-            --bg-mid: #F0F5F9;
-            --bg-end: #FFFFFF;
-            --card-bg: #FFFFFF;
-            --text-primary: #1E293B;
-            --text-secondary: #64748B;
-            --accent: #F59E0B;
+            --bg-start: #0a0a1a;
+            --bg-mid: #1a1a3a;
+            --bg-end: #0d0d2a;
+            --card-bg: rgba(26, 26, 58, 0.9);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --accent: #F7931A;  /* Bitcoin orange */
             --accent-light: #FCD34D;
             --success: #10B981;
             --danger: #EF4444;
@@ -27,12 +27,77 @@
         
         body {
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3a 50%, #0d0d2a 100%);
             background-attachment: fixed;
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        
+        /* Blockchain Animation */
+        .blockchain-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .block {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(245, 158, 11, 0.3);
+            border-radius: 2px;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        .block:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 12s; }
+        .block:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 14s; }
+        .block:nth-child(3) { left: 30%; animation-delay: 4s; animation-duration: 11s; }
+        .block:nth-child(4) { left: 40%; animation-delay: 1s; animation-duration: 13s; }
+        .block:nth-child(5) { left: 50%; animation-delay: 3s; animation-duration: 15s; }
+        .block:nth-child(6) { left: 60%; animation-delay: 5s; animation-duration: 12s; }
+        .block:nth-child(7) { left: 70%; animation-delay: 2s; animation-duration: 14s; }
+        .block:nth-child(8) { left: 80%; animation-delay: 4s; animation-duration: 11s; }
+        .block:nth-child(9) { left: 90%; animation-delay: 1s; animation-duration: 13s; }
+        
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+        
+        /* Skate Motion */
+        .skate-bg {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 3rem;
+            animation: skate 8s infinite ease-in-out;
+            z-index: -1;
+            opacity: 0.15;
+        }
+        
+        @keyframes skate {
+            0%, 100% { transform: translateX(0) rotate(-5deg); }
+            50% { transform: translateX(30px) rotate(5deg); }
+        }
+        
+        /* Glow effects */
+        .glow {
+            animation: glow-pulse 3s infinite ease-in-out;
+        }
+        
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(245, 158, 11, 0.4); }
         }
         
         .container {
@@ -649,6 +714,20 @@
     </style>
 </head>
 <body>
+    <!-- Blockchain Animation -->
+    <div class="blockchain-bg">
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+    </div>
+    <!-- Skate Motion -->
+    <div class="skate-bg">🛹</div>
     <div class="container">
         <!-- Hero -->
         <div class="hero">
@@ -680,6 +759,13 @@
                     <span>
                         <span class="price-value" id="eth-price">---</span>
                         <span class="price-change" id="eth-change">---</span>
+                    </span>
+                </div>
+                <div class="price-item">
+                    <span class="coin-name">◎ Solana</span>
+                    <span>
+                        <span class="price-value" id="sol-price">---</span>
+                        <span class="price-change" id="sol-change">---</span>
                     </span>
                 </div>
                 <p class="status" id="price-status">Loading...</p>
