@@ -776,6 +776,7 @@
                         </div>
                     </div>
                     <div class="rsi-signal" id="rsi-signal">Loading...</div>
+                    <p class="status" id="rsi-source">Loading...</p>
                 </div>
             </div>
             
@@ -1141,15 +1142,30 @@
                 if (priceData.BTC) {
                     // Convert to CoinGecko format for compatibility
                     const formatted = {
-                        bitcoin: { usd: priceData.BTC.USD, usd_24h_change: 2.5 },
-                        ethereum: { usd: priceData.ETH.USD, usd_24h_change: 1.5 },
-                        solana: { usd: priceData.SOL.USD, usd_24h_change: 3.2 }
+                        bitcoin: { usd: priceData.BTC.USD, usd_24h_change: 2.5 }
                     };
                     updatePrices(formatted);
                     document.getElementById('price-status').textContent = '✓ Live data';
                 } else {
                     updatePrices(FALLBACK);
                     document.getElementById('price-status').textContent = '⚠ Using cached';
+                }
+                
+                try {
+                    // Fetch historical data for RSI calculation
+                    const histoRes = await fetch('https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=USD&limit=14');
+                    const histoData = await histoRes.json();
+                    
+                    if (histoData.Data && histoData.Data.Data) {
+                        const closes = histoData.Data.Data.map(d => d.close);
+                        const rsi = calculateRSI(closes);
+                        updateRSI(rsi);
+                        document.getElementById('rsi-source').textContent = '✓ Live RSI';
+                    } else {
+                        updateRSI(FALLBACK.rsi);
+                    }
+                } catch(e) {
+                    updateRSI(FALLBACK.rsi);
                 }
                 
                 try {
@@ -1164,7 +1180,6 @@
                     document.getElementById('fear-status').textContent = '⚠ Using cached';
                 }
                 
-                updateRSI(FALLBACK.rsi);
                 updateTrends(2.5); // Using default change
                 
             } catch(e) {
@@ -1176,6 +1191,30 @@
             }
             
             document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleString();
+        }
+        
+        // Calculate RSI from closing prices
+        function calculateRSI(closes, period = 14) {
+            if (!closes || closes.length < period + 1) return 50;
+            
+            let gains = 0;
+            let losses = 0;
+            
+            for (let i = closes.length - period; i < closes.length; i++) {
+                const change = closes[i] - closes[i - 1];
+                if (change > 0) gains += change;
+                else losses -= change;
+            }
+            
+            const avgGain = gains / period;
+            const avgLoss = losses / period;
+            
+            if (avgLoss === 0) return 100;
+            
+            const rs = avgGain / avgLoss;
+            const rsi = 100 - (100 / (1 + rs));
+            
+            return Math.round(rsi);
         }
         
         function updatePrices(data) {
