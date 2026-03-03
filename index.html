@@ -1179,12 +1179,12 @@
                 
                 try {
                     // Fetch hourly data for accurate RSI (like TradingView)
-                    const histoRes = await fetch('https://min-api.cryptocompare.com/data/v2/histohour?fsym=BTC&tsym=USD&limit=50');
+                    const histoRes = await fetch('https://min-api.cryptocompare.com/data/v2/histohour?fsym=BTC&tsym=USD&limit=60');
                     const histoData = await histoRes.json();
                     
                     if (histoData.Data && histoData.Data.Data) {
                         const closes = histoData.Data.Data.map(d => d.close);
-                        const rsi = calculateRSI(closes, 14);
+                        const rsi = calculateRSI(closes, 21);
                         updateRSI(rsi);
                         document.getElementById('rsi-source').textContent = '✓ Live RSI: ' + rsi.toFixed(1);
                     } else {
@@ -1239,7 +1239,7 @@
         }
         
         // Calculate RSI from closing prices
-        function calculateRSI(closes, period = 14) {
+        function calculateRSI(closes, period = 21) {
             if (!closes || closes.length < period + 1) return 50;
             
             // Calculate price changes
