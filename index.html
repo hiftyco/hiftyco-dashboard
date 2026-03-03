@@ -105,8 +105,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            margin-top: 80px;
-            padding: 20px;
+            padding: 60px 20px;
         }
         
         /* Hero */
@@ -723,31 +722,10 @@
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">🌙</button>
     
     <!-- Trading Sessions Clock -->
-    <div class="trading-clock" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: center; align-items: center; gap: 40px; background: var(--card-bg); padding: 12px 20px; border-bottom: 1px solid var(--border); font-size: 0.85rem;">
-        <div style="text-align: center;">
-            <div class="clock-face" id="ny-clock" style="width: 50px; height: 50px; border: 3px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto 4px;">
-                <div class="clock-hand" style="position: absolute; width: 2px; height: 14px; background: var(--text-primary); top: 8px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="ny-hour"></div>
-                <div class="clock-hand" style="position: absolute; width: 2px; height: 18px; background: var(--text-secondary); top: 4px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="ny-minute"></div>
-            </div>
-            <div style="font-weight: 700;">🇺🇸 NEW YORK</div>
-            <div id="ny-time" style="color: var(--text-secondary); font-size: 0.8rem;">--:--</div>
-        </div>
-        <div style="text-align: center;">
-            <div class="clock-face" id="london-clock" style="width: 50px; height: 50px; border: 3px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto 4px;">
-                <div class="clock-hand" style="position: absolute; width: 2px; height: 14px; background: var(--text-primary); top: 8px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="london-hour"></div>
-                <div class="clock-hand" style="position: absolute; width: 2px; height: 18px; background: var(--text-secondary); top: 4px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="london-minute"></div>
-            </div>
-            <div style="font-weight: 700;">🇬🇧 LONDON</div>
-            <div id="london-time" style="color: var(--text-secondary); font-size: 0.8rem;">--:--</div>
-        </div>
-        <div style="text-align: center;">
-            <div class="clock-face" id="tokyo-clock" style="width: 50px; height: 50px; border: 3px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto 4px;">
-                <div class="clock-hand" style="position: absolute; width: 2px; height: 14px; background: var(--text-primary); top: 8px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="tokyo-hour"></div>
-                <div class="clock-hand" style="position: absolute; width: 2px; height: 18px; background: var(--text-secondary); top: 4px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="tokyo-minute"></div>
-            </div>
-            <div style="font-weight: 700;">🇯🇵 TOKYO</div>
-            <div id="tokyo-time" style="color: var(--text-secondary); font-size: 0.8rem;">--:--</div>
-        </div>
+    <div class="trading-clock" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 16px; background: var(--card-bg); padding: 8px 16px; border-radius: 12px; box-shadow: var(--shadow); font-size: 0.85rem;">
+        <div style="text-align: center;"><span style="font-weight: 600;">🇺🇸 New York</span><br><span id="ny-time">--:--</span></div>
+        <div style="text-align: center;"><span style="font-weight: 600;">🇬🇧 London</span><br><span id="london-time">--:--</span></div>
+        <div style="text-align: center;"><span style="font-weight: 600;">🇯🇵 Tokyo</span><br><span id="tokyo-time">--:--</span></div>
     </div>
     <script>
         function updateTradingSessions() {
@@ -760,20 +738,16 @@
             document.getElementById('london-time').textContent = london.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
             document.getElementById('tokyo-time').textContent = tokyo.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
             
-            document.getElementById('ny-hour').style.transform = 'rotate(' + ((ny.getHours() % 12 + ny.getMinutes()/60) * 30) + 'deg)';
-            document.getElementById('ny-minute').style.transform = 'rotate(' + (ny.getMinutes() * 6) + 'deg)';
-            document.getElementById('london-hour').style.transform = 'rotate(' + ((london.getHours() % 12 + london.getMinutes()/60) * 30) + 'deg)';
-            document.getElementById('london-minute').style.transform = 'rotate(' + (london.getMinutes() * 6) + 'deg)';
-            document.getElementById('tokyo-hour').style.transform = 'rotate(' + ((tokyo.getHours() % 12 + tokyo.getMinutes()/60) * 30) + 'deg)';
-            document.getElementById('tokyo-minute').style.transform = 'rotate(' + (tokyo.getMinutes() * 6) + 'deg)';
+            // Highlight active session
+            const nyHour = ny.getHours(), londonHour = london.getHours(), tokyoHour = tokyo.getHours();
+            // NYC: 8:30-16:00, London: 8:00-16:30, Tokyo: 9:00-15:00, Saturday: 0-7
+            const nyActive = nyHour >= 8 && nyHour < 16 && ny.getDay() > 0 && ny.getDay() < 6;
+            const londonActive = londonHour >= 8 && londonHour < 16 && london.getDay() > 0 && london.getDay() < 6;
+            const tokyoActive = tokyoHour >= 9 && tokyoHour < 15 && tokyo.getDay() > 0 && tokyo.getDay() < 6;
             
-            const nyActive = ny.getHours() >= 8 && ny.getHours() < 16 && ny.getDay() > 0 && ny.getDay() < 6;
-            const londonActive = london.getHours() >= 8 && london.getHours() < 16 && london.getDay() > 0 && london.getDay() < 6;
-            const tokyoActive = tokyo.getHours() >= 9 && tokyo.getHours() < 15 && tokyo.getDay() > 0 && tokyo.getDay() < 6;
-            
-            document.getElementById('ny-clock').style.borderColor = nyActive ? '#10B981' : 'var(--accent)';
-            document.getElementById('london-clock').style.borderColor = londonActive ? '#10B981' : 'var(--accent)';
-            document.getElementById('tokyo-clock').style.borderColor = tokyoActive ? '#10B981' : 'var(--accent)';
+            document.getElementById('ny-time').style.color = nyActive ? '#10B981' : 'var(--text-secondary)';
+            document.getElementById('london-time').style.color = londonActive ? '#10B981' : 'var(--text-secondary)';
+            document.getElementById('tokyo-time').style.color = tokyoActive ? '#10B981' : 'var(--text-secondary)';
         }
         updateTradingSessions();
         setInterval(updateTradingSessions, 1000);
@@ -805,12 +779,14 @@
                     </span>
                 </div>
                 <div class="price-item">
+                    <span class="coin-name">Ξ Ethereum</span>
                     <span>
                         <span class="price-value" id="eth-price">---</span>
                         <span class="price-change" id="eth-change">---</span>
                     </span>
                 </div>
                 <div class="price-item">
+                    <span class="coin-name">◎ Solana</span>
                     <span>
                         <span class="price-value" id="sol-price">---</span>
                         <span class="price-change" id="sol-change">---</span>
@@ -819,6 +795,8 @@
                 <p class="status" id="price-status">Loading...</p>
             </div>
             
+            <!-- RSI -->
+            <div class="card">
                 <h2>📊 RSI Indicator</h2>
                 <div class="rsi-container">
                     <div class="rsi-gauge">
@@ -1052,7 +1030,6 @@
             <div style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(245,158,11,0.1)); padding: 16px; border-radius: 12px; margin-bottom: 14px;">
                 <p style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">🎯 RSI Best Practices for Crypto</p>
                 <ul style="list-style: none; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.8;">
-                    
                     <li>📊 <strong>Use 7-10 period RSI</strong> (not 14) - More responsive for crypto</li>
                     <li>🎯 <strong>80/20 thresholds</strong> instead of 70/30 - Better signals</li>
                     <li>📈 <strong>200 EMA trend filter</strong> - Only trade in trend direction</li>
@@ -1144,16 +1121,15 @@
         <!-- Rules & Team -->
         <div class="grid" style="margin-top: 24px;">
             <div class="card">
-                <h2>📋 8 Trading Rules</h2>
+                <h2>📋 7 Trading Rules</h2>
                 <ul class="rules-list">
-                    <li><span class="rule-num">1</span>🕐 PATIENCE IS KEY - Wait for the market, don't rush</li>
-                    <li><span class="rule-num">2</span>RSI ≤20 (LONG) | ≥80 (SHORT) - New 80/20</li>
-                    <li><span class="rule-num">3</span>Price must be above/below 200 EMA</li>
-                    <li><span class="rule-num">4</span>Ratio 2:1 to 3:1</li>
-                    <li><span class="rule-num">5</span>SET and FORGET</li>
-                    <li><span class="rule-num">6</span>No revenge trading</li>
-                    <li><span class="rule-num">7</span>Size winners, cut losers</li>
-                    <li><span class="rule-num">8</span>StochRSI confirms timing</li>
+                    <li><span class="rule-num">1</span>RSI ≤20 (LONG) | ≥80 (SHORT) - New 80/20</li>
+                    <li><span class="rule-num">2</span>Price must be above/below 200 EMA</li>
+                    <li><span class="rule-num">3</span>Ratio 2:1 to 3:1</li>
+                    <li><span class="rule-num">4</span>SET and FORGET</li>
+                    <li><span class="rule-num">5</span>No revenge trading</li>
+                    <li><span class="rule-num">6</span>Size winners, cut losers</li>
+                    <li><span class="rule-num">7</span>StochRSI confirms timing</li>
                 </ul>
             </div>
             
