@@ -1022,6 +1022,17 @@
             <div class="signal-box" id="signal-box">
                 Loading market data...
             </div>
+            <div style="margin-top: 16px;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 500;">🎯 Take Profit ($)</label>
+                <input type="number" id="signal-tp" placeholder="e.g. 70000" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card-bg); color: var(--text-primary);">
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Exit target (3:1 ratio recommended)</p>
+            </div>
+            <div style="margin-top: 12px;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 500;">🛡️ Stop Loss ($)</label>
+                <input type="number" id="signal-sl" placeholder="e.g. 65000" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card-bg); color: var(--text-primary);">
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Maximum loss acceptable (1-2% risk)</p>
+            </div>
+            <button onclick="calculateSignal()" style="width: 100%; margin-top: 12px; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">📊 Calculate Signal</button>
         </div>
         
         <!-- Chart -->
@@ -1330,6 +1341,44 @@
         }
         
         initTheme();
+        
+        // Calculate Signal with TP/SL
+        function calculateSignal() {
+            const entry = parseFloat(document.getElementById('signal-tp').value);
+            const sl = parseFloat(document.getElementById('signal-sl').value);
+            const currentPrice = parseFloat(document.getElementById('btc-price').textContent.replace(/[^0-9.]/g, ''));
+            
+            const signalBox = document.getElementById('signal-box');
+            
+            if (!entry || !sl || !currentPrice) {
+                signalBox.innerHTML = '⚠️ Please enter TP and SL values';
+                return;
+            }
+            
+            const isLong = entry > sl;
+            const risk = Math.abs(entry - sl);
+            const reward = isLong ? (entry - currentPrice) : (currentPrice - entry);
+            const ratio = reward / risk;
+            
+            let signal = isLong ? '🟢 LONG SIGNAL' : '🔴 SHORT SIGNAL';
+            let color = isLong ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+            
+            signalBox.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">${signal}</div>
+                    <div style="font-size: 0.9rem;">
+                        <p>Entry: $${entry.toLocaleString()}</p>
+                        <p>Stop Loss: $${sl.toLocaleString()}</p>
+                        <p>Risk: $${risk.toFixed(2)}</p>
+                        <p>Potential Reward: $${reward.toFixed(2)}</p>
+                        <p style="font-weight: 700; font-size: 1.1rem;">Risk:Reward = 1:${ratio.toFixed(2)}</p>
+                        ${ratio >= 3 ? '<p style="color: #10B981;">✅ 3:1 or better!</p>' : '<p style="color: #EF4444;">⚠️ Aim for 3:1</p>'}
+                    </div>
+                </div>
+            `;
+            signalBox.style.background = color;
+        }
+        
         // Refresh every 30 seconds for real-time data (Fast & Precision!)
         setInterval(fetchData, 30000);
         
