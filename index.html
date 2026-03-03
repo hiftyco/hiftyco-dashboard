@@ -852,7 +852,7 @@
                         <div class="kpi-label">Trades</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-value" id="kpi-pnl">+$15,399
+                        <div class="kpi-value" id="kpi-pnl">+$15,399</div>
                         <div class="kpi-label">Total P&L</div>
                     </div>
                     <div class="kpi-item">
@@ -860,7 +860,7 @@
                         <div class="kpi-label">RSI Compliance</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-value" id="kpi-avg">$3,850
+                        <div class="kpi-value" id="kpi-avg">$3,850</div>
                         <div class="kpi-label">Avg Win</div>
                     </div>
                     <div class="kpi-item">
@@ -1179,12 +1179,12 @@
                 
                 try {
                     // Fetch hourly data for accurate RSI (like TradingView)
-                    const histoRes = await fetch('https://min-api.cryptocompare.com/data/v2/histohour?fsym=BTC&tsym=USD&limit=60');
+                    const histoRes = await fetch('https://min-api.cryptocompare.com/data/v2/histohour?fsym=BTC&tsym=USD&limit=50');
                     const histoData = await histoRes.json();
                     
                     if (histoData.Data && histoData.Data.Data) {
                         const closes = histoData.Data.Data.map(d => d.close);
-                        const rsi = calculateRSI(closes, 21);
+                        const rsi = calculateRSI(closes, 14);
                         updateRSI(rsi);
                         document.getElementById('rsi-source').textContent = '✓ Live RSI: ' + rsi.toFixed(1);
                     } else {
@@ -1204,40 +1204,6 @@
                 } catch(e) {
                     updateFear(FALLBACK.fear);
                     document.getElementById('fear-status').textContent = '⚠ Using cached';
-                }
-                
-                // Fetch Live News
-                try {
-                    const newsRes = await fetch('https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories=BTC');
-                    const newsData = await newsRes.json();
-                    if (newsData.Data && newsData.Data.length > 0) {
-                        const newsHtml = newsData.Data.slice(0, 5).map(item => 
-                            '<div class="news-item"><div class="news-headline"><a href="' + item.url + '" target="_blank" style="color: var(--text-primary);">' + item.title + '</a></div><div class="news-meta">' + item.categories + ' • ' + item.published_on + '</div></div>'
-                        ).join('');
-                        document.getElementById('news-feed').innerHTML = newsHtml;
-                        document.getElementById('news-status').textContent = '✓ Live Bitcoin News';
-                    }
-                } catch(e) {}
-                
-                // RSI Alert Check
-                const rsi = parseFloat(document.getElementById('rsi-value').textContent);
-                if (rsi <= 30 && !alerts.rsi30Triggered) {
-                    alerts.rsi30Triggered = true;
-                    document.getElementById('rsi-signal').innerHTML = '🔥 BUY SIGNAL! RSI: ' + rsi;
-                    document.getElementById('rsi-signal').style.background = 'rgba(16,185,129,0.2)';
-                    saveAlert('RSI Buy Signal', 'RSI at ' + rsi + ' - Buy Zone!');
-                    sendTelegramAlert('🔥 BUY SIGNAL! RSI: ' + rsi + ' - Bitcoin may be oversold!');
-                }
-                if (rsi >= 70 && !alerts.rsi70Triggered) {
-                    alerts.rsi70Triggered = true;
-                    document.getElementById('rsi-signal').innerHTML = '🔥 SELL SIGNAL! RSI: ' + rsi;
-                    document.getElementById('rsi-signal').style.background = 'rgba(239,68,68,0.2)';
-                    saveAlert('RSI Sell Signal', 'RSI at ' + rsi + ' - Sell Zone!');
-                    sendTelegramAlert('🔥 SELL SIGNAL! RSI: ' + rsi + ' - Bitcoin may be overbought!');
-                }
-                if (rsi > 30 && rsi < 70) {
-                    alerts.rsi30Triggered = false;
-                    alerts.rsi70Triggered = false;
                 }
                 
                 // Calculate Support & Resistance from recent data
@@ -1273,7 +1239,7 @@
         }
         
         // Calculate RSI from closing prices
-        function calculateRSI(closes, period = 21) {
+        function calculateRSI(closes, period = 14) {
             if (!closes || closes.length < period + 1) return 50;
             
             // Calculate price changes
@@ -1578,7 +1544,7 @@
         }
         
         // === Alerts Section ===
-        const alerts = { rsi30: false, rsi70: false, rsi30Triggered: false, rsi70Triggered: false };
+        const alerts = { rsi30: false, rsi70: false };
         
         function toggleAlert(level) {
             const btn = document.getElementById('alert-' + level);
@@ -1636,48 +1602,6 @@
             if (alerts.rsi70) document.getElementById('alert-70').textContent = '✓ RSI 70 ON';
             updateAlertStatus();
         }
-        
-        // Telegram Alert Function (saves locally since we can't send directly)
-        function sendTelegramAlert(message) {
-            // Store alert for display
-            const alertHistory = JSON.parse(localStorage.getItem('hifty-alert-history') || '[]');
-            alertHistory.unshift({
-                time: new Date().toISOString(),
-                message: message
-            });
-            // Keep only last 30 days (~30 alerts)
-            alertHistory.splice(30);
-            localStorage.setItem('hifty-alert-history', JSON.stringify(alertHistory));
-            
-            // Show on page
-            showAlertNotification(message);
-        }
-        
-        function showAlertNotification(message) {
-            const notification = document.createElement('div');
-            notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; background: linear-gradient(135deg, #F59E0B, #EF4444); color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;';
-            notification.innerHTML = '<div style="font-weight: 700;">🔔 RSI ALERT</div><div>' + message + '</div>';
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 5000);
-        }
-        
-        // Check and clear old alerts monthly
-        function clearOldAlerts() {
-            const alertHistory = JSON.parse(localStorage.getItem('hifty-alert-history') || '[]');
-            const now = new Date();
-            const filtered = alertHistory.filter(a => {
-                const alertDate = new Date(a.time);
-                const daysDiff = (now - alertDate) / (1000 * 60 * 60 * 24);
-                return daysDiff < 30;
-            });
-            localStorage.setItem('hifty-alert-history', JSON.stringify(filtered));
-        }
-        clearOldAlerts();
-        
-        // Add animation
-        const style = document.createElement('style');
-        style.textContent = '@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }';
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
