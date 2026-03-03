@@ -105,7 +105,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            margin-top: 50px;
+            margin-top: 80px;
             padding: 20px;
         }
         
@@ -723,30 +723,30 @@
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">🌙</button>
     
     <!-- Trading Sessions Clock -->
-    <div class="trading-clock" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: center; gap: 16px; background: var(--card-bg); padding: 8px 16px; border-bottom: 1px solid var(--border); font-size: 0.75rem;">
+    <div class="trading-clock" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: center; align-items: center; gap: 40px; background: var(--card-bg); padding: 12px 20px; border-bottom: 1px solid var(--border); font-size: 0.85rem;">
         <div style="text-align: center;">
-            <div class="clock-face" id="ny-clock" style="width: 36px; height: 36px; border: 2px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto;">
-                <div class="clock-hand" style="position: absolute; width: 2px; height: 10px; background: var(--text-primary); top: 6px; left: 15px; transform-origin: bottom center; border-radius: 1px;" id="ny-hour"></div>
-                <div class="clock-hand" style="position: absolute; width: 1px; height: 12px; background: var(--text-secondary); top: 4px; left: 16px; transform-origin: bottom center; border-radius: 1px;" id="ny-minute"></div>
+            <div class="clock-face" id="ny-clock" style="width: 50px; height: 50px; border: 3px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto 4px;">
+                <div class="clock-hand" style="position: absolute; width: 2px; height: 14px; background: var(--text-primary); top: 8px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="ny-hour"></div>
+                <div class="clock-hand" style="position: absolute; width: 2px; height: 18px; background: var(--text-secondary); top: 4px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="ny-minute"></div>
             </div>
-            <div style="margin-top: 2px; font-weight: 600;">🇺🇸 NY</div>
-            <div id="ny-time" style="color: var(--text-secondary);">--:--</div>
+            <div style="font-weight: 700;">🇺🇸 NEW YORK</div>
+            <div id="ny-time" style="color: var(--text-secondary); font-size: 0.8rem;">--:--</div>
         </div>
         <div style="text-align: center;">
-            <div class="clock-face" id="london-clock" style="width: 36px; height: 36px; border: 2px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto;">
-                <div class="clock-hand" style="position: absolute; width: 2px; height: 10px; background: var(--text-primary); top: 6px; left: 15px; transform-origin: bottom center; border-radius: 1px;" id="london-hour"></div>
-                <div class="clock-hand" style="position: absolute; width: 1px; height: 12px; background: var(--text-secondary); top: 4px; left: 16px; transform-origin: bottom center; border-radius: 1px;" id="london-minute"></div>
+            <div class="clock-face" id="london-clock" style="width: 50px; height: 50px; border: 3px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto 4px;">
+                <div class="clock-hand" style="position: absolute; width: 2px; height: 14px; background: var(--text-primary); top: 8px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="london-hour"></div>
+                <div class="clock-hand" style="position: absolute; width: 2px; height: 18px; background: var(--text-secondary); top: 4px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="london-minute"></div>
             </div>
-            <div style="margin-top: 2px; font-weight: 600;">🇬🇧 LON</div>
-            <div id="london-time" style="color: var(--text-secondary);">--:--</div>
+            <div style="font-weight: 700;">🇬🇧 LONDON</div>
+            <div id="london-time" style="color: var(--text-secondary); font-size: 0.8rem;">--:--</div>
         </div>
         <div style="text-align: center;">
-            <div class="clock-face" id="tokyo-clock" style="width: 36px; height: 36px; border: 2px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto;">
-                <div class="clock-hand" style="position: absolute; width: 2px; height: 10px; background: var(--text-primary); top: 6px; left: 15px; transform-origin: bottom center; border-radius: 1px;" id="tokyo-hour"></div>
-                <div class="clock-hand" style="position: absolute; width: 1px; height: 12px; background: var(--text-secondary); top: 4px; left: 16px; transform-origin: bottom center; border-radius: 1px;" id="tokyo-minute"></div>
+            <div class="clock-face" id="tokyo-clock" style="width: 50px; height: 50px; border: 3px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto 4px;">
+                <div class="clock-hand" style="position: absolute; width: 2px; height: 14px; background: var(--text-primary); top: 8px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="tokyo-hour"></div>
+                <div class="clock-hand" style="position: absolute; width: 2px; height: 18px; background: var(--text-secondary); top: 4px; left: 22px; transform-origin: bottom center; border-radius: 2px;" id="tokyo-minute"></div>
             </div>
-            <div style="margin-top: 2px; font-weight: 600;">🇯🇵 TKY</div>
-            <div id="tokyo-time" style="color: var(--text-secondary);">--:--</div>
+            <div style="font-weight: 700;">🇯🇵 TOKYO</div>
+            <div id="tokyo-time" style="color: var(--text-secondary); font-size: 0.8rem;">--:--</div>
         </div>
     </div>
     <script>
