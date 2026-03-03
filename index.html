@@ -720,6 +720,38 @@
     <canvas id="particles-bg"></canvas>
     <!-- Theme Toggle -->
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">🌙</button>
+    
+    <!-- Trading Sessions Clock -->
+    <div class="trading-clock" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 16px; background: var(--card-bg); padding: 8px 16px; border-radius: 12px; box-shadow: var(--shadow); font-size: 0.85rem;">
+        <div style="text-align: center;"><span style="font-weight: 600;">🇺🇸 New York</span><br><span id="ny-time">--:--</span></div>
+        <div style="text-align: center;"><span style="font-weight: 600;">🇬🇧 London</span><br><span id="london-time">--:--</span></div>
+        <div style="text-align: center;"><span style="font-weight: 600;">🇯🇵 Tokyo</span><br><span id="tokyo-time">--:--</span></div>
+    </div>
+    <script>
+        function updateTradingSessions() {
+            const now = new Date();
+            const ny = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+            const london = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+            const tokyo = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+            
+            document.getElementById('ny-time').textContent = ny.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            document.getElementById('london-time').textContent = london.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            document.getElementById('tokyo-time').textContent = tokyo.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            
+            // Highlight active session
+            const nyHour = ny.getHours(), londonHour = london.getHours(), tokyoHour = tokyo.getHours();
+            // NYC: 8:30-16:00, London: 8:00-16:30, Tokyo: 9:00-15:00, Saturday: 0-7
+            const nyActive = nyHour >= 8 && nyHour < 16 && ny.getDay() > 0 && ny.getDay() < 6;
+            const londonActive = londonHour >= 8 && londonHour < 16 && london.getDay() > 0 && london.getDay() < 6;
+            const tokyoActive = tokyoHour >= 9 && tokyoHour < 15 && tokyo.getDay() > 0 && tokyo.getDay() < 6;
+            
+            document.getElementById('ny-time').style.color = nyActive ? '#10B981' : 'var(--text-secondary)';
+            document.getElementById('london-time').style.color = londonActive ? '#10B981' : 'var(--text-secondary)';
+            document.getElementById('tokyo-time').style.color = tokyoActive ? '#10B981' : 'var(--text-secondary)';
+        }
+        updateTradingSessions();
+        setInterval(updateTradingSessions, 1000);
+    </script>
     <div class="container">
         <!-- Hero -->
         <div class="hero">
