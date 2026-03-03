@@ -104,7 +104,7 @@
         
         .container {
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 80px auto 0;
             padding: 60px 20px;
         }
         
@@ -722,6 +722,16 @@
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">🌙</button>
     
     <!-- Trading Sessions Clock -->
+    <div class="trading-clock" style="position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;justify-content:center;align-items:center;gap:40px;background:var(--card-bg);padding:12px 20px;border-bottom:1px solid var(--border);font-size:0.85rem;">
+        <div style="text-align:center;"><div id="ny-clock" style="width:50px;height:50px;border:3px solid var(--accent);border-radius:50%;position:relative;margin:0 auto 4px;"><div id="ny-hour" style="position:absolute;width:2px;height:14px;background:var(--text-primary);top:8px;left:22px;transform-origin:bottom center;border-radius:2px;"></div><div id="ny-minute" style="position:absolute;width:2px;height:18px;background:var(--text-secondary);top:4px;left:22px;transform-origin:bottom center;border-radius:2px;"></div></div><div style="font-weight:700;">🇺🇸 NEW YORK</div><div id="ny-time" style="color:var(--text-secondary);font-size:0.8rem;">--:--</div></div>
+        <div style="text-align:center;"><div id="london-clock" style="width:50px;height:50px;border:3px solid var(--accent);border-radius:50%;position:relative;margin:0 auto 4px;"><div id="london-hour" style="position:absolute;width:2px;height:14px;background:var(--text-primary);top:8px;left:22px;transform-origin:bottom center;border-radius:2px;"></div><div id="london-minute" style="position:absolute;width:2px;height:18px;background:var(--text-secondary);top:4px;left:22px;transform-origin:bottom center;border-radius:2px;"></div></div><div style="font-weight:700;">🇬🇧 LONDON</div><div id="london-time" style="color:var(--text-secondary);font-size:0.8rem;">--:--</div></div>
+        <div style="text-align:center;"><div id="tokyo-clock" style="width:50px;height:50px;border:3px solid var(--accent);border-radius:50%;position:relative;margin:0 auto 4px;"><div id="tokyo-hour" style="position:absolute;width:2px;height:14px;background:var(--text-primary);top:8px;left:22px;transform-origin:bottom center;border-radius:2px;"></div><div id="tokyo-minute" style="position:absolute;width:2px;height:18px;background:var(--text-secondary);top:4px;left:22px;transform-origin:bottom center;border-radius:2px;"></div></div><div style="font-weight:700;">🇯🇵 TOKYO</div><div id="tokyo-time" style="color:var(--text-secondary);font-size:0.8rem;">--:--</div></div>
+    </div>
+    <script>
+        function updateTradingSessions(){const n=new Date().toLocaleString("en-US",{timeZone:"America/New_York"}),l=new Date().toLocaleString("en-US",{timeZone:"Europe/London"}),t=new Date().toLocaleString("en-US",{timeZone:"Asia/Tokyo"});document.getElementById("ny-time").textContent=n.split(",")[1].trim().split(" ")[0];document.getElementById("london-time").textContent=l.split(",")[1].trim().split(" ")[0];document.getElementById("tokyo-time").textContent=t.split(",")[1].trim().split(" ")[0];var r=new Date(n).getHours()%12+new Date(n).getMinutes()/60,a=new Date(l).getHours()%12+new Date(l).getMinutes()/60,o=new Date(t).getHours()%12+new Date(t).getMinutes()/60;document.getElementById("ny-hour").style.transform="rotate("+30*r+"deg)";document.getElementById("ny-minute").style.transform="rotate("+new Date(n).getMinutes()*6+"deg)";document.getElementById("london-hour").style.transform="rotate("+30*a+"deg)";document.getElementById("london-minute").style.transform="rotate("+new Date(l).getMinutes()*6+"deg)";document.getElementById("tokyo-hour").style.transform="rotate("+30*o+"deg)";document.getElementById("tokyo-minute").style.transform="rotate("+new Date(t).getMinutes()*6+"deg");var s=new Date(n).getHours()>=8&&new Date(n).getHours()<16,e=new Date(l).getHours()>=8&&new Date(l).getHours()<16,i=new Date(t).getHours()>=9&&new Date(t).getHours()<15;document.getElementById("ny-clock").style.borderColor=s?"#10B981":"var(--accent)";document.getElementById("london-clock").style.borderColor=e?"#10B981":"var(--accent)";document.getElementById("tokyo-clock").style.borderColor=i?"#10B981":"var(--accent)"}updateTradingSessions();setInterval(updateTradingSessions,1e3);
+    </script>
+    
+    <!-- Trading Sessions Clock -->
     <div class="trading-clock" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 16px; background: var(--card-bg); padding: 8px 16px; border-radius: 12px; box-shadow: var(--shadow); font-size: 0.85rem;">
         <div style="text-align: center;"><span style="font-weight: 600;">🇺🇸 New York</span><br><span id="ny-time">--:--</span></div>
         <div style="text-align: center;"><span style="font-weight: 600;">🇬🇧 London</span><br><span id="london-time">--:--</span></div>
@@ -1121,9 +1131,10 @@
         <!-- Rules & Team -->
         <div class="grid" style="margin-top: 24px;">
             <div class="card">
-                <h2>📋 7 Trading Rules</h2>
+                <h2>📋 8 Trading Rules</h2>
                 <ul class="rules-list">
-                    <li><span class="rule-num">1</span>RSI ≤20 (LONG) | ≥80 (SHORT) - New 80/20</li>
+                    <li><span class="rule-num">1</span>🕐 PATIENCE IS KEY - Wait for market, don't rush</li>
+                    <li><span class="rule-num">2</span>RSI ≤20 (LONG) | ≥80 (SHORT) - New 80/20</li>
                     <li><span class="rule-num">2</span>Price must be above/below 200 EMA</li>
                     <li><span class="rule-num">3</span>Ratio 2:1 to 3:1</li>
                     <li><span class="rule-num">4</span>SET and FORGET</li>
