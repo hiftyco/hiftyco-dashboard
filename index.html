@@ -1040,13 +1040,6 @@
             <button onclick="calculateSignal()" style="width: 100%; margin-top: 12px; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">📊 Calculate Signal</button>
         </div>
         
-        <!-- Fear & Greed Chart -->
-        <div class="card" style="margin-top: 24px;">
-            <h2>😱 Fear & Greed Index Chart</h2>
-            <iframe src="https://coinmarketcap.com/charts/fear-and-greed-index/" width="100%" height="300" style="border: none; border-radius: 8px;"></iframe>
-            <p style="text-align: center; margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary);">Live Fear & Greed Index from CoinMarketCap</p>
-        </div>
-        
         <!-- Chart -->
         <div class="card" style="margin-top: 24px;">
             <h2>📈 BTC Price Chart</h2>
@@ -1158,17 +1151,27 @@
         
         async function fetchData() {
             try {
-                // Use CryptoCompare API (free, no API key needed)
+                // Use CryptoCompare API with multiple sources for better real-time data
                 const priceRes = await fetch('https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=USD');
                 const priceData = await priceRes.json();
                 
                 if (priceData.BTC) {
-                    // Convert to CoinGecko format for compatibility
-                    const formatted = {
-                        bitcoin: { usd: priceData.BTC.USD, usd_24h_change: 2.5 }
-                    };
+                    const btcPrice = priceData.BTC.USD;
+                    const formatted = { bitcoin: { usd: btcPrice } };
                     updatePrices(formatted);
-                    document.getElementById('price-status').textContent = '✓ Live data';
+                    document.getElementById('price-status').textContent = '✓ Live: $' + btcPrice.toLocaleString();
+                    
+                    // Fetch 24h change for trends
+                    try {
+                        const changeRes = await fetch('https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=USD&limit=2');
+                        const changeData = await changeRes.json();
+                        if (changeData.Data && changeData.Data.Data && changeData.Data.Data.length >= 2) {
+                            const today = changeData.Data.Data[changeData.Data.Data.length - 1].close;
+                            const yesterday = changeData.Data.Data[changeData.Data.Data.length - 2].close;
+                            const change = ((today - yesterday) / yesterday) * 100;
+                            updateTrends(change);
+                        }
+                    } catch(e) {}
                 } else {
                     updatePrices(FALLBACK);
                     document.getElementById('price-status').textContent = '⚠ Using cached';
@@ -1183,7 +1186,7 @@
                         const closes = histoData.Data.Data.map(d => d.close);
                         const rsi = calculateRSI(closes, 14);
                         updateRSI(rsi);
-                        document.getElementById('rsi-source').textContent = '✓ Live RSI (14)';
+                        document.getElementById('rsi-source').textContent = '✓ Live RSI: ' + rsi.toFixed(1);
                     } else {
                         updateRSI(FALLBACK.rsi);
                     }
@@ -1197,13 +1200,32 @@
                     const match = fearText.match(/(\d+)/);
                     const fear = match ? parseInt(match[1]) : FALLBACK.fear;
                     updateFear(fear);
-                    document.getElementById('fear-status').textContent = '✓ Live data';
+                    document.getElementById('fear-status').textContent = '✓ Live: ' + fear + '/100';
                 } catch(e) {
                     updateFear(FALLBACK.fear);
                     document.getElementById('fear-status').textContent = '⚠ Using cached';
                 }
                 
-                updateTrends(2.5); // Using default change
+                // Calculate Support & Resistance from recent data
+                try {
+                    const srRes = await fetch('https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=USD&limit=20');
+                    const srData = await srRes.json();
+                    if (srData.Data && srData.Data.Data) {
+                        const highs = srData.Data.Data.map(d => d.high);
+                        const lows = srData.Data.Data.map(d => d.low);
+                        const current = highs[highs.length - 1];
+                        
+                        const r2 = Math.max(...highs.slice(-5));
+                        const r1 = Math.max(...highs.slice(-10));
+                        const s1 = Math.min(...lows.slice(-10));
+                        const s2 = Math.min(...lows.slice(-5));
+                        
+                        document.getElementById('r2').textContent = '$' + Math.round(r2).toLocaleString();
+                        document.getElementById('r1').textContent = '$' + Math.round(r1).toLocaleString();
+                        document.getElementById('s1').textContent = '$' + Math.round(s1).toLocaleString();
+                        document.getElementById('s2').textContent = '$' + Math.round(s2).toLocaleString();
+                    }
+                } catch(e) {}
                 
             } catch(e) {
                 updatePrices(FALLBACK);
@@ -1213,7 +1235,7 @@
                 document.getElementById('fear-status').textContent = '⚠ Using cached';
             }
             
-            document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleString();
+            document.getElementById('last-updated').textContent = '🕐 ' + new Date().toLocaleTimeString();
         }
         
         // Calculate RSI from closing prices
