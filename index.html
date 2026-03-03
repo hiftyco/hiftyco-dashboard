@@ -1242,24 +1242,33 @@
         function calculateRSI(closes, period = 14) {
             if (!closes || closes.length < period + 1) return 50;
             
-            let gains = 0;
-            let losses = 0;
-            
-            for (let i = closes.length - period; i < closes.length; i++) {
-                const change = closes[i] - closes[i - 1];
-                if (change > 0) gains += change;
-                else losses -= change;
+            // Calculate price changes
+            const changes = [];
+            for (let i = 1; i < closes.length; i++) {
+                changes.push(closes[i] - closes[i - 1]);
             }
             
-            const avgGain = gains / period;
-            const avgLoss = losses / period;
+            // Get last 'period' gains and losses
+            const gains = changes.slice(-period).filter(c => c > 0);
+            const losses = changes.slice(-period).filter(c => c < 0).map(c => Math.abs(c));
+            
+            // Initial averages (simple)
+            let avgGain = gains.reduce((a, b) => a + b, 0) / period;
+            let avgLoss = losses.reduce((a, b) => a + b, 0) / period;
+            
+            // Wilder's smoothing for subsequent values
+            for (let i = period; i < changes.length; i++) {
+                const change = changes[i];
+                avgGain = (avgGain * (period - 1) + (change > 0 ? change : 0)) / period;
+                avgLoss = (avgLoss * (period - 1) + (change < 0 ? Math.abs(change) : 0)) / period;
+            }
             
             if (avgLoss === 0) return 100;
             
             const rs = avgGain / avgLoss;
             const rsi = 100 - (100 / (1 + rs));
             
-            return Math.round(rsi);
+            return Math.round(rsi * 10) / 10; // 1 decimal place
         }
         
         function updatePrices(data) {
