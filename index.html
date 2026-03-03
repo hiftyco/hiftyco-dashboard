@@ -1191,6 +1191,9 @@
     </div>
     
     <script>
+        // ==========================================
+        // CONFIGURATION - Default values
+        // ==========================================
         const FALLBACK = {
             btc: { usd: 67000, usd_24h_change: 2.5 },
             eth: { usd: 2000, usd_24h_change: 1.5 },
@@ -1199,6 +1202,9 @@
             rsi: 45
         };
         
+        // ==========================================
+        // MAIN FUNCTION - Fetch all market data
+        // ==========================================
         async function fetchData() {
             try {
                 // Use CryptoCompare API - BTC, SOL, ETH for Live Prices
@@ -1296,6 +1302,9 @@
         }
         
         // Calculate RSI from closing prices
+        // ==========================================
+        // RSI CALCULATION - Wilder's smoothing method
+        // ==========================================
         function calculateRSI(closes, period = 14) {
             if (!closes || closes.length < period + 1) return 50;
             
@@ -1328,6 +1337,9 @@
             return Math.round(rsi * 10) / 10; // 1 decimal place
         }
         
+        // ==========================================
+        // UPDATE UI - Display fetched prices
+        // ==========================================
         function updatePrices(data) {
             const btc = data.bitcoin || FALLBACK.btc;
             const sol = data.solana || FALLBACK.sol;
@@ -1355,6 +1367,9 @@
             document.getElementById('s2').textContent = '$' + Math.round(price * 0.95).toLocaleString();
         }
         
+        // ==========================================
+        // UPDATE UI - Display RSI value & signal
+        // ==========================================
         function updateRSI(rsi) {
             document.getElementById('rsi-value').textContent = rsi;
             const signal = document.getElementById('rsi-signal');
@@ -1373,6 +1388,9 @@
             }
         }
         
+        // ==========================================
+        // UPDATE UI - Display Fear & Greed index
+        // ==========================================
         function updateFear(value) {
             document.getElementById('fear-value').textContent = value + '/100';
             document.getElementById('fear-indicator').style.left = Math.min(value, 94) + '%';
@@ -1402,6 +1420,9 @@
             }
         }
         
+        // ==========================================
+        // UPDATE UI - Display trend indicators
+        // ==========================================
         function updateTrends(change) {
             const trend = change >= 0 ? '📈' : '📉';
             const color = change >= 0 ? '#10B981' : '#EF4444';
@@ -1451,6 +1472,9 @@
         initTheme();
         
         // Calculate Signal with TP/SL
+        // ==========================================
+        // TRADING TOOLS - Signal & Position Calculator
+        // ==========================================
         function calculateSignal() {
             const entry = parseFloat(document.getElementById('signal-entry').value);
             const tp = parseFloat(document.getElementById('signal-tp').value);
@@ -1499,6 +1523,9 @@
         setInterval(fetchData, 30000);
         
         // === NEW FEATURES: Position Size Calculator ===
+        // ==========================================
+        // TRADING TOOLS - Position Size Calculator
+        // ==========================================
         function calculatePosition() {
             const balance = parseFloat(document.getElementById('calc-balance').value) || 10000;
             const riskPct = parseFloat(document.getElementById('calc-risk').value) || 2;
@@ -1526,6 +1553,9 @@
         }
         
         // === Performance Dashboard ===
+        // ==========================================
+        // TRADING TOOLS - Performance Dashboard
+        // ==========================================
         function updatePerformance() {
             const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
             
@@ -1548,6 +1578,9 @@
         }
         
         // === Quick Trade Logger ===
+        // ==========================================
+        // TRADING TOOLS - Trade Logger
+        // ==========================================
         function saveTrade() {
             const entry = parseFloat(document.getElementById('trade-entry').value);
             const exit = parseFloat(document.getElementById('trade-exit').value);
@@ -1611,6 +1644,9 @@
         // === Alerts Section ===
         const alerts = { rsi30: false, rsi70: false };
         
+        // ==========================================
+        // TRADING TOOLS - RSI Alerts
+        // ==========================================
         function toggleAlert(level) {
             const btn = document.getElementById('alert-' + level);
             
