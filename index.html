@@ -722,10 +722,31 @@
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">🌙</button>
     
     <!-- Trading Sessions Clock -->
-    <div class="trading-clock" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 16px; background: var(--card-bg); padding: 8px 16px; border-radius: 12px; box-shadow: var(--shadow); font-size: 0.85rem;">
-        <div style="text-align: center;"><span style="font-weight: 600;">🇺🇸 New York</span><br><span id="ny-time">--:--</span></div>
-        <div style="text-align: center;"><span style="font-weight: 600;">🇬🇧 London</span><br><span id="london-time">--:--</span></div>
-        <div style="text-align: center;"><span style="font-weight: 600;">🇯🇵 Tokyo</span><br><span id="tokyo-time">--:--</span></div>
+    <div class="trading-clock" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 24px; background: var(--card-bg); padding: 12px 20px; border-radius: 16px; box-shadow: var(--shadow);">
+        <div style="text-align: center;">
+            <div class="clock-face" id="ny-clock" style="width: 60px; height: 60px; border: 3px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto;">
+                <div class="clock-hand" id="ny-hour" style="position: absolute; width: 3px; height: 18px; background: var(--text-primary); top: 12px; left: 26px; transform-origin: bottom center; border-radius: 2px;"></div>
+                <div class="clock-hand" id="ny-minute" style="position: absolute; width: 2px; height: 24px; background: var(--text-secondary); top: 6px; left: 27px; transform-origin: bottom center; border-radius: 2px;"></div>
+            </div>
+            <div style="margin-top: 6px; font-weight: 600; font-size: 0.8rem;">🇺🇸 New York</div>
+            <div id="ny-time" style="font-size: 0.75rem; color: var(--text-secondary);">--:--</div>
+        </div>
+        <div style="text-align: center;">
+            <div class="clock-face" id="london-clock" style="width: 60px; height: 60px; border: 3px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto;">
+                <div class="clock-hand" id="london-hour" style="position: absolute; width: 3px; height: 18px; background: var(--text-primary); top: 12px; left: 26px; transform-origin: bottom center; border-radius: 2px;"></div>
+                <div class="clock-hand" id="london-minute" style="position: absolute; width: 2px; height: 24px; background: var(--text-secondary); top: 6px; left: 27px; transform-origin: bottom center; border-radius: 2px;"></div>
+            </div>
+            <div style="margin-top: 6px; font-weight: 600; font-size: 0.8rem;">🇬🇧 London</div>
+            <div id="london-time" style="font-size: 0.75rem; color: var(--text-secondary);">--:--</div>
+        </div>
+        <div style="text-align: center;">
+            <div class="clock-face" id="tokyo-clock" style="width: 60px; height: 60px; border: 3px solid var(--accent); border-radius: 50%; position: relative; margin: 0 auto;">
+                <div class="clock-hand" id="tokyo-hour" style="position: absolute; width: 3px; height: 18px; background: var(--text-primary); top: 12px; left: 26px; transform-origin: bottom center; border-radius: 2px;"></div>
+                <div class="clock-hand" id="tokyo-minute" style="position: absolute; width: 2px; height: 24px; background: var(--text-secondary); top: 6px; left: 27px; transform-origin: bottom center; border-radius: 2px;"></div>
+            </div>
+            <div style="margin-top: 6px; font-weight: 600; font-size: 0.8rem;">🇯🇵 Tokyo</div>
+            <div id="tokyo-time" style="font-size: 0.75rem; color: var(--text-secondary);">--:--</div>
+        </div>
     </div>
     <script>
         function updateTradingSessions() {
@@ -734,20 +755,35 @@
             const london = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
             const tokyo = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
             
+            // Update digital time
             document.getElementById('ny-time').textContent = ny.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
             document.getElementById('london-time').textContent = london.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
             document.getElementById('tokyo-time').textContent = tokyo.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
             
-            // Highlight active session
-            const nyHour = ny.getHours(), londonHour = london.getHours(), tokyoHour = tokyo.getHours();
-            // NYC: 8:30-16:00, London: 8:00-16:30, Tokyo: 9:00-15:00, Saturday: 0-7
-            const nyActive = nyHour >= 8 && nyHour < 16 && ny.getDay() > 0 && ny.getDay() < 6;
-            const londonActive = londonHour >= 8 && londonHour < 16 && london.getDay() > 0 && london.getDay() < 6;
-            const tokyoActive = tokyoHour >= 9 && tokyoHour < 15 && tokyo.getDay() > 0 && tokyo.getDay() < 6;
+            // Update clock hands
+            const nyHour = ny.getHours() % 12 + ny.getMinutes()/60;
+            const nyMinute = ny.getMinutes();
+            document.getElementById('ny-hour').style.transform = `rotate(${nyHour * 30}deg)`;
+            document.getElementById('ny-minute').style.transform = `rotate(${nyMinute * 6}deg)`;
             
-            document.getElementById('ny-time').style.color = nyActive ? '#10B981' : 'var(--text-secondary)';
-            document.getElementById('london-time').style.color = londonActive ? '#10B981' : 'var(--text-secondary)';
-            document.getElementById('tokyo-time').style.color = tokyoActive ? '#10B981' : 'var(--text-secondary)';
+            const londonHour = london.getHours() % 12 + london.getMinutes()/60;
+            const londonMinute = london.getMinutes();
+            document.getElementById('london-hour').style.transform = `rotate(${londonHour * 30}deg)`;
+            document.getElementById('london-minute').style.transform = `rotate(${londonMinute * 6}deg)`;
+            
+            const tokyoHour = tokyo.getHours() % 12 + tokyo.getMinutes()/60;
+            const tokyoMinute = tokyo.getMinutes();
+            document.getElementById('tokyo-hour').style.transform = `rotate(${tokyoHour * 30}deg)`;
+            document.getElementById('tokyo-minute').style.transform = `rotate(${tokyoMinute * 6}deg)`;
+            
+            // Highlight active session
+            const nyActive = ny.getHours() >= 8 && ny.getHours() < 16 && ny.getDay() > 0 && ny.getDay() < 6;
+            const londonActive = london.getHours() >= 8 && london.getHours() < 16 && london.getDay() > 0 && london.getDay() < 6;
+            const tokyoActive = tokyo.getHours() >= 9 && tokyo.getHours() < 15 && tokyo.getDay() > 0 && tokyo.getDay() < 6;
+            
+            document.getElementById('ny-clock').style.borderColor = nyActive ? '#10B981' : 'var(--accent)';
+            document.getElementById('london-clock').style.borderColor = londonActive ? '#10B981' : 'var(--accent)';
+            document.getElementById('tokyo-clock').style.borderColor = tokyoActive ? '#10B981' : 'var(--accent)';
         }
         updateTradingSessions();
         setInterval(updateTradingSessions, 1000);
