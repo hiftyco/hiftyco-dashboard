@@ -722,16 +722,6 @@
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">🌙</button>
     
     <!-- Trading Sessions Clock -->
-    <div class="trading-clock" style="position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;justify-content:center;align-items:center;gap:40px;background:var(--card-bg);padding:12px 20px;border-bottom:1px solid var(--border);font-size:0.85rem;">
-        <div style="text-align:center;"><div id="ny-clock" style="width:50px;height:50px;border:3px solid var(--accent);border-radius:50%;position:relative;margin:0 auto 4px;"><div id="ny-hour" style="position:absolute;width:2px;height:14px;background:var(--text-primary);top:8px;left:22px;transform-origin:bottom center;border-radius:2px;"></div><div id="ny-minute" style="position:absolute;width:2px;height:18px;background:var(--text-secondary);top:4px;left:22px;transform-origin:bottom center;border-radius:2px;"></div></div><div style="font-weight:700;">🇺🇸 NEW YORK</div><div id="ny-time" style="color:var(--text-secondary);font-size:0.8rem;">--:--</div></div>
-        <div style="text-align:center;"><div id="london-clock" style="width:50px;height:50px;border:3px solid var(--accent);border-radius:50%;position:relative;margin:0 auto 4px;"><div id="london-hour" style="position:absolute;width:2px;height:14px;background:var(--text-primary);top:8px;left:22px;transform-origin:bottom center;border-radius:2px;"></div><div id="london-minute" style="position:absolute;width:2px;height:18px;background:var(--text-secondary);top:4px;left:22px;transform-origin:bottom center;border-radius:2px;"></div></div><div style="font-weight:700;">🇬🇧 LONDON</div><div id="london-time" style="color:var(--text-secondary);font-size:0.8rem;">--:--</div></div>
-        <div style="text-align:center;"><div id="tokyo-clock" style="width:50px;height:50px;border:3px solid var(--accent);border-radius:50%;position:relative;margin:0 auto 4px;"><div id="tokyo-hour" style="position:absolute;width:2px;height:14px;background:var(--text-primary);top:8px;left:22px;transform-origin:bottom center;border-radius:2px;"></div><div id="tokyo-minute" style="position:absolute;width:2px;height:18px;background:var(--text-secondary);top:4px;left:22px;transform-origin:bottom center;border-radius:2px;"></div></div><div style="font-weight:700;">🇯🇵 TOKYO</div><div id="tokyo-time" style="color:var(--text-secondary);font-size:0.8rem;">--:--</div></div>
-    </div>
-    <script>
-        function updateTradingSessions(){const n=new Date().toLocaleString("en-US",{timeZone:"America/New_York"}),l=new Date().toLocaleString("en-US",{timeZone:"Europe/London"}),t=new Date().toLocaleString("en-US",{timeZone:"Asia/Tokyo"});document.getElementById("ny-time").textContent=n.split(",")[1].trim().split(" ")[0];document.getElementById("london-time").textContent=l.split(",")[1].trim().split(" ")[0];document.getElementById("tokyo-time").textContent=t.split(",")[1].trim().split(" ")[0];var r=new Date(n).getHours()%12+new Date(n).getMinutes()/60,a=new Date(l).getHours()%12+new Date(l).getMinutes()/60,o=new Date(t).getHours()%12+new Date(t).getMinutes()/60;document.getElementById("ny-hour").style.transform="rotate("+30*r+"deg)";document.getElementById("ny-minute").style.transform="rotate("+new Date(n).getMinutes()*6+"deg)";document.getElementById("london-hour").style.transform="rotate("+30*a+"deg)";document.getElementById("london-minute").style.transform="rotate("+new Date(l).getMinutes()*6+"deg)";document.getElementById("tokyo-hour").style.transform="rotate("+30*o+"deg)";document.getElementById("tokyo-minute").style.transform="rotate("+new Date(t).getMinutes()*6+"deg");var s=new Date(n).getHours()>=8&&new Date(n).getHours()<16,e=new Date(l).getHours()>=8&&new Date(l).getHours()<16,i=new Date(t).getHours()>=9&&new Date(t).getHours()<15;document.getElementById("ny-clock").style.borderColor=s?"#10B981":"var(--accent)";document.getElementById("london-clock").style.borderColor=e?"#10B981":"var(--accent)";document.getElementById("tokyo-clock").style.borderColor=i?"#10B981":"var(--accent)"}updateTradingSessions();setInterval(updateTradingSessions,1e3);
-    </script>
-    
-    <!-- Trading Sessions Clock -->
     <div class="trading-clock" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 16px; background: var(--card-bg); padding: 8px 16px; border-radius: 12px; box-shadow: var(--shadow); font-size: 0.85rem;">
         <div style="text-align: center;"><span style="font-weight: 600;">🇺🇸 New York</span><br><span id="ny-time">--:--</span></div>
         <div style="text-align: center;"><span style="font-weight: 600;">🇬🇧 London</span><br><span id="london-time">--:--</span></div>
@@ -789,17 +779,17 @@
                     </span>
                 </div>
                 <div class="price-item">
-                    <span class="coin-name">Ξ Ethereum</span>
-                    <span>
-                        <span class="price-value" id="eth-price">---</span>
-                        <span class="price-change" id="eth-change">---</span>
-                    </span>
-                </div>
-                <div class="price-item">
                     <span class="coin-name">◎ Solana</span>
                     <span>
                         <span class="price-value" id="sol-price">---</span>
                         <span class="price-change" id="sol-change">---</span>
+                    </span>
+                </div>
+                <div class="price-item">
+                    <span class="coin-name">Ξ Ethereum</span>
+                    <span>
+                        <span class="price-value" id="eth-price">---</span>
+                        <span class="price-change" id="eth-change">---</span>
                     </span>
                 </div>
                 <p class="status" id="price-status">Loading...</p>
@@ -1194,13 +1184,20 @@
         
         async function fetchData() {
             try {
-                // Use CryptoCompare API with multiple sources for better real-time data
-                const priceRes = await fetch('https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=USD');
+                // Use CryptoCompare API - BTC, SOL, ETH for Live Prices
+                const priceRes = await fetch('https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,SOL,ETH&tsyms=USD');
                 const priceData = await priceRes.json();
                 
                 if (priceData.BTC) {
                     const btcPrice = priceData.BTC.USD;
-                    const formatted = { bitcoin: { usd: btcPrice } };
+                    const solPrice = priceData.SOL ? priceData.SOL.USD : 0;
+                    const ethPrice = priceData.ETH ? priceData.ETH.USD : 0;
+                    
+                    const formatted = { 
+                        bitcoin: { usd: btcPrice, usd_24h_change: 0 },
+                        solana: { usd: solPrice, usd_24h_change: 0 },
+                        ethereum: { usd: ethPrice, usd_24h_change: 0 }
+                    };
                     updatePrices(formatted);
                     document.getElementById('price-status').textContent = '✓ Live: $' + btcPrice.toLocaleString();
                     
@@ -1316,12 +1313,20 @@
         
         function updatePrices(data) {
             const btc = data.bitcoin || FALLBACK.btc;
+            const sol = data.solana || FALLBACK.sol;
             const eth = data.ethereum || FALLBACK.eth;
             
+            // Bitcoin
             document.getElementById('btc-price').textContent = '$' + Math.round(btc.usd).toLocaleString();
             document.getElementById('btc-change').textContent = (btc.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(btc.usd_24h_change || 0).toFixed(2) + '%';
             document.getElementById('btc-change').className = 'price-change ' + (btc.usd_24h_change >= 0 ? 'positive' : 'negative');
             
+            // Solana
+            document.getElementById('sol-price').textContent = '$' + Math.round(sol.usd).toLocaleString();
+            document.getElementById('sol-change').textContent = (sol.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(sol.usd_24h_change || 0).toFixed(2) + '%';
+            document.getElementById('sol-change').className = 'price-change ' + (sol.usd_24h_change >= 0 ? 'positive' : 'negative');
+            
+            // Ethereum
             document.getElementById('eth-price').textContent = '$' + Math.round(eth.usd).toLocaleString();
             document.getElementById('eth-change').textContent = (eth.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(eth.usd_24h_change || 0).toFixed(2) + '%';
             document.getElementById('eth-change').className = 'price-change ' + (eth.usd_24h_change >= 0 ? 'positive' : 'negative');
