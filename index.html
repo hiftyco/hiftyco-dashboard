@@ -2207,16 +2207,38 @@
             const input2 = document.getElementById('price-alert-2').value;
             const input3 = document.getElementById('price-alert-3').value;
             
+            // If already active, turn it off
+            if (priceAlerts.active) {
+                priceAlerts.active = false;
+                priceAlerts.prices = [];
+                priceAlerts.lastTriggered = {};
+                document.getElementById('price-alert-btn').textContent = 'Set Price Alerts';
+                document.getElementById('price-alert-btn').style.background = '';
+                document.getElementById('price-alert-status').className = 'alert-status';
+                document.getElementById('price-alert-text').innerHTML = '<span class="alert-dot inactive"></span>No price alerts set';
+                document.getElementById('price-alert-1').value = '';
+                document.getElementById('price-alert-2').value = '';
+                document.getElementById('price-alert-3').value = '';
+                localStorage.removeItem('hifty-price-alerts');
+                return;
+            }
+            
             priceAlerts.prices = [input1, input2, input3].filter(p => p && parseFloat(p) > 0).map(p => parseFloat(p));
             
             if (priceAlerts.prices.length > 0) {
                 priceAlerts.active = true;
                 priceAlerts.lastTriggered = {};
-                document.getElementById('price-alert-btn').textContent = '✓ Price Alerts Active';
-                document.getElementById('price-alert-btn').style.background = 'var(--success)';
+                document.getElementById('price-alert-btn').textContent = 'Turn Off Alerts';
+                document.getElementById('price-alert-btn').style.background = 'var(--danger)';
                 document.getElementById('price-alert-status').className = 'alert-status active';
                 document.getElementById('price-alert-text').innerHTML = '<span class="alert-dot active"></span>Watching: $' + priceAlerts.prices.join(', $');
                 localStorage.setItem('hifty-price-alerts', JSON.stringify(priceAlerts));
+                
+                // Check immediately if price is already at target
+                const currentPrice = parseFloat(document.getElementById('btc-price').textContent.replace(/[$,]/g, '')) || 0;
+                if (currentPrice > 0) {
+                    checkPriceAlerts(currentPrice);
+                }
             }
         }
         
