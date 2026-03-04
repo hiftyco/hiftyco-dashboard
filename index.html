@@ -2247,8 +2247,17 @@
             
             priceAlerts.prices.forEach(targetPrice => {
                 const key = targetPrice.toString();
-                // Check if price reached (within 0.5% tolerance)
-                if (Math.abs(price - targetPrice) / targetPrice < 0.005 && !priceAlerts.lastTriggered[key]) {
+                
+                // Skip if already triggered
+                if (priceAlerts.lastTriggered[key]) return;
+                
+                // Check if price reached - tighter tolerance (0.1%)
+                const tolerance = 0.001;
+                const priceDiff = Math.abs(price - targetPrice) / targetPrice;
+                
+                console.log('Checking price: $' + price + ' vs target: $' + targetPrice + ' diff: ' + (priceDiff*100).toFixed(2) + '%');
+                
+                if (priceDiff < tolerance) {
                     priceAlerts.lastTriggered[key] = true;
                     
                     // Play meditation bell
