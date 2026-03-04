@@ -1147,6 +1147,7 @@
             <div class="alert-buttons">
                 <button class="btn btn-small" id="alert-30" onclick="toggleAlert(30)">RSI 30 Alert</button>
                 <button class="btn btn-small btn-secondary" id="alert-70" onclick="toggleAlert(70)">RSI 70 Alert</button>
+                <button class="btn btn-small" style="background: #6366f1;" onclick="testAlert()">Test Alert</button>
             </div>
             <div class="alert-status" id="alert-status">
                 <span class="alert-dot inactive"></span>
@@ -2111,6 +2112,34 @@
         // ==========================================
         // TRADING TOOLS - RSI Alerts
         // ==========================================
+        
+        // Test alert function
+        function testAlert() {
+            // Force trigger a test alert
+            const testPrice = parseFloat(document.getElementById('btc-price').textContent.replace(/[$,]/g, '')) || 73000;
+            checkPriceAlerts(testPrice);
+            
+            const testRSI = parseFloat(document.getElementById('rsi-value').textContent) || 50;
+            checkAlerts(testRSI);
+            
+            // Also play sound and show alert directly
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = 800;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 1);
+            } catch(e) {}
+            
+            alert('🔔 TEST ALERT!\nPrice: $' + testPrice + '\nRSI: ' + testRSI + '\n\nIf you see this, alerts ARE working!');
+        }
+        
         function toggleAlert(level) {
             const btn = document.getElementById('alert-' + level);
             const rsiEl = document.getElementById('rsi-value');
