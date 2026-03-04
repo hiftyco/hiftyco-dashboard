@@ -982,6 +982,30 @@
             </div>
         </div>
         
+        <!-- NEW: Trade History Dashboard -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📈 Trade History Dashboard</h2>
+            <div class="grid" style="grid-template-columns: repeat(3); gap: , 1fr12px; margin-bottom: 16px;">
+                <div class="perf-stat">
+                    <div class="perf-value" id="trade-streak">0</div>
+                    <div class="perf-label">Current Streak</div>
+                </div>
+                <div class="perf-stat">
+                    <div class="perf-value" id="trade-wins">0</div>
+                    <div class="perf-label">Total Wins</div>
+                </div>
+                <div class="perf-stat">
+                    <div class="perf-value" id="trade-losses">0</div>
+                    <div class="perf-label">Total Losses</div>
+                </div>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <div class="perf-label">Best Trading Time</div>
+                <div class="perf-value" id="best-time" style="font-size: 1.2rem;">-</div>
+            </div>
+            <div id="trade-history-list" style="max-height: 200px; overflow-y: auto;"></div>
+        </div>
+        
         <!-- NEW: News Feed -->
         <div class="card" style="margin-top: 24px;">
             <h2>📰 Latest Market News</h2>
@@ -1024,8 +1048,17 @@
                 <label>RSI at Entry</label>
                 <input type="number" id="trade-rsi" placeholder="28" step="1">
             </div>
+            <div class="form-group">
+                <label>Trade Notes / Thesis</label>
+                <textarea id="trade-notes" placeholder="Why did you take this trade? What's your thesis?" rows="2" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-end);color:var(--text-primary);font-family:inherit;resize:vertical;"></textarea>
+            </div>
             <button class="btn" onclick="saveTrade()">Save Trade</button>
-            <div class="trade-list" id="trade-list"></div>
+        </div>
+        
+        <!-- NEW: Trade Journal -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📓 Trade Journal</h2>
+            <div id="trade-journal"></div>
         </div>
         
         <!-- NEW: Alerts Section -->
@@ -1477,6 +1510,10 @@
         
         initTheme();
         
+        // Load trade journal and history on page start
+        loadTradeJournal();
+        loadTradeHistory();
+        
         // Calculate Signal with TP/SL
         // ==========================================
         // TRADING TOOLS - Signal Calculator
@@ -1589,6 +1626,7 @@
             const exit = parseFloat(document.getElementById('trade-exit').value);
             const direction = document.getElementById('trade-direction').value;
             const rsi = parseFloat(document.getElementById('trade-rsi').value) || 0;
+            const notes = document.getElementById('trade-notes').value || '';
             
             if (!entry || !exit) {
                 alert('Please enter Entry and Exit prices');
@@ -1607,6 +1645,7 @@
                 exit,
                 direction,
                 rsi,
+                notes,
                 pnl,
                 date: new Date().toISOString()
             };
@@ -1622,8 +1661,106 @@
             document.getElementById('trade-entry').value = '';
             document.getElementById('trade-exit').value = '';
             document.getElementById('trade-rsi').value = '';
+            document.getElementById('trade-notes').value = '';
+            
+            // Refresh displays
+            updatePerformance();
+            loadTradeJournal();
+            loadTradeHistory();
+            
+            alert('Trade saved!');
         }
         
+        // ==========================================
+        // TRADE JOURNAL - Display trades with notes
+        // ==========================================
+        function loadTradeJournal() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            const journal = document.getElementById('trade-journal');
+            if (!journal) return;
+            
+            if (trades.length === 0) {
+                journal.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">No trades in journal yet!</p>';
+                return;
+            }
+            
+            let html = '';
+            trades.slice(0, 10).forEach((trade, idx) => {
+                const date = new Date(trade.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+                const dirIcon = trade.direction === 'long' ? '↗' : '↘';
+                
+                html += `<div style="padding:10px;border-bottom:1px solid var(--border);${idx>0?'margin-top:10px':''}">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                        <strong>${dirIcon} ${trade.direction.toUpperCase()}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-secondary)">${date}</span>
+                    </div>
+                    <div style="font-size:0.85rem;">Entry: $${trade.entry.toLocaleString()} | Exit: $${trade.exit.toLocaleString()} | RSI: ${trade.rsi||'-'}</div>
+                    <div style="font-weight:700;color:${pnlClass==='positive'?'var(--success)':'var(--danger)'}">${trade.pnl>=0?'+':''}$${trade.pnl.toFixed(2)}</div>
+                    ${trade.notes ? `<div style="margin-top:6px;padding:6px;background:var(--bg-mid);border-radius:6px;font-size:0.8rem;font-style:italic;color:var(--text-secondary)">"${trade.notes}"</div>` : ''}
+                </div>`;
+            });
+            journal.innerHTML = html;
+        }
+        
+        // ==========================================
+        // TRADE HISTORY - Stats, streaks, best time
+        // ==========================================
+        function loadTradeHistory() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            
+            const wins = trades.filter(t => t.pnl > 0).length;
+            const losses = trades.filter(t => t.pnl < 0).length;
+            
+            // Streak
+            let streak = 0;
+            if (trades.length > 0) {
+                const sorted = [...trades].sort((a,b) => new Date(b.date) - new Date(a.date));
+                if (sorted[0].pnl > 0) { for (const t of sorted) { if (t.pnl > 0) streak++; else break; } }
+                else { for (const t of sorted) { if (t.pnl < 0) streak--; else break; } }
+            }
+            
+            // Best hour
+            let hourCounts = {};
+            trades.forEach(t => {
+                const h = new Date(t.date).getHours();
+                if (!hourCounts[h]) hourCounts[h] = {wins:0,total:0};
+                hourCounts[h].total++;
+                if (t.pnl > 0) hourCounts[h].wins++;
+            });
+            
+            let bestHour = '-';
+            let bestWR = 0;
+            Object.entries(hourCounts).forEach(([h, d]) => {
+                const wr = (d.wins/d.total)*100;
+                if (wr > bestWR && d.total >= 1) { bestWR = wr; bestHour = h + ':00'; }
+            });
+            
+            // Update UI
+            const sEl = document.getElementById('trade-streak');
+            if (sEl) { sEl.textContent = streak > 0 ? '🔥' + streak + 'W' : (streak < 0 ? '📉' + Math.abs(streak) + 'L' : '0'); sEl.style.color = streak > 0 ? 'var(--success)' : (streak < 0 ? 'var(--danger)' : 'var(--text-secondary)'); }
+            if (document.getElementById('trade-wins')) document.getElementById('trade-wins').textContent = wins;
+            if (document.getElementById('trade-losses')) document.getElementById('trade-losses').textContent = losses;
+            if (document.getElementById('best-time')) document.getElementById('best-time').textContent = bestHour;
+            
+            // History list
+            const lEl = document.getElementById('trade-history-list');
+            if (lEl) {
+                if (trades.length === 0) lEl.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">No trades yet</p>';
+                else {
+                    lEl.innerHTML = trades.slice(0,20).map(t => {
+                        const d = new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const sig = (t.rsi <= 30 || t.rsi >= 70) ? '✅' : '⚠️';
+                        return `<div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid var(--border);font-size:0.8rem;">
+                            <span>${d} ${t.direction==='long'?'↗':'↘'} $${t.entry.toFixed(0)}→$${t.exit.toFixed(0)}</span>
+                            <span style="color:${t.pnl>=0?'var(--success)':'var(--danger)'}">${t.pnl>=0?'+':''}$${t.pnl.toFixed(2)} ${sig}</span>
+                        </div>`;
+                    }).join('');
+                }
+            }
+        }
+        
+        // Load on start
         function renderTrades() {
             const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
             const container = document.getElementById('trade-list');
