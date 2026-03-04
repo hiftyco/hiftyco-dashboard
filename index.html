@@ -1154,6 +1154,23 @@
             </div>
         </div>
         
+        <!-- Price Alerts Section -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>💰 Price Alerts</h2>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                <input type="number" id="price-alert-1" placeholder="Price 1" style="width: 90px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-start); color: var(--text-primary);">
+                <input type="number" id="price-alert-2" placeholder="Price 2" style="width: 90px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-start); color: var(--text-primary);">
+                <input type="number" id="price-alert-3" placeholder="Price 3" style="width: 90px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-start); color: var(--text-primary);">
+            </div>
+            <div class="alert-buttons">
+                <button class="btn btn-small" id="price-alert-btn" onclick="togglePriceAlerts()">Set Price Alerts</button>
+            </div>
+            <div class="alert-status" id="price-alert-status">
+                <span class="alert-dot inactive"></span>
+                <span id="price-alert-text">No price alerts set</span>
+            </div>
+        </div>
+        
         <!-- Trading Tips - NEW -->
         <div class="card" style="margin-top: 24px;">
             <h2>💡 Trading Tips (Latest Research)</h2>
@@ -1486,6 +1503,11 @@
             document.getElementById('btc-price').textContent = '$' + Math.round(btc.usd).toLocaleString();
             document.getElementById('btc-change').textContent = (btc.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(btc.usd_24h_change || 0).toFixed(2) + '%';
             document.getElementById('btc-change').className = 'price-change ' + (btc.usd_24h_change >= 0 ? 'positive' : 'negative');
+            
+            // Check price alerts
+            if (typeof checkPriceAlerts === 'function') {
+                checkPriceAlerts(btc.usd);
+            }
             
             // Solana
             document.getElementById('sol-price').textContent = '$' + Math.round(sol.usd).toLocaleString();
@@ -2084,6 +2106,7 @@
         
         // === Alerts Section ===
         const alerts = { rsi30: false, rsi70: false };
+        const priceAlerts = { prices: [], active: false, lastTriggered: {} };
         
         // ==========================================
         // TRADING TOOLS - RSI Alerts
@@ -2174,6 +2197,64 @@
                     alert('🔔 RSI 70 Alert! RSI is now ' + rsi + ' - SELL SIGNAL! 🔴');
                 }, 2500); // Wait 2.5 seconds for sound to fully play
             }
+        }
+        
+        // ==========================================
+        // TRADING TOOLS - Price Alerts
+        // ==========================================
+        function togglePriceAlerts() {
+            const input1 = document.getElementById('price-alert-1').value;
+            const input2 = document.getElementById('price-alert-2').value;
+            const input3 = document.getElementById('price-alert-3').value;
+            
+            priceAlerts.prices = [input1, input2, input3].filter(p => p && parseFloat(p) > 0).map(p => parseFloat(p));
+            
+            if (priceAlerts.prices.length > 0) {
+                priceAlerts.active = true;
+                priceAlerts.lastTriggered = {};
+                document.getElementById('price-alert-btn').textContent = '✓ Price Alerts Active';
+                document.getElementById('price-alert-btn').style.background = 'var(--success)';
+                document.getElementById('price-alert-status').className = 'alert-status active';
+                document.getElementById('price-alert-text').innerHTML = '<span class="alert-dot active"></span>Watching: $' + priceAlerts.prices.join(', $');
+                localStorage.setItem('hifty-price-alerts', JSON.stringify(priceAlerts));
+            }
+        }
+        
+        function checkPriceAlerts(price) {
+            if (!priceAlerts.active || priceAlerts.prices.length === 0) return;
+            
+            priceAlerts.prices.forEach(targetPrice => {
+                const key = targetPrice.toString();
+                // Check if price reached (within 0.5% tolerance)
+                if (Math.abs(price - targetPrice) / targetPrice < 0.005 && !priceAlerts.lastTriggered[key]) {
+                    priceAlerts.lastTriggered[key] = true;
+                    
+                    // Play meditation bell
+                    try {
+                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        function playDing(freq, delay, duration) {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.frequency.value = freq;
+                            osc.type = 'sine';
+                            const now = audioCtx.currentTime + delay;
+                            gain.gain.setValueAtTime(0, now);
+                            gain.gain.linearRampToValueAtTime(0.5, now + 0.1);
+                            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                            osc.start(now);
+                            osc.stop(now + duration);
+                        }
+                        playDing(528, 0, 3);
+                        playDing(1056, 0.1, 2.5);
+                    } catch(e) {}
+                    
+                    setTimeout(() => {
+                        alert('💰 Price Alert! BTC reached $' + targetPrice.toLocaleString() + '!');
+                    }, 2500);
+                }
+            });
         }
         
         // === Initialize ===
