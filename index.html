@@ -2186,16 +2186,18 @@
             }
             
             if (alerts.rsi30 && rsi <= 30) {
+                console.log('RSI 30 Alert Triggered! RSI: ' + rsi);
                 playMeditationBell();
                 setTimeout(function() {
                     alert('🔔 RSI 30 Alert! RSI is now ' + rsi + ' - BUY SIGNAL! 🟢');
-                }, 2500); // Wait 2.5 seconds for sound to fully play
+                }, 100);
             }
             if (alerts.rsi70 && rsi >= 70) {
+                console.log('RSI 70 Alert Triggered! RSI: ' + rsi);
                 playMeditationBell();
                 setTimeout(function() {
                     alert('🔔 RSI 70 Alert! RSI is now ' + rsi + ' - SELL SIGNAL! 🔴');
-                }, 2500); // Wait 2.5 seconds for sound to fully play
+                }, 100);
             }
         }
         
@@ -2258,6 +2260,7 @@
                 
                 if (priceDiff <= 1) {
                     priceAlerts.lastTriggered[key] = true;
+                    console.log('Price Alert Triggered! BTC: $' + price + ' Target: $' + targetPrice);
                     
                     // Play meditation bell
                     try {
@@ -2282,7 +2285,7 @@
                     
                     setTimeout(() => {
                         alert('💰 Price Alert! BTC reached $' + targetPrice.toLocaleString() + '!');
-                    }, 2500);
+                    }, 100);
                 }
             });
         }
