@@ -1024,8 +1024,18 @@
                 <label>RSI at Entry</label>
                 <input type="number" id="trade-rsi" placeholder="28" step="1">
             </div>
+            <div class="form-group">
+                <label>Journal Notes</label>
+                <textarea id="trade-notes" placeholder="Why did you take this trade? What's your thesis?" rows="3" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-end);color:var(--text-primary);font-family:inherit;resize:vertical;"></textarea>
+            </div>
             <button class="btn" onclick="saveTrade()">Save Trade</button>
             <div class="trade-list" id="trade-list"></div>
+        </div>
+        
+        <!-- NEW: Trade Journal -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📓 Trade Journal</h2>
+            <div id="trade-journal"></div>
         </div>
         
         <!-- NEW: Alerts Section -->
@@ -1579,13 +1589,14 @@
         
         // === Quick Trade Logger ===
         // ==========================================
-        // TRADING TOOLS - Trade Logger
+        // TRADING TOOLS - Trade Logger with Journal Notes
         // ==========================================
         function saveTrade() {
             const entry = parseFloat(document.getElementById('trade-entry').value);
             const exit = parseFloat(document.getElementById('trade-exit').value);
             const direction = document.getElementById('trade-direction').value;
             const rsi = parseFloat(document.getElementById('trade-rsi').value) || 0;
+            const notes = document.getElementById('trade-notes').value || '';
             
             if (!entry || !exit) {
                 alert('Please enter Entry and Exit prices');
@@ -1605,6 +1616,7 @@
                 direction,
                 rsi,
                 pnl,
+                notes,
                 date: new Date().toISOString()
             };
             
@@ -1612,6 +1624,61 @@
             trades.unshift(trade);
             localStorage.setItem('hifty-trades', JSON.stringify(trades));
             
+            // Clear form
+            document.getElementById('trade-entry').value = '';
+            document.getElementById('trade-exit').value = '';
+            document.getElementById('trade-rsi').value = '';
+            document.getElementById('trade-notes').value = '';
+            
+            // Refresh displays
+            loadTrades();
+            loadTradeJournal();
+            
+            alert('Trade saved with journal notes!');
+        }
+        
+        // ==========================================
+        // TRADE JOURNAL - Display trades with notes
+        // ==========================================
+        function loadTradeJournal() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            const journal = document.getElementById('trade-journal');
+            
+            if (trades.length === 0) {
+                journal.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">No trades in journal yet. Add your first trade above!</p>';
+                return;
+            }
+            
+            let html = '';
+            trades.forEach((trade, index) => {
+                const date = new Date(trade.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+                const directionIcon = trade.direction === 'long' ? '↗' : '↘';
+                
+                html += `
+                    <div style="padding:12px;border-bottom:1px solid var(--border);${index > 0 ? 'margin-top:12px;' : ''}">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <span style="font-weight:600;">${directionIcon} ${trade.direction.toUpperCase()}</span>
+                            <span style="font-size:0.85rem;color:var(--text-secondary);">${date}</span>
+                        </div>
+                        <div style="display:flex;gap:16px;font-size:0.9rem;margin-bottom:8px;">
+                            <span>Entry: <strong>$${trade.entry.toLocaleString()}</strong></span>
+                            <span>Exit: <strong>$${trade.exit.toLocaleString()}</strong></span>
+                            <span>RSI: <strong>${trade.rsi || '-'}</strong></span>
+                        </div>
+                        <div style="font-weight:700;font-size:1.1rem;${pnlClass === 'positive' ? 'color:var(--success);' : 'color:var(--danger);'}">
+                            ${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toFixed(2)}
+                        </div>
+                        ${trade.notes ? `<div style="margin-top:8px;padding:8px;background:var(--bg-mid);border-radius:8px;font-size:0.85rem;color:var(--text-secondary);font-style:italic;">"${trade.notes}"</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            journal.innerHTML = html;
+        }
+        
+        // Load journal on page load
+        loadTradeJournal();
             renderTrades();
             updatePerformance();
             
