@@ -2155,7 +2155,7 @@
         }
         
         function checkAlerts(rsi) {
-            // Play meditation bell
+            // Play meditation bell sound
             function playMeditationBell() {
                 try {
                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -2175,9 +2175,10 @@
                         osc.start(now);
                         osc.stop(now + duration);
                     }
+                    // Play 3 meditation bells
                     playDing(528, 0, 2);
-                    playDing(528, 0.3, 2);
-                    playDing(528, 0.6, 2);
+                    playDing(528, 0.4, 2);
+                    playDing(528, 0.8, 2);
                 } catch(e) {}
             }
             
