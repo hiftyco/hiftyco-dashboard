@@ -1520,10 +1520,6 @@
                 signal.style.color = '#EF4444';
             } else {
                 signal.innerHTML = '🟡 NEUTRAL - WAIT';
-            }
-            
-            // Check alerts when RSI updates
-            checkAlerts(rsi);
                 signal.style.background = 'rgba(251,191,36,0.15)';
                 signal.style.color = '#D97706';
             }
@@ -2089,20 +2085,15 @@
         // ==========================================
         function toggleAlert(level) {
             const btn = document.getElementById('alert-' + level);
-            let currentRSI = parseFloat(document.getElementById('rsi-value').textContent) || 50;
             
             if (level === 30) {
                 alerts.rsi30 = !alerts.rsi30;
                 btn.style.background = alerts.rsi30 ? 'var(--success)' : '';
                 btn.textContent = alerts.rsi30 ? '✓ RSI 30 ON' : 'RSI 30 Alert';
-                // Check immediately when toggled
-                if (alerts.rsi30) checkAlerts(currentRSI);
             } else {
                 alerts.rsi70 = !alerts.rsi70;
                 btn.style.background = alerts.rsi70 ? 'var(--danger)' : '';
                 btn.textContent = alerts.rsi70 ? '✓ RSI 70 ON' : 'RSI 70 Alert';
-                // Check immediately when toggled
-                if (alerts.rsi70) checkAlerts(currentRSI);
             }
             
             updateAlertStatus();
