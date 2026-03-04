@@ -2248,7 +2248,14 @@
         }
         
         function checkPriceAlerts(price) {
-            if (!priceAlerts.active || priceAlerts.prices.length === 0) return;
+            console.log('checkPriceAlerts called with price: $' + price);
+            
+            if (!priceAlerts.active || priceAlerts.prices.length === 0) {
+                console.log('Price alerts not active or no prices set');
+                return;
+            }
+            
+            console.log('Active prices: ' + priceAlerts.prices.join(', '));
             
             // Play meditation bell for price alerts
             function playPriceBell() {
@@ -2274,6 +2281,7 @@
                     playDing(1056, 0.1, 3.5);
                     return true;
                 } catch(e) {
+                    console.log('Audio error: ' + e);
                     return false;
                 }
             }
@@ -2282,16 +2290,19 @@
                 const key = targetPrice.toString();
                 
                 // Skip if already triggered
-                if (priceAlerts.lastTriggered[key]) return;
+                if (priceAlerts.lastTriggered[key]) {
+                    console.log('Already triggered: ' + key);
+                    return;
+                }
                 
-                // Price match within $1
+                // Price match within $2 (loosened)
                 const priceDiff = Math.abs(price - targetPrice);
                 
-                console.log('Price Check - Price: $' + price + ' Target: $' + targetPrice + ' Diff: $' + priceDiff);
+                console.log('Checking: Price $' + price + ' vs Target $' + targetPrice + ' Diff: $' + priceDiff);
                 
-                if (priceDiff <= 1) {
+                if (priceDiff <= 2) {
+                    console.log('TRIGGERING ALERT!');
                     priceAlerts.lastTriggered[key] = true;
-                    console.log('Price Alert! BTC: $' + price + ' Target: $' + targetPrice);
                     
                     // Play sound FIRST
                     const played = playPriceBell();
