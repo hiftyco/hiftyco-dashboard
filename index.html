@@ -1523,6 +1523,11 @@
                 signal.style.background = 'rgba(251,191,36,0.15)';
                 signal.style.color = '#D97706';
             }
+            
+            // Check alerts when RSI updates
+            if (typeof checkAlerts === 'function') {
+                checkAlerts(rsi);
+            }
         }
         
         // ==========================================
@@ -2085,6 +2090,8 @@
         // ==========================================
         function toggleAlert(level) {
             const btn = document.getElementById('alert-' + level);
+            const rsiEl = document.getElementById('rsi-value');
+            const currentRSI = rsiEl && rsiEl.textContent !== '--' ? parseFloat(rsiEl.textContent) : 50;
             
             if (level === 30) {
                 alerts.rsi30 = !alerts.rsi30;
@@ -2100,6 +2107,11 @@
             
             // Save to localStorage
             localStorage.setItem('hifty-alerts', JSON.stringify(alerts));
+            
+            // Check immediately when toggled
+            if (typeof checkAlerts === 'function') {
+                setTimeout(() => checkAlerts(currentRSI), 100);
+            }
         }
         
         function updateAlertStatus() {
