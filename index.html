@@ -1273,7 +1273,7 @@
     
     <script>
         // ==========================================
-        // CONFIGURATION - Default values if APIs fail
+        // CONFIGURATION - Default values & trades
         // ==========================================
         const FALLBACK = {
             btc: { usd: 67000, usd_24h_change: 2.5 },
@@ -1282,6 +1282,19 @@
             fear: 18,
             rsi: 45
         };
+        
+        // Default trade history (Hifty Co - Mango's trades)
+        const DEFAULT_TRADES = [
+            { entry: 64500, exit: 67400, direction: 'long', rsi: 28, pnl: 2900, notes: 'First trade - RSI oversold, BTC bounce', date: '2026-03-01T10:00:00.000Z' },
+            { entry: 65800, exit: 70600, direction: 'long', rsi: 25, pnl: 4800, notes: 'Follow up - strong momentum', date: '2026-03-02T14:30:00.000Z' },
+            { entry: 66100, exit: 70200, direction: 'long', rsi: 29, pnl: 4100, notes: 'RSI showing oversold again', date: '2026-03-02T18:00:00.000Z' },
+            { entry: 66439, exit: 67740, direction: 'long', rsi: 31, pnl: 1301, notes: 'Trade 4 - Waiting for full target', date: '2026-03-03T12:00:00.000Z' }
+        ];
+        
+        // Initialize with default trades if empty
+        if (!localStorage.getItem('hifty-trades')) {
+            localStorage.setItem('hifty-trades', JSON.stringify(DEFAULT_TRADES));
+        }
         
         // ==========================================
         // MAIN FUNCTION - Fetch all market data
