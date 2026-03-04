@@ -1481,9 +1481,6 @@
         
         initTheme();
         
-        // Load trade journal on page load
-        loadTradeJournal();
-        
         // Calculate Signal with TP/SL
         // ==========================================
         // TRADING TOOLS - Signal & Position Calculator
@@ -1634,6 +1631,7 @@
             document.getElementById('trade-notes').value = '';
             
             // Refresh displays
+            loadTrades();
             loadTradeJournal();
             
             alert('Trade saved with journal notes!');
