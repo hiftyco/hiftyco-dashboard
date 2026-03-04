@@ -1807,8 +1807,9 @@
                 const date = new Date(trade.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                 const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
                 const dirIcon = trade.direction === 'long' ? '↗' : '↘';
-                // Calculate trade number correctly (newest is highest number)
-                const tradeNum = trades.length - idx;
+                // Extract trade number from notes (e.g., "Trade #1" -> 1)
+                const tradeNumMatch = trade.notes ? trade.notes.match(/Trade #(\d+)/) : null;
+                const tradeNum = tradeNumMatch ? parseInt(tradeNumMatch[1]) : (trades.length - idx);
                 const tradeImg = tradeImages[tradeNum] || '';
                 
                 html += `<div style="padding:10px;border-bottom:1px solid var(--border);${idx>0?'margin-top:10px':''}">
