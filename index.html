@@ -1024,18 +1024,8 @@
                 <label>RSI at Entry</label>
                 <input type="number" id="trade-rsi" placeholder="28" step="1">
             </div>
-            <div class="form-group">
-                <label>Journal Notes</label>
-                <textarea id="trade-notes" placeholder="Why did you take this trade? What's your thesis?" rows="3" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-end);color:var(--text-primary);font-family:inherit;resize:vertical;"></textarea>
-            </div>
             <button class="btn" onclick="saveTrade()">Save Trade</button>
             <div class="trade-list" id="trade-list"></div>
-        </div>
-        
-        <!-- NEW: Trade Journal -->
-        <div class="card" style="margin-top: 24px;">
-            <h2>📓 Trade Journal</h2>
-            <div id="trade-journal"></div>
         </div>
         
         <!-- NEW: Alerts Section -->
@@ -1201,9 +1191,6 @@
     </div>
     
     <script>
-        // ==========================================
-        // CONFIGURATION - Default values
-        // ==========================================
         const FALLBACK = {
             btc: { usd: 67000, usd_24h_change: 2.5 },
             eth: { usd: 2000, usd_24h_change: 1.5 },
@@ -1212,9 +1199,6 @@
             rsi: 45
         };
         
-        // ==========================================
-        // MAIN FUNCTION - Fetch all market data
-        // ==========================================
         async function fetchData() {
             try {
                 // Use CryptoCompare API - BTC, SOL, ETH for Live Prices
@@ -1312,9 +1296,6 @@
         }
         
         // Calculate RSI from closing prices
-        // ==========================================
-        // RSI CALCULATION - Wilder's smoothing method
-        // ==========================================
         function calculateRSI(closes, period = 14) {
             if (!closes || closes.length < period + 1) return 50;
             
@@ -1347,9 +1328,6 @@
             return Math.round(rsi * 10) / 10; // 1 decimal place
         }
         
-        // ==========================================
-        // UPDATE UI - Display fetched prices
-        // ==========================================
         function updatePrices(data) {
             const btc = data.bitcoin || FALLBACK.btc;
             const sol = data.solana || FALLBACK.sol;
@@ -1377,9 +1355,6 @@
             document.getElementById('s2').textContent = '$' + Math.round(price * 0.95).toLocaleString();
         }
         
-        // ==========================================
-        // UPDATE UI - Display RSI value & signal
-        // ==========================================
         function updateRSI(rsi) {
             document.getElementById('rsi-value').textContent = rsi;
             const signal = document.getElementById('rsi-signal');
@@ -1398,9 +1373,6 @@
             }
         }
         
-        // ==========================================
-        // UPDATE UI - Display Fear & Greed index
-        // ==========================================
         function updateFear(value) {
             document.getElementById('fear-value').textContent = value + '/100';
             document.getElementById('fear-indicator').style.left = Math.min(value, 94) + '%';
@@ -1430,9 +1402,6 @@
             }
         }
         
-        // ==========================================
-        // UPDATE UI - Display trend indicators
-        // ==========================================
         function updateTrends(change) {
             const trend = change >= 0 ? '📈' : '📉';
             const color = change >= 0 ? '#10B981' : '#EF4444';
@@ -1481,13 +1450,7 @@
         
         initTheme();
         
-        // Load trade journal on page load
-        loadTradeJournal();
-        
         // Calculate Signal with TP/SL
-        // ==========================================
-        // TRADING TOOLS - Signal & Position Calculator
-        // ==========================================
         function calculateSignal() {
             const entry = parseFloat(document.getElementById('signal-entry').value);
             const tp = parseFloat(document.getElementById('signal-tp').value);
@@ -1536,9 +1499,6 @@
         setInterval(fetchData, 30000);
         
         // === NEW FEATURES: Position Size Calculator ===
-        // ==========================================
-        // TRADING TOOLS - Position Size Calculator
-        // ==========================================
         function calculatePosition() {
             const balance = parseFloat(document.getElementById('calc-balance').value) || 10000;
             const riskPct = parseFloat(document.getElementById('calc-risk').value) || 2;
@@ -1566,9 +1526,6 @@
         }
         
         // === Performance Dashboard ===
-        // ==========================================
-        // TRADING TOOLS - Performance Dashboard
-        // ==========================================
         function updatePerformance() {
             const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
             
@@ -1591,15 +1548,11 @@
         }
         
         // === Quick Trade Logger ===
-        // ==========================================
-        // TRADING TOOLS - Trade Logger with Journal Notes
-        // ==========================================
         function saveTrade() {
             const entry = parseFloat(document.getElementById('trade-entry').value);
             const exit = parseFloat(document.getElementById('trade-exit').value);
             const direction = document.getElementById('trade-direction').value;
             const rsi = parseFloat(document.getElementById('trade-rsi').value) || 0;
-            const notes = document.getElementById('trade-notes').value || '';
             
             if (!entry || !exit) {
                 alert('Please enter Entry and Exit prices');
@@ -1619,7 +1572,6 @@
                 direction,
                 rsi,
                 pnl,
-                notes,
                 date: new Date().toISOString()
             };
             
@@ -1627,60 +1579,6 @@
             trades.unshift(trade);
             localStorage.setItem('hifty-trades', JSON.stringify(trades));
             
-            // Clear form
-            document.getElementById('trade-entry').value = '';
-            document.getElementById('trade-exit').value = '';
-            document.getElementById('trade-rsi').value = '';
-            document.getElementById('trade-notes').value = '';
-            
-            // Refresh displays
-            loadTradeJournal();
-            
-            alert('Trade saved with journal notes!');
-        }
-        
-        // ==========================================
-        // TRADE JOURNAL - Display trades with notes
-        // ==========================================
-        function loadTradeJournal() {
-            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
-            const journal = document.getElementById('trade-journal');
-            
-            if (trades.length === 0) {
-                journal.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">No trades in journal yet. Add your first trade above!</p>';
-                return;
-            }
-            
-            let html = '';
-            trades.forEach((trade, index) => {
-                const date = new Date(trade.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
-                const directionIcon = trade.direction === 'long' ? '↗' : '↘';
-                
-                html += `
-                    <div style="padding:12px;border-bottom:1px solid var(--border);${index > 0 ? 'margin-top:12px;' : ''}">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                            <span style="font-weight:600;">${directionIcon} ${trade.direction.toUpperCase()}</span>
-                            <span style="font-size:0.85rem;color:var(--text-secondary);">${date}</span>
-                        </div>
-                        <div style="display:flex;gap:16px;font-size:0.9rem;margin-bottom:8px;">
-                            <span>Entry: <strong>$${trade.entry.toLocaleString()}</strong></span>
-                            <span>Exit: <strong>$${trade.exit.toLocaleString()}</strong></span>
-                            <span>RSI: <strong>${trade.rsi || '-'}</strong></span>
-                        </div>
-                        <div style="font-weight:700;font-size:1.1rem;${pnlClass === 'positive' ? 'color:var(--success);' : 'color:var(--danger);'}">
-                            ${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toFixed(2)}
-                        </div>
-                        ${trade.notes ? `<div style="margin-top:8px;padding:8px;background:var(--bg-mid);border-radius:8px;font-size:0.85rem;color:var(--text-secondary);font-style:italic;">"${trade.notes}"</div>` : ''}
-                    </div>
-                `;
-            });
-            
-            journal.innerHTML = html;
-        }
-        
-        // Load journal on page load
-        loadTradeJournal();
             renderTrades();
             updatePerformance();
             
@@ -1713,9 +1611,6 @@
         // === Alerts Section ===
         const alerts = { rsi30: false, rsi70: false };
         
-        // ==========================================
-        // TRADING TOOLS - RSI Alerts
-        // ==========================================
         function toggleAlert(level) {
             const btn = document.getElementById('alert-' + level);
             
