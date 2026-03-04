@@ -2155,52 +2155,39 @@
         }
         
         function checkAlerts(rsi) {
-            // Play pleasant meditation bell sound - PLAYS FIRST
+            // Play meditation bell
             function playMeditationBell() {
                 try {
                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     audioCtx.resume();
                     
-                    // Play sound FIRST, then show popup after
                     function playDing(freq, delay, duration) {
                         const osc = audioCtx.createOscillator();
                         const gain = audioCtx.createGain();
                         osc.connect(gain);
                         gain.connect(audioCtx.destination);
-                        
                         osc.frequency.value = freq;
                         osc.type = 'sine';
-                        
                         const now = audioCtx.currentTime + delay;
                         gain.gain.setValueAtTime(0, now);
                         gain.gain.linearRampToValueAtTime(0.6, now + 0.05);
                         gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                        
                         osc.start(now);
                         osc.stop(now + duration);
                     }
-                    
-                    // Play 4-second meditation bell
-                    playDing(528, 0, 4);
-                    playDing(1056, 0.1, 3.5);
-                    playDing(792, 0.05, 3);
-                    
-                    // Show popup AFTER 3.5 seconds
-                    return true;
-                } catch(e) {
-                    return false;
-                }
+                    playDing(528, 0, 2);
+                    playDing(528, 0.3, 2);
+                    playDing(528, 0.6, 2);
+                } catch(e) {}
             }
             
             if (alerts.rsi30 && rsi <= 30) {
-                console.log('RSI 30 Alert! RSI: ' + rsi + ' - BUY SIGNAL');
-                const played = playMeditationBell();
-                setTimeout(() => alert('🔔 RSI 30 Alert! RSI is now ' + rsi + ' - BUY SIGNAL! 🟢'), played ? 3500 : 100);
+                playMeditationBell();
+                alert('🔔 RSI 30 Alert! RSI is now ' + rsi + ' - BUY SIGNAL! 🟢');
             }
             if (alerts.rsi70 && rsi >= 70) {
-                console.log('RSI 70 Alert! RSI: ' + rsi + ' - SELL SIGNAL');
-                const played = playMeditationBell();
-                setTimeout(() => alert('🔔 RSI 70 Alert! RSI is now ' + rsi + ' - SELL SIGNAL! 🔴'), played ? 3500 : 100);
+                playMeditationBell();
+                alert('🔔 RSI 70 Alert! RSI is now ' + rsi + ' - SELL SIGNAL! 🔴');
             }
         }
         
