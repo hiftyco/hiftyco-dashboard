@@ -982,28 +982,76 @@
             </div>
         </div>
         
-        <!-- NEW: Trade History Dashboard -->
+        <!-- NEW: Trade History Dashboard with Charts -->
         <div class="card" style="margin-top: 24px;">
             <h2>📈 Trade History Dashboard</h2>
-            <div class="grid" style="grid-template-columns: repeat(3); gap: , 1fr12px; margin-bottom: 16px;">
+            
+            <!-- Stats Row -->
+            <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
                 <div class="perf-stat">
                     <div class="perf-value" id="trade-streak">0</div>
-                    <div class="perf-label">Current Streak</div>
+                    <div class="perf-label">Streak</div>
                 </div>
                 <div class="perf-stat">
                     <div class="perf-value" id="trade-wins">0</div>
-                    <div class="perf-label">Total Wins</div>
+                    <div class="perf-label">Wins</div>
                 </div>
                 <div class="perf-stat">
                     <div class="perf-value" id="trade-losses">0</div>
-                    <div class="perf-label">Total Losses</div>
+                    <div class="perf-label">Losses</div>
+                </div>
+                <div class="perf-stat">
+                    <div class="perf-value" id="best-time">-</div>
+                    <div class="perf-label">Best Hour</div>
                 </div>
             </div>
-            <div style="margin-bottom: 12px;">
-                <div class="perf-label">Best Trading Time</div>
-                <div class="perf-value" id="best-time" style="font-size: 1.2rem;">-</div>
+            
+            <!-- 1% Trader Chart - P&L Over Time -->
+            <div style="margin: 16px 0;">
+                <div class="perf-label">📊 P&L Over Trades (1% Trader Style)</div>
+                <canvas id="pnl-chart" height="100" style="width:100%;height:100px;background:var(--bg-mid);border-radius:8px;margin-top:8px;"></canvas>
             </div>
-            <div id="trade-history-list" style="max-height: 200px; overflow-y: auto;"></div>
+            
+            <!-- Win Rate Indicator -->
+            <div style="margin: 16px 0;">
+                <div class="perf-label">🎯 Win Rate Progress</div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+                    <div style="flex:1;height:12px;background:var(--bg-mid);border-radius:6px;overflow:hidden;">
+                        <div id="winrate-bar" style="width:100%;height:100%;background:linear-gradient(90deg, #10B981, #F59E0B);border-radius:6px;transition:width 0.5s;"></div>
+                    </div>
+                    <span id="winrate-text" style="font-weight:700;font-size:1.1rem;">100%</span>
+                </div>
+            </div>
+            
+            <!-- 1% Trader Indicators -->
+            <div style="margin: 16px 0; padding: 12px; background: var(--bg-mid); border-radius: 10px;">
+                <div class="perf-label">🏆 1% Trader Indicators</div>
+                <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem;">📈</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">Avg Win</div>
+                        <div id="avg-win" style="font-weight:700;color:var(--success);">$0</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem;">📉</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">Avg Loss</div>
+                        <div id="avg-loss" style="font-weight:700;color:var(--danger);">$0</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem;">⚡</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">Risk:Reward</div>
+                        <div id="rr-ratio" style="font-weight:700;">-</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem;">💎</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">Edge</div>
+                        <div id="edge-indicator" style="font-weight:700;color:var(--accent);">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trade List -->
+            <div id="trade-history-list" style="max-height: 150px; overflow-y: auto;"></div>
         </div>
         
         <!-- NEW: News Feed -->
@@ -1758,6 +1806,167 @@
                     }).join('');
                 }
             }
+        }
+        
+        // ==========================================
+        // 1% TRADER CHART & METRICS
+        // ==========================================
+        function loadTradeHistory() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            
+            const wins = trades.filter(t => t.pnl > 0).length;
+            const losses = trades.filter(t => t.pnl < 0).length;
+            const winRate = trades.length > 0 ? Math.round((wins / trades.length) * 100) : 0;
+            
+            // Streak
+            let streak = 0;
+            if (trades.length > 0) {
+                const sorted = [...trades].sort((a,b) => new Date(b.date) - new Date(a.date));
+                if (sorted[0].pnl > 0) { for (const t of sorted) { if (t.pnl > 0) streak++; else break; } }
+                else { for (const t of sorted) { if (t.pnl < 0) streak--; else break; } }
+            }
+            
+            // Best hour
+            let hourCounts = {};
+            trades.forEach(t => {
+                const h = new Date(t.date).getHours();
+                if (!hourCounts[h]) hourCounts[h] = {wins:0,total:0};
+                hourCounts[h].total++;
+                if (t.pnl > 0) hourCounts[h].wins++;
+            });
+            
+            let bestHour = '-';
+            let bestWR = 0;
+            Object.entries(hourCounts).forEach(([h, d]) => {
+                const wr = (d.wins/d.total)*100;
+                if (wr > bestWR && d.total >= 1) { bestWR = wr; bestHour = h + ':00'; }
+            });
+            
+            // === 1% TRADER METRICS ===
+            const winsList = trades.filter(t => t.pnl > 0).map(t => t.pnl);
+            const lossesList = trades.filter(t => t.pnl < 0).map(t => Math.abs(t.pnl));
+            
+            const avgWin = winsList.length > 0 ? winsList.reduce((a,b)=>a+b,0) / winsList.length : 0;
+            const avgLoss = lossesList.length > 0 ? lossesList.reduce((a,b)=>a+b,0) / lossesList.length : 0;
+            
+            // Risk:Reward & Edge
+            let rrRatio = '-';
+            let edge = '-';
+            if (avgLoss > 0 && avgWin > 0) {
+                rrRatio = (avgWin / avgLoss).toFixed(1) + ':1';
+                const winRateDec = wins / trades.length || 0;
+                const lossRateDec = losses / trades.length || 0;
+                const edgeVal = (winRateDec * avgWin) - (lossRateDec * avgLoss);
+                edge = edgeVal > 0 ? '+$' + edgeVal.toFixed(0) : '-$' + Math.abs(edgeVal).toFixed(0);
+            }
+            
+            // Update 1% trader metrics
+            const avgWinEl = document.getElementById('avg-win');
+            const avgLossEl = document.getElementById('avg-loss');
+            const rrEl = document.getElementById('rr-ratio');
+            const edgeEl = document.getElementById('edge-indicator');
+            
+            if (avgWinEl) avgWinEl.textContent = '$' + Math.round(avgWin).toLocaleString();
+            if (avgLossEl) avgLossEl.textContent = '$' + Math.round(avgLoss).toLocaleString();
+            if (rrEl) rrEl.textContent = rrRatio;
+            if (edgeEl) { edgeEl.textContent = edge; edgeEl.style.color = edge.startsWith('+$') ? 'var(--success)' : 'var(--danger)'; }
+            
+            // Win rate bar
+            const wrBar = document.getElementById('winrate-bar');
+            const wrText = document.getElementById('winrate-text');
+            if (wrBar) wrBar.style.width = winRate + '%';
+            if (wrText) wrText.textContent = winRate + '%';
+            
+            // Draw P&L Chart
+            drawPnLChart(trades);
+            
+            // Update basic stats
+            const sEl = document.getElementById('trade-streak');
+            if (sEl) { sEl.textContent = streak > 0 ? '🔥' + streak + 'W' : (streak < 0 ? '📉' + Math.abs(streak) + 'L' : '0'); sEl.style.color = streak > 0 ? 'var(--success)' : (streak < 0 ? 'var(--danger)' : 'var(--text-secondary)'); }
+            if (document.getElementById('trade-wins')) document.getElementById('trade-wins').textContent = wins;
+            if (document.getElementById('trade-losses')) document.getElementById('trade-losses').textContent = losses;
+            if (document.getElementById('best-time')) document.getElementById('best-time').textContent = bestHour;
+            
+            // History list
+            const lEl = document.getElementById('trade-history-list');
+            if (lEl) {
+                if (trades.length === 0) lEl.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">No trades yet</p>';
+                else {
+                    lEl.innerHTML = trades.slice(0,15).map(t => {
+                        const d = new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const sig = (t.rsi <= 30 || t.rsi >= 70) ? '✅' : '⚠️';
+                        return `<div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid var(--border);font-size:0.8rem;">
+                            <span>${d} ${t.direction==='long'?'↗':'↘'} $${t.entry.toFixed(0)}→$${t.exit.toFixed(0)}</span>
+                            <span style="color:${t.pnl>=0?'var(--success)':'var(--danger)'}">${t.pnl>=0?'+':''}$${t.pnl.toFixed(2)} ${sig}</span>
+                        </div>`;
+                    }).join('');
+                }
+            }
+        }
+        
+        // Draw P&L Chart (1% Trader Style)
+        function drawPnLChart(trades) {
+            const canvas = document.getElementById('pnl-chart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width = canvas.offsetWidth || 300;
+            const h = canvas.height = canvas.offsetHeight || 100;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            if (trades.length === 0) {
+                ctx.fillStyle = '#888';
+                ctx.font = '12px Outfit';
+                ctx.textAlign = 'center';
+                ctx.fillText('No trades yet', w/2, h/2);
+                return;
+            }
+            
+            let cumulative = 0;
+            const points = trades.map(t => { cumulative += t.pnl; return cumulative; });
+            
+            const maxVal = Math.max(...points, 0);
+            const minVal = Math.min(...points, 0);
+            const range = maxVal - minVal || 1;
+            
+            // Draw line
+            ctx.beginPath();
+            ctx.strokeStyle = '#10B981';
+            ctx.lineWidth = 2;
+            
+            points.forEach((val, i) => {
+                const x = (i / Math.max(points.length - 1, 1)) * w;
+                const y = h - ((val - minVal) / range) * (h - 10) - 5;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            // Fill area
+            ctx.lineTo(w, h);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+            ctx.fill();
+            
+            // Zero line
+            const zeroY = h - ((0 - minVal) / range) * (h - 10) - 5;
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(0, zeroY);
+            ctx.lineTo(w, zeroY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Current P&L
+            const currentPnL = points[points.length - 1];
+            ctx.fillStyle = currentPnL >= 0 ? '#10B981' : '#EF4444';
+            ctx.font = 'bold 14px Outfit';
+            ctx.textAlign = 'right';
+            ctx.fillText((currentPnL >= 0 ? '+' : '') + '$' + Math.round(currentPnL).toLocaleString(), w - 10, 20);
         }
         
         // Load on start
