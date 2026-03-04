@@ -1818,9 +1818,9 @@
                 const tradeNumMatch = trade.notes ? trade.notes.match(/Trade #(\d+)/) : null;
                 const tradeNum = tradeNumMatch ? parseInt(tradeNumMatch[1]) : (sortedTrades.length - idx);
                 const tradeImg = tradeImages[tradeNum] || '';
-                // Live trade indicator (red pulsing dot)
+                // Live trade indicator (red pulsing dot + "LIVE" text)
                 const isLive = trade.pnl === 0 || trade.exit === 0;
-                const liveIndicator = isLive ? '<span style="display:inline-block;width:10px;height:10px;background:#ff4444;border-radius:50%;margin-left:8px;animation:pulse 1.5s infinite;"></span>' : '';
+                const liveIndicator = isLive ? '<span style="display:inline-flex;align-items:center;gap:6px;margin-left:8px;"><span style="width:10px;height:10px;background:#ff4444;border-radius:50%;animation:pulse 1.5s infinite;"></span><span style="color:#ff4444;font-size:0.75rem;font-weight:700;">LIVE</span></span>' : '';
                 
                 html += `<div style="padding:10px;border-bottom:1px solid var(--border);${idx>0?'margin-top:10px':''}">
                     <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
