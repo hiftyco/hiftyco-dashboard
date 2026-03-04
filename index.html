@@ -676,18 +676,33 @@
         
         .rules-list li:last-child { border: none; }
         
+        .rule-check {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .rule-check input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--success);
+            cursor: pointer;
+        }
+        
         .rule-num {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             background: var(--accent);
             color: #fff;
-            border-radius: 50%;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
             font-size: 0.7rem;
-            margin-right: 12px;
+            margin-left: 8px;
             flex-shrink: 0;
         }
         
@@ -1231,16 +1246,16 @@
         <!-- Rules & Team -->
         <div class="grid" style="margin-top: 24px;">
             <div class="card">
-                <h2>📋 8 Trading Rules</h2>
+                <h2>📋 Trading Rules Checklist</h2>
                 <ul class="rules-list">
-                    <li><span class="rule-num">1</span>🕐 PATIENCE IS KEY - Wait for market, don't rush</li>
-                    <li><span class="rule-num">2</span>RSI ≤20 (LONG) | ≥80 (SHORT) - New 80/20</li>
-                    <li><span class="rule-num">2</span>Price must be above/below 200 EMA</li>
-                    <li><span class="rule-num">3</span>Ratio 2:1 to 3:1</li>
-                    <li><span class="rule-num">4</span>SET and FORGET</li>
-                    <li><span class="rule-num">5</span>No revenge trading</li>
-                    <li><span class="rule-num">6</span>Size winners, cut losers</li>
-                    <li><span class="rule-num">7</span>StochRSI confirms timing</li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">1</span>🕐 PATIENCE IS KEY - Wait for market, don't rush</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">2</span>RSI ≤20 (LONG) | ≥80 (SHORT)</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">3</span>Price must be above/below 200 EMA</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">4</span>Ratio 2:1 to 3:1</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">5</span>SET and FORGET</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">6</span>No revenge trading</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">7</span>Size winners, cut losers</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">8</span>StochRSI confirms timing</label></li>
                 </ul>
             </div>
             
