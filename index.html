@@ -2193,12 +2193,12 @@
             }
             
             if (alerts.rsi30 && rsi <= 30) {
-                console.log('RSI 30 Alert! RSI: ' + rsi);
+                console.log('RSI 30 Alert! RSI: ' + rsi + ' - BUY SIGNAL');
                 const played = playMeditationBell();
                 setTimeout(() => alert('🔔 RSI 30 Alert! RSI is now ' + rsi + ' - BUY SIGNAL! 🟢'), played ? 3500 : 100);
             }
             if (alerts.rsi70 && rsi >= 70) {
-                console.log('RSI 70 Alert! RSI: ' + rsi);
+                console.log('RSI 70 Alert! RSI: ' + rsi + ' - SELL SIGNAL');
                 const played = playMeditationBell();
                 setTimeout(() => alert('🔔 RSI 70 Alert! RSI is now ' + rsi + ' - SELL SIGNAL! 🔴'), played ? 3500 : 100);
             }
@@ -2295,13 +2295,14 @@
                     return;
                 }
                 
-                // Price match within $2 (loosened)
-                const priceDiff = Math.abs(price - targetPrice);
+                // Trigger when price is AT or ABOVE target
+                const isAtOrAbove = price >= targetPrice;
+                const priceDiff = price - targetPrice;
                 
-                console.log('Checking: Price $' + price + ' vs Target $' + targetPrice + ' Diff: $' + priceDiff);
+                console.log('Checking: Price $' + price + ' vs Target $' + targetPrice + ' - At/Above: ' + isAtOrAbove);
                 
-                if (priceDiff <= 2) {
-                    console.log('TRIGGERING ALERT!');
+                if (isAtOrAbove) {
+                    console.log('TRIGGERING ALERT! Price $' + price + ' >= Target $' + targetPrice);
                     priceAlerts.lastTriggered[key] = true;
                     
                     // Play sound FIRST
@@ -2309,7 +2310,7 @@
                     
                     // Show popup AFTER 3.5 seconds
                     setTimeout(() => {
-                        alert('💰 Price Alert! BTC reached $' + targetPrice.toLocaleString() + '!');
+                        alert('💰 Price Alert! BTC reached $' + price.toLocaleString() + ' (Target: $' + targetPrice.toLocaleString() + ')!');
                     }, played ? 3500 : 100);
                 }
             });
