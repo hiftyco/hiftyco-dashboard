@@ -2316,6 +2316,14 @@
                 if (priceAlerts.prices[0]) document.getElementById('price-alert-1').value = priceAlerts.prices[0];
                 if (priceAlerts.prices[1]) document.getElementById('price-alert-2').value = priceAlerts.prices[1];
                 if (priceAlerts.prices[2]) document.getElementById('price-alert-3').value = priceAlerts.prices[2];
+                
+                // Check immediately after load
+                setTimeout(() => {
+                    const currentPrice = parseFloat(document.getElementById('btc-price').textContent.replace(/[$,]/g, '')) || 0;
+                    if (currentPrice > 0 && typeof checkPriceAlerts === 'function') {
+                        checkPriceAlerts(currentPrice);
+                    }
+                }, 3000);
             }
         }
     </script>
