@@ -1361,22 +1361,28 @@
         // ==========================================
         async function fetchData() {
             try {
-                // Use CryptoCompare API - BTC, SOL, ETH for Live Prices
-                const priceRes = await fetch('https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,SOL,ETH&tsyms=USD');
-                const priceData = await priceRes.json();
+                // Use Binance API - matches TradingView BTC/USDT exactly
+                const [btcRes, solRes, ethRes] = await Promise.all([
+                    fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'),
+                    fetch('https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT'),
+                    fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
+                ]);
                 
-                if (priceData.BTC) {
-                    const btcPrice = priceData.BTC.USD;
-                    const solPrice = priceData.SOL ? priceData.SOL.USD : 0;
-                    const ethPrice = priceData.ETH ? priceData.ETH.USD : 0;
-                    
-                    const formatted = { 
-                        bitcoin: { usd: btcPrice, usd_24h_change: 0 },
-                        solana: { usd: solPrice, usd_24h_change: 0 },
-                        ethereum: { usd: ethPrice, usd_24h_change: 0 }
-                    };
-                    updatePrices(formatted);
-                    document.getElementById('price-status').textContent = '✓ Live: $' + btcPrice.toLocaleString();
+                const btcData = await btcRes.json();
+                const solData = await solRes.json();
+                const ethData = await ethRes.json();
+                
+                const btcPrice = parseFloat(btcData.price);
+                const solPrice = parseFloat(solData.price);
+                const ethPrice = parseFloat(ethData.price);
+                
+                const formatted = { 
+                    bitcoin: { usd: btcPrice, usd_24h_change: 0 },
+                    solana: { usd: solPrice, usd_24h_change: 0 },
+                    ethereum: { usd: ethPrice, usd_24h_change: 0 }
+                };
+                updatePrices(formatted);
+                document.getElementById('price-status').textContent = '✓ Live: $' + Math.round(btcPrice).toLocaleString();
                     
                     // Fetch 24h change for trends
                     try {
