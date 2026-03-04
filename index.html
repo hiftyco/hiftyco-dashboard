@@ -1147,7 +1147,6 @@
             <div class="alert-buttons">
                 <button class="btn btn-small" id="alert-30" onclick="toggleAlert(30)">RSI 30 Alert</button>
                 <button class="btn btn-small btn-secondary" id="alert-70" onclick="toggleAlert(70)">RSI 70 Alert</button>
-                <button class="btn btn-small" style="background: #6366f1;" onclick="testAlert()">Test Alert</button>
             </div>
             <div class="alert-status" id="alert-status">
                 <span class="alert-dot inactive"></span>
@@ -2113,33 +2112,6 @@
         // TRADING TOOLS - RSI Alerts
         // ==========================================
         
-        // Test alert function
-        function testAlert() {
-            // Force trigger a test alert
-            const testPrice = parseFloat(document.getElementById('btc-price').textContent.replace(/[$,]/g, '')) || 73000;
-            checkPriceAlerts(testPrice);
-            
-            const testRSI = parseFloat(document.getElementById('rsi-value').textContent) || 50;
-            checkAlerts(testRSI);
-            
-            // Also play sound and show alert directly
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.value = 800;
-                osc.type = 'sine';
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
-                osc.start(audioCtx.currentTime);
-                osc.stop(audioCtx.currentTime + 1);
-            } catch(e) {}
-            
-            alert('🔔 TEST ALERT!\nPrice: $' + testPrice + '\nRSI: ' + testRSI + '\n\nIf you see this, alerts ARE working!');
-        }
-        
         function toggleAlert(level) {
             const btn = document.getElementById('alert-' + level);
             const rsiEl = document.getElementById('rsi-value');
@@ -2183,12 +2155,13 @@
         }
         
         function checkAlerts(rsi) {
-            // Play pleasant meditation bell sound
+            // Play pleasant meditation bell sound - PLAYS FIRST
             function playMeditationBell() {
                 try {
                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioCtx.resume();
                     
-                    // Create a longer, more audible meditation bell sound
+                    // Play sound FIRST, then show popup after
                     function playDing(freq, delay, duration) {
                         const osc = audioCtx.createOscillator();
                         const gain = audioCtx.createGain();
@@ -2200,33 +2173,34 @@
                         
                         const now = audioCtx.currentTime + delay;
                         gain.gain.setValueAtTime(0, now);
-                        gain.gain.linearRampToValueAtTime(0.5, now + 0.1);
+                        gain.gain.linearRampToValueAtTime(0.6, now + 0.05);
                         gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
                         
                         osc.start(now);
                         osc.stop(now + duration);
                     }
                     
-                    // Play multiple harmonics for a meditation bell effect - longer duration
-                    playDing(528, 0, 3);    // Main frequency - 3 seconds
-                    playDing(1056, 0.1, 2.5); // Octave above
-                    playDing(792, 0.05, 2);   // Harmony
-                } catch(e) {}
+                    // Play 4-second meditation bell
+                    playDing(528, 0, 4);
+                    playDing(1056, 0.1, 3.5);
+                    playDing(792, 0.05, 3);
+                    
+                    // Show popup AFTER 3.5 seconds
+                    return true;
+                } catch(e) {
+                    return false;
+                }
             }
             
             if (alerts.rsi30 && rsi <= 30) {
-                console.log('RSI 30 Alert Triggered! RSI: ' + rsi);
-                playMeditationBell();
-                setTimeout(function() {
-                    alert('🔔 RSI 30 Alert! RSI is now ' + rsi + ' - BUY SIGNAL! 🟢');
-                }, 100);
+                console.log('RSI 30 Alert! RSI: ' + rsi);
+                const played = playMeditationBell();
+                setTimeout(() => alert('🔔 RSI 30 Alert! RSI is now ' + rsi + ' - BUY SIGNAL! 🟢'), played ? 3500 : 100);
             }
             if (alerts.rsi70 && rsi >= 70) {
-                console.log('RSI 70 Alert Triggered! RSI: ' + rsi);
-                playMeditationBell();
-                setTimeout(function() {
-                    alert('🔔 RSI 70 Alert! RSI is now ' + rsi + ' - SELL SIGNAL! 🔴');
-                }, 100);
+                console.log('RSI 70 Alert! RSI: ' + rsi);
+                const played = playMeditationBell();
+                setTimeout(() => alert('🔔 RSI 70 Alert! RSI is now ' + rsi + ' - SELL SIGNAL! 🔴'), played ? 3500 : 100);
             }
         }
         
@@ -2276,45 +2250,56 @@
         function checkPriceAlerts(price) {
             if (!priceAlerts.active || priceAlerts.prices.length === 0) return;
             
+            // Play meditation bell for price alerts
+            function playPriceBell() {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioCtx.resume();
+                    
+                    function playDing(freq, delay, duration) {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.frequency.value = freq;
+                        osc.type = 'sine';
+                        const now = audioCtx.currentTime + delay;
+                        gain.gain.setValueAtTime(0, now);
+                        gain.gain.linearRampToValueAtTime(0.6, now + 0.05);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                        osc.start(now);
+                        osc.stop(now + duration);
+                    }
+                    playDing(528, 0, 4);
+                    playDing(1056, 0.1, 3.5);
+                    return true;
+                } catch(e) {
+                    return false;
+                }
+            }
+            
             priceAlerts.prices.forEach(targetPrice => {
                 const key = targetPrice.toString();
                 
                 // Skip if already triggered
                 if (priceAlerts.lastTriggered[key]) return;
                 
-                // ONLY trigger when price EXACTLY matches (within $1)
+                // Price match within $1
                 const priceDiff = Math.abs(price - targetPrice);
                 
-                console.log('Price Alert Check - Price: $' + price.toFixed(2) + ' Target: $' + targetPrice + ' Diff: $' + priceDiff.toFixed(2));
+                console.log('Price Check - Price: $' + price + ' Target: $' + targetPrice + ' Diff: $' + priceDiff);
                 
                 if (priceDiff <= 1) {
                     priceAlerts.lastTriggered[key] = true;
-                    console.log('Price Alert Triggered! BTC: $' + price + ' Target: $' + targetPrice);
+                    console.log('Price Alert! BTC: $' + price + ' Target: $' + targetPrice);
                     
-                    // Play meditation bell
-                    try {
-                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                        function playDing(freq, delay, duration) {
-                            const osc = audioCtx.createOscillator();
-                            const gain = audioCtx.createGain();
-                            osc.connect(gain);
-                            gain.connect(audioCtx.destination);
-                            osc.frequency.value = freq;
-                            osc.type = 'sine';
-                            const now = audioCtx.currentTime + delay;
-                            gain.gain.setValueAtTime(0, now);
-                            gain.gain.linearRampToValueAtTime(0.5, now + 0.1);
-                            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-                            osc.start(now);
-                            osc.stop(now + duration);
-                        }
-                        playDing(528, 0, 3);
-                        playDing(1056, 0.1, 2.5);
-                    } catch(e) {}
+                    // Play sound FIRST
+                    const played = playPriceBell();
                     
+                    // Show popup AFTER 3.5 seconds
                     setTimeout(() => {
                         alert('💰 Price Alert! BTC reached $' + targetPrice.toLocaleString() + '!');
-                    }, 100);
+                    }, played ? 3500 : 100);
                 }
             });
         }
