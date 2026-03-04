@@ -2251,13 +2251,12 @@
                 // Skip if already triggered
                 if (priceAlerts.lastTriggered[key]) return;
                 
-                // Check if price reached - tighter tolerance (0.1%)
-                const tolerance = 0.001;
-                const priceDiff = Math.abs(price - targetPrice) / targetPrice;
+                // ONLY trigger when price EXACTLY matches (within $1)
+                const priceDiff = Math.abs(price - targetPrice);
                 
-                console.log('Checking price: $' + price + ' vs target: $' + targetPrice + ' diff: ' + (priceDiff*100).toFixed(2) + '%');
+                console.log('Price Alert Check - Price: $' + price.toFixed(2) + ' Target: $' + targetPrice + ' Diff: $' + priceDiff.toFixed(2));
                 
-                if (priceDiff < tolerance) {
+                if (priceDiff <= 1) {
                     priceAlerts.lastTriggered[key] = true;
                     
                     // Play meditation bell
