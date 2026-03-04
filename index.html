@@ -2291,6 +2291,22 @@
             if (alerts.rsi70) document.getElementById('alert-70').textContent = '✓ RSI 70 ON';
             updateAlertStatus();
         }
+        
+        // Load saved price alerts
+        const savedPriceAlerts = JSON.parse(localStorage.getItem('hifty-price-alerts'));
+        if (savedPriceAlerts && savedPriceAlerts.active) {
+            Object.assign(priceAlerts, savedPriceAlerts);
+            if (priceAlerts.prices.length > 0) {
+                document.getElementById('price-alert-btn').textContent = 'Turn Off Alerts';
+                document.getElementById('price-alert-btn').style.background = 'var(--danger)';
+                document.getElementById('price-alert-status').className = 'alert-status active';
+                document.getElementById('price-alert-text').innerHTML = '<span class="alert-dot active"></span>Watching: $' + priceAlerts.prices.join(', $');
+                // Restore input values
+                if (priceAlerts.prices[0]) document.getElementById('price-alert-1').value = priceAlerts.prices[0];
+                if (priceAlerts.prices[1]) document.getElementById('price-alert-2').value = priceAlerts.prices[1];
+                if (priceAlerts.prices[2]) document.getElementById('price-alert-3').value = priceAlerts.prices[2];
+            }
+        }
     </script>
 </body>
 </html>
