@@ -2119,23 +2119,11 @@
         }
         
         function checkAlerts(rsi) {
-            // Browser popup alert
             if (alerts.rsi30 && rsi <= 30) {
                 alert('🔔 RSI 30 Alert! RSI is now ' + rsi + ' - BUY SIGNAL! 🟢');
             }
             if (alerts.rsi70 && rsi >= 70) {
                 alert('🔔 RSI 70 Alert! RSI is now ' + rsi + ' - SELL SIGNAL! 🔴');
-            }
-            
-            // Telegram notifications (requires backend - logging for now)
-            if (alerts.rsi30 && rsi <= 30) {
-                console.log('📱 Telegram: RSI 30 Alert - BUY SIGNAL! RSI: ' + rsi);
-                // Store alert to sync with server
-                localStorage.setItem('last-alert', JSON.stringify({type: 'RSI 30', signal: 'BUY', rsi: rsi, time: new Date().toISOString()}));
-            }
-            if (alerts.rsi70 && rsi >= 70) {
-                console.log('📱 Telegram: RSI 70 Alert - SELL SIGNAL! RSI: ' + rsi);
-                localStorage.setItem('last-alert', JSON.stringify({type: 'RSI 70', signal: 'SELL', rsi: rsi, time: new Date().toISOString()}));
             }
         }
         
