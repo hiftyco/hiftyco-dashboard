@@ -1825,6 +1825,7 @@
             }
         }
         
+        function deleteTrade(idx){if(confirm("Delete trade?")){let t=JSON.parse(localStorage.getItem("hifty-trades")||"[]");t.splice(idx,1);localStorage.setItem("hifty-trades",JSON.stringify(t));updatePerformance();loadTradeJournal();}}
         function saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, imageBase64, pnl, status, pnlPercent) {
             const exit = tp > 0 ? tp : 0;
             
