@@ -1129,6 +1129,10 @@
                 </select>
             </div>
             <div class="form-group">
+                <label>Upload Trade Screenshot</label>
+                <input type="file" id="trade-image" accept="image/*" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-mid);color:var(--text);">
+            </div>
+            <div class="form-group">
                 <label>Trade Notes / Thesis</label>
                 <textarea id="trade-notes" placeholder="Why are you taking this trade?" rows="3" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;"></textarea>
             </div>
@@ -1750,7 +1754,7 @@
         
         // === Quick Trade Logger ===
         // ==========================================
-        // TRADING TOOLS - Trade Logger
+        // TRADING TOOLS - Trade Logger with Image Upload
         // ==========================================
         function saveTrade() {
             const entry = parseFloat(document.getElementById('trade-entry').value);
@@ -1760,12 +1764,30 @@
             const rsi = parseFloat(document.getElementById('trade-rsi').value) || 0;
             const direction = document.getElementById('trade-direction').value;
             const notes = document.getElementById('trade-notes').value || '';
+            const imageInput = document.getElementById('trade-image');
             
             if (!entry) {
                 alert('Please enter Entry price');
                 return;
             }
             
+            // Handle image upload
+            const imageFile = imageInput.files[0];
+            let imageBase64 = null;
+            
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imageBase64 = e.target.result;
+                    saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, imageBase64);
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, null);
+            }
+        }
+        
+        function saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, imageBase64) {
             // Calculate P&L based on direction
             let pnl = 0;
             let exit = 0;
@@ -1779,6 +1801,10 @@
                 }
             }
             
+            // Get existing trades count for image numbering
+            const existingTrades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            const tradeNum = existingTrades.length + 1;
+            
             const trade = {
                 entry,
                 exit,
@@ -1789,15 +1815,23 @@
                 rsi,
                 notes,
                 pnl,
-                date: new Date().toISOString()
+                date: new Date().toISOString().split('T')[0],
+                tradeNum: tradeNum
             };
             
+            // Save trade
             const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
             trades.unshift(trade);
             localStorage.setItem('hifty-trades', JSON.stringify(trades));
             
-            renderTrades();
+            // Save image to localStorage if provided
+            if (imageBase64) {
+                localStorage.setItem('trade-img-' + tradeNum, imageBase64);
+            }
+            
+            // Refresh displays
             updatePerformance();
+            loadTradeJournal();
             
             // Clear form
             document.getElementById('trade-entry').value = '';
@@ -1805,13 +1839,9 @@
             document.getElementById('trade-sl').value = '';
             document.getElementById('trade-rsi').value = '';
             document.getElementById('trade-notes').value = '';
+            document.getElementById('trade-image').value = '';
             
-            // Refresh displays
-            updatePerformance();
-            loadTradeJournal();
-            loadTradeHistory();
-            
-            alert('Trade saved!');
+            alert('Trade saved with image!');
         }
         
         // ==========================================
@@ -1827,14 +1857,22 @@
                 return;
             }
             
-            // Trade images mapping (trade number to image file)
-            const tradeImages = {
-                1: 'trade1-screenshot.jpg',
-                2: 'trade2-screenshot.jpg',
-                3: 'trade3-screenshot.jpg',
-                4: 'trade4-screenshot.jpg',
-                5: 'trade5-screenshot.jpg'
-            };
+            // Trade images mapping - Check localStorage first, then GitHub fallback
+            function getTradeImage(tradeNum) {
+                // First check localStorage for uploaded images
+                const localImg = localStorage.getItem('trade-img-' + tradeNum);
+                if (localImg) return localImg;
+                
+                // Fallback to GitHub URLs for original 5 trades
+                const githubImages = {
+                    1: 'trade1-screenshot.jpg',
+                    2: 'trade2-screenshot.jpg',
+                    3: 'trade3-screenshot.jpg',
+                    4: 'trade4-screenshot.jpg',
+                    5: 'trade5-screenshot.jpg'
+                };
+                return githubImages[tradeNum] || '';
+            }
             
             let html = '';
             // Sort oldest first (chronological order - oldest at top)
@@ -1845,8 +1883,8 @@
                 const dirIcon = trade.direction === 'long' ? '↗' : '↘';
                 // Extract trade number from notes (e.g., "Trade #1" -> 1)
                 const tradeNumMatch = trade.notes ? trade.notes.match(/Trade #(\d+)/) : null;
-                const tradeNum = tradeNumMatch ? parseInt(tradeNumMatch[1]) : (sortedTrades.length - idx);
-                const tradeImg = tradeImages[tradeNum] || '';
+                const tradeNum = trade.tradeNum || (tradeNumMatch ? parseInt(tradeNumMatch[1]) : (sortedTrades.length - idx));
+                const tradeImg = getTradeImage(tradeNum);
                 // Live trade indicator (red pulsing dot + "LIVE" text)
                 const isLive = trade.pnl === 0 || trade.exit === 0;
                 const liveIndicator = isLive ? '<span style="display:inline-flex;align-items:center;gap:6px;margin-left:8px;"><span style="width:10px;height:10px;background:#ff4444;border-radius:50%;animation:pulse 1.5s infinite;"></span><span style="color:#ff4444;font-size:0.75rem;font-weight:700;">LIVE</span></span>' : '';
