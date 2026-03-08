@@ -1098,6 +1098,18 @@
         <div class="card" style="margin-top: 24px;">
             <h2>📝 Quick Trade Logger</h2>
             <div class="form-group">
+                <label>Trade Result</label>
+                <select id="trade-result" onchange="updateTradeAmount()">
+                    <option value="">-- Select Result --</option>
+                    <option value="WIN">✅ WIN</option>
+                    <option value="LOSS">❌ LOSS</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Profit/Loss Amount ($)</label>
+                <input type="number" id="trade-pnl" placeholder="2500" step="0.01">
+            </div>
+            <div class="form-group">
                 <label>Entry Price ($)</label>
                 <input type="number" id="trade-entry" placeholder="67000" step="0.01">
             </div>
@@ -1136,7 +1148,7 @@
                 <label>Trade Notes / Thesis</label>
                 <textarea id="trade-notes" placeholder="Why are you taking this trade?" rows="3" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;"></textarea>
             </div>
-            <button class="btn" onclick="saveTrade()">Save Trade</button>
+            <button class="btn" onclick="saveTrade()">💾 Save Trade</button>
         </div>
         
         <!-- NEW: Trade Journal -->
@@ -1756,6 +1768,11 @@
         // ==========================================
         // TRADING TOOLS - Trade Logger with Image Upload
         // ==========================================
+        
+        function updateTradeAmount() {
+            // Auto-fill based on direction and risk if needed
+        }
+        
         function saveTrade() {
             const entry = parseFloat(document.getElementById('trade-entry').value);
             const tp = parseFloat(document.getElementById('trade-tp').value) || 0;
@@ -1764,11 +1781,32 @@
             const rsi = parseFloat(document.getElementById('trade-rsi').value) || 0;
             const direction = document.getElementById('trade-direction').value;
             const notes = document.getElementById('trade-notes').value || '';
+            const result = document.getElementById('trade-result').value;
+            const pnlInput = parseFloat(document.getElementById('trade-pnl').value);
             const imageInput = document.getElementById('trade-image');
+            
+            if (!result) {
+                alert('Please select Trade Result (WIN or LOSS)');
+                return;
+            }
             
             if (!entry) {
                 alert('Please enter Entry price');
                 return;
+            }
+            
+            // Calculate P&L - use input if provided
+            let pnl = pnlInput || 0;
+            let status = result;
+            let pnlPercent = 100; // Full win or loss
+            
+            if (!pnlInput && tp > 0 && entry > 0) {
+                // Calculate from TP
+                if (direction === 'long') {
+                    pnl = (tp - entry);
+                } else {
+                    pnl = (entry - tp);
+                }
             }
             
             // Handle image upload
@@ -1779,27 +1817,16 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     imageBase64 = e.target.result;
-                    saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, imageBase64);
+                    saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, imageBase64, pnl, status, pnlPercent);
                 };
                 reader.readAsDataURL(imageFile);
             } else {
-                saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, null);
+                saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, null, pnl, status, pnlPercent);
             }
         }
         
-        function saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, imageBase64) {
-            // Calculate P&L based on direction
-            let pnl = 0;
-            let exit = 0;
-            if (tp > 0) {
-                if (direction === 'long') {
-                    pnl = tp - entry;
-                    exit = tp;
-                } else {
-                    pnl = entry - tp;
-                    exit = tp;
-                }
-            }
+        function saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, imageBase64, pnl, status, pnlPercent) {
+            const exit = tp > 0 ? tp : 0;
             
             // Get existing trades count for image numbering
             const existingTrades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
@@ -1815,6 +1842,8 @@
                 rsi,
                 notes,
                 pnl,
+                status,
+                pnlPercent,
                 date: new Date().toISOString().split('T')[0],
                 tradeNum: tradeNum
             };
@@ -1840,8 +1869,23 @@
             document.getElementById('trade-rsi').value = '';
             document.getElementById('trade-notes').value = '';
             document.getElementById('trade-image').value = '';
+            document.getElementById('trade-result').value = '';
+            document.getElementById('trade-pnl').value = '';
             
-            alert('Trade saved with image!');
+            alert('Trade saved! ' + status + ' $' + Math.abs(pnl).toFixed(2));
+        }
+        
+        // Delete trade function
+        function deleteTrade(index) {
+            if (!confirm('Are you sure you want to delete this trade?')) return;
+            
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            trades.splice(index, 1);
+            localStorage.setItem('hifty-trades', JSON.stringify(trades));
+            
+            // Refresh displays
+            updatePerformance();
+            loadTradeJournal();
         }
         
         // ==========================================
