@@ -2001,9 +2001,8 @@
                 const date = new Date(trade.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                 const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
                 const dirIcon = trade.direction === 'long' ? '↗' : '↘';
-                // Extract trade number from notes (e.g., "Trade #1" -> 1)
-                const tradeNumMatch = trade.notes ? trade.notes.match(/Trade #(\d+)/) : null;
-                const tradeNum = trade.tradeNum || (tradeNumMatch ? parseInt(tradeNumMatch[1]) : (sortedTrades.length - idx));
+                // Trade number based on position (oldest=1, newest=latest)
+                const tradeNum = trade.tradeNum || (idx + 1);
                 const tradeImg = getTradeImage(tradeNum);
                 // Live trade indicator (red pulsing dot + "LIVE" text)
                 const isLive = trade.pnl === 0 || trade.exit === 0;
@@ -2017,7 +2016,10 @@
                     <div style="font-size:0.85rem;">Entry: $${trade.entry.toLocaleString()} | Exit: $${trade.exit ? trade.exit.toLocaleString() : 'Open'} | RSI: ${trade.rsi||'-'}</div>
                     <div style="font-weight:700;color:${pnlClass==='positive'?'var(--success)':'var(--danger)'}">${trade.pnl>=0?'+':''}$${trade.pnl.toFixed(2)}</div>
                     ${trade.notes ? `<div style="margin-top:6px;padding:6px;background:var(--bg-mid);border-radius:6px;font-size:0.8rem;font-style:italic;color:var(--text-secondary)">"${trade.notes}"</div>` : ''}
-                    ${tradeImg ? `<div style="margin-top:8px;"><img src="${tradeImg}" alt="Trade ${tradeNum}" style="max-width:100%;border-radius:8px;cursor:pointer;" onclick="this.style.maxWidth=this.style.maxWidth==='100%'?'200px':'100%'"></div>` : ''}
+                    ${tradeImg ? `<div style="margin-top:8px;">
+                        <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:4px;">📷 Trade ${tradeNum} Screenshot (click to enlarge)</div>
+                        <img src="${tradeImg}" alt="Trade ${tradeNum}" style="max-width:100%;border-radius:8px;cursor:pointer;border:2px solid var(--border);" onclick="this.style.maxWidth=this.style.maxWidth==='100%'?'200px':'100%'">
+                    </div>` : ''}
                     <div style="margin-top:10px;display:flex;gap:8px;">
                         <button style="background:var(--danger);color:white;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.75rem;" onclick="deleteTrade(${idx})">🗑️ Delete</button>
                         <button style="background:var(--primary);color:white;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.75rem;" onclick="editTrade(${idx})">✏️ Modify</button>
