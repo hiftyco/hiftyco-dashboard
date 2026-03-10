@@ -1988,21 +1988,10 @@
                 return;
             }
             
-            // Trade images mapping - Check localStorage first, then GitHub fallback
+            // Trade images - stored privately in localStorage
             function getTradeImage(tradeNum) {
-                // First check localStorage for uploaded images
-                const localImg = localStorage.getItem('trade-img-' + tradeNum);
-                if (localImg) return localImg;
-                
-                // Fallback to GitHub URLs for original 5 trades
-                const githubImages = {
-                    1: 'trade1-screenshot.jpg',
-                    2: 'trade2-screenshot.jpg',
-                    3: 'trade3-screenshot.jpg',
-                    4: 'trade4-screenshot.jpg',
-                    5: 'trade5-screenshot.jpg'
-                };
-                return githubImages[tradeNum] || '';
+                // Check localStorage for uploaded images (private)
+                return localStorage.getItem('trade-img-' + tradeNum) || '';
             }
             
             let html = '';
