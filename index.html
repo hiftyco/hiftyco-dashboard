@@ -1149,6 +1149,7 @@
                 <textarea id="trade-notes" placeholder="Why are you taking this trade?" rows="3" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;"></textarea>
             </div>
             <button class="btn" onclick="saveTrade()">💾 Save Trade</button>
+            <button class="btn" onclick="updateTrade()" style="background:var(--success);">✏️ Update Trade</button>
         </div>
         
         <!-- NEW: Trade Journal -->
@@ -1889,6 +1890,91 @@
             loadTradeJournal();
         }
         
+        // Edit trade function
+        function editTrade(index) {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            if (!trades[index]) return alert('Trade not found!');
+            
+            const trade = trades[index];
+            
+            // Populate form with trade data
+            document.getElementById('trade-direction').value = trade.direction || 'long';
+            document.getElementById('trade-entry').value = trade.entry || '';
+            document.getElementById('trade-tp').value = trade.exit || ''; // Using exit as TP
+            document.getElementById('trade-sl').value = trade.sl || '';
+            document.getElementById('trade-rsi').value = trade.rsi || '';
+            document.getElementById('trade-notes').value = trade.notes || '';
+            document.getElementById('trade-pnl').value = trade.pnl || '';
+            document.getElementById('trade-result').value = trade.pnl > 0 ? 'WIN' : (trade.pnl < 0 ? 'LOSS' : '');
+            
+            // Store edit index for update
+            window.editingTradeIndex = index;
+            
+            // Scroll to form
+            document.querySelector('.quick-trade').scrollIntoView({ behavior: 'smooth' });
+            
+            alert('Trade loaded into form. Make changes and click "Update Trade" to save.');
+        }
+        
+        // Update trade function (for modified trades)
+        function updateTrade() {
+            const idx = window.editingTradeIndex;
+            if (idx === undefined || idx === null) return alert('No trade being edited!');
+            
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            if (!trades[idx]) return alert('Trade not found!');
+            
+            // Get form values
+            const direction = document.getElementById('trade-direction').value;
+            const entry = parseFloat(document.getElementById('trade-entry').value);
+            const exit = parseFloat(document.getElementById('trade-tp').value);
+            const sl = parseFloat(document.getElementById('trade-sl').value);
+            const rsi = parseFloat(document.getElementById('trade-rsi').value);
+            const notes = document.getElementById('trade-notes').value;
+            const pnl = parseFloat(document.getElementById('trade-pnl').value);
+            const result = document.getElementById('trade-result').value;
+            
+            if (!entry || !result) {
+                alert('Please fill in entry price and select WIN/LOSS!');
+                return;
+            }
+            
+            // Update trade
+            trades[idx] = {
+                ...trades[idx],
+                direction,
+                entry,
+                exit,
+                sl,
+                rsi,
+                notes,
+                pnl,
+                result,
+                date: trades[idx].date // Keep original date
+            };
+            
+            localStorage.setItem('hifty-trades', JSON.stringify(trades));
+            
+            // Clear edit index
+            window.editingTradeIndex = null;
+            
+            // Refresh
+            updatePerformance();
+            loadTradeJournal();
+            
+            // Clear form
+            document.getElementById('trade-entry').value = '';
+            document.getElementById('trade-tp').value = '';
+            document.getElementById('trade-sl').value = '';
+            document.getElementById('trade-rsi').value = '';
+            document.getElementById('trade-notes').value = '';
+            document.getElementById('trade-image').value = '';
+            document.getElementById('trade-result').value = '';
+            document.getElementById('trade-pnl').value = '';
+            
+            alert('Trade updated successfully!');
+        }
+        
         // ==========================================
         // TRADE JOURNAL - Display trades with notes
         // ==========================================
@@ -1943,6 +2029,10 @@
                     <div style="font-weight:700;color:${pnlClass==='positive'?'var(--success)':'var(--danger)'}">${trade.pnl>=0?'+':''}$${trade.pnl.toFixed(2)}</div>
                     ${trade.notes ? `<div style="margin-top:6px;padding:6px;background:var(--bg-mid);border-radius:6px;font-size:0.8rem;font-style:italic;color:var(--text-secondary)">"${trade.notes}"</div>` : ''}
                     ${tradeImg ? `<div style="margin-top:8px;"><img src="${tradeImg}" alt="Trade ${tradeNum}" style="max-width:100%;border-radius:8px;cursor:pointer;" onclick="this.style.maxWidth=this.style.maxWidth==='100%'?'200px':'100%'"></div>` : ''}
+                    <div style="margin-top:10px;display:flex;gap:8px;">
+                        <button style="background:var(--danger);color:white;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.75rem;" onclick="deleteTrade(${idx})">🗑️ Delete</button>
+                        <button style="background:var(--primary);color:white;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.75rem;" onclick="editTrade(${idx})">✏️ Modify</button>
+                    </div>
                 </div>`;
             });
             journal.innerHTML = html;
