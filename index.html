@@ -1319,12 +1319,15 @@
         </div>
         
         <script>
+        // Base URL with all settings
+        const baseChartUrl = 'https://www.tradingview.com/widgetembed/?symbol=BINANCE%3ABTCUSDT&interval=D&timezone=America%2FNew_York&theme=dark&style=1&locale=en&enable_publishing=false&support_host=https%3A%2F%2Fwww.tradingview.com&hide_top_toolbar=false&hide_side_toolbar=false&allow_symbol_change=true&hide_legend=false&show_popup_button=true&popup_width=1200&popup_height=800&saveChart=true&studies=RSI%40tv-basicstudies%3BMASimple%40tv-basicstudies%3BVolume%40tv-basicstudies';
+        
         // Open full TradingView chart with all tools
         function openFullChart() {
             window.open('https://www.tradingview.com/chart/?symbol=BINANCE:BTCUSDT', '_blank');
         }
         
-        // Save chart - TradingView widget has built-in save via saveChart=true
+        // Save chart - just saves settings, doesn't reload
         function saveChartState() {
             const status = document.getElementById('save-status');
             status.textContent = '💾 Saving chart settings...';
@@ -1334,19 +1337,11 @@
             const interval = document.getElementById('chart-interval').value;
             localStorage.setItem('hiftyChartInterval', interval);
             
-            // TradingView widget auto-saves drawings when saveChart=true
-            // We just need to ensure the widget is ready
-            const iframe = document.getElementById('btc-chart-iframe');
-            
-            // Send save command to iframe
-            try {
-                iframe.contentWindow.postMessage({ type: 'tv-widget-save' }, 'https://www.tradingview.com');
-            } catch(e) {}
-            
+            // Just save to localStorage - no iframe reload needed
             setTimeout(() => {
-                status.textContent = '✅ Chart settings saved! Drawings auto-saved by TradingView.';
+                status.textContent = '✅ Chart settings saved! Your preferences are saved.';
                 status.style.color = 'var(--success)';
-            }, 2000);
+            }, 1000);
         }
         
         // Clear saved data
@@ -1356,17 +1351,18 @@
             const status = document.getElementById('save-status');
             status.textContent = '🗑️ Settings cleared!';
             status.style.color = 'var(--danger)';
+            // Reload with default interval
             location.reload();
         }
         
-        // Update chart interval
+        // Update chart interval - rebuilds URL with all settings preserved
         function updateChartSettings() {
             const interval = document.getElementById('chart-interval').value;
             localStorage.setItem('hiftyChartInterval', interval);
             
             const iframe = document.getElementById('btc-chart-iframe');
-            const baseUrl = 'https://www.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&timezone=America%2FNew_York&theme=dark&style=1&locale=en&enable_publishing=false&saveChart=true&studies=RSI%40tv-basicstudies%3BMASimple%40tv-basicstudies';
-            iframe.src = baseUrl + '&interval=' + interval;
+            // Use full URL with all toolbar and indicator settings
+            iframe.src = baseChartUrl + '&interval=' + interval;
             
             const status = document.getElementById('save-status');
             status.textContent = `⏳ Loading ${interval}...`;
@@ -1383,21 +1379,19 @@
         
         // Initialize on load
         document.addEventListener('DOMContentLoaded', function() {
-            // Restore saved interval
+            // Build URL with saved interval
             const saved = localStorage.getItem('hiftyChartInterval');
+            const iframe = document.getElementById('btc-chart-iframe');
+            
             if (saved) {
                 document.getElementById('chart-interval').value = saved;
-                // Update iframe with saved interval
-                const iframe = document.getElementById('btc-chart-iframe');
-                const baseUrl = 'https://www.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&timezone=America%2FNew_York&theme=dark&style=1&locale=en&enable_publishing=false&saveChart=true&studies=RSI%40tv-basicstudies%3BMASimple%40tv-basicstudies';
-                iframe.src = baseUrl + '&interval=' + saved;
+                iframe.src = baseChartUrl + '&interval=' + saved;
             }
             
             // Check if chart loaded
-            const iframe = document.getElementById('btc-chart-iframe');
             iframe.onload = function() {
                 const status = document.getElementById('save-status');
-                status.textContent = '📊 Chart ready! Use "Full Chart" for all tools.';
+                status.textContent = '📊 Chart ready with toolbar & indicators!';
                 status.style.color = 'var(--success)';
                 setTimeout(() => { status.textContent = ''; }, 4000);
             };
