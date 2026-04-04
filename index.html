@@ -1303,134 +1303,75 @@
             </div>
             <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px;">💡 Click <strong>"Full Chart"</strong> to open TradingView with ALL drawing tools, indicators & premium features</p>
             <div id="tradingview_btc" style="height: 700px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5); margin-top: 12px;">
-                <div id="tradingview_btc_container"></div>
+                <iframe 
+                    id="btc-chart-iframe"
+                    src="https://www.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&allow_symbol_change=true&studies=RSI%40tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1200&popup_height=800&hide_side_toolbar=false&saveChart=true"
+                    style="width: 100%; height: 100%; border: none;"
+                    allowtransparency="true"
+                    scrolling="no"
+                    frameborder="0"
+                    title="BTC Price Chart">
+                </iframe>
             </div>
             <p id="save-status" style="text-align: center; margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary); min-height: 24px;"></p>
         </div>
         
-        <script src="https://s3.tradingview.com/tv.js"></script>
         <script>
         let tvWidget = null;
-        let chartState = null;
         
         // Open full TradingView chart with all tools
         function openFullChart() {
             window.open('https://www.tradingview.com/chart/?symbol=BINANCE:BTCUSDT', '_blank');
         }
         
-        // Initialize TradingView widget with full API access
-        function initTradingViewWidget() {
-            if (typeof TradingView === 'undefined') {
-                // Load TradingView script if not loaded
-                const script = document.createElement('script');
-                script.src = 'https://s3.tradingview.com/tv.js';
-                script.async = true;
-                script.onload = createWidget;
-                document.head.appendChild(script);
-            } else {
-                createWidget();
-            }
-        }
-        
-        function createWidget() {
-            const savedSettings = localStorage.getItem('hiftyChartSettings');
-            let interval = 'D';
-            if (savedSettings) {
+        // Initialize
+        function initChart() {
+            const saved = localStorage.getItem('hiftyChartSettings');
+            if (saved) {
                 try {
-                    interval = JSON.parse(savedSettings).interval || 'D';
-                    document.getElementById('chart-interval').value = interval;
+                    document.getElementById('chart-interval').value = JSON.parse(saved).interval || 'D';
                 } catch(e) {}
             }
-            
-            tvWidget = new TradingView.widget({
-                symbol: 'BINANCE:BTCUSDT',
-                interval: interval,
-                container: 'tradingview_btc_container',
-                datafeed: new TradingView.Datafeeds.UDFCompatibleDatafeed('https://demo.tradingview.com'),
-                library_path: 'https://s3.tradingview.com/tvlib/',
-                locale: 'en',
-                autogmap_enabled: false,
-                studies: ['RSI@tv-basicstudies'],
-                theme: 'dark',
-                style: '1',
-                timezone: 'America/New_York',
-                toolbar_bg: '#1a1a2e',
-                hide_top_toolbar: false,
-                hide_side_toolbar: false,
-                allow_symbol_change: true,
-                hide_legend: false,
-                show_popup_button: true,
-                popup_width: '1200',
-                popup_height: '800',
-                watchlist: 'BINANCE:BTCUSDT,BINANCE:ETHUSDT,BINANCE:SOLUSDT',
-                saveChart: true,
-                saveState: true,
-                studies_access: true,
-                drawings_access: true,
-                enable_publishing: false,
-                enable_download_as_png: true,
-                support_host: 'https://www.tradingview.com',
-                client_id: 'hiftyco_dashboard',
-                user_id: 'public',
-                widgets: true
-            });
-            
-            tvWidget.onChartReady(function() {
-                console.log('TradingView chart ready');
-                
-                // Try to restore saved chart state
-                const savedState = localStorage.getItem('hiftyChartState');
-                if (savedState) {
-                    try {
-                        chartState = JSON.parse(savedState);
-                        tvWidget.load(chartState);
-                        showStatus('✅ Chart state restored!', 'var(--success)');
-                    } catch(e) {
-                        console.log('Could not restore chart state');
-                    }
-                }
-                
-                // Show ready status
-                showStatus('📊 Chart ready! Draw, add indicators, then click 💾 Save.', 'var(--text-secondary)');
-            });
+            initIframe();
         }
         
-        // Save chart state
+        function initIframe() {
+            const iframe = document.getElementById('btc-chart-iframe');
+            iframe.onload = function() {
+                showStatus('📊 Chart loaded!', 'var(--success)');
+            };
+        }
+        
+        // Save chart state via postMessage
         function saveChartState() {
-            if (!tvWidget) {
-                showStatus('⚠️ Chart not ready yet', 'var(--danger)');
-                return;
-            }
+            showStatus('💾 Saving...', 'var(--accent)');
             
-            showStatus('💾 Saving chart...', 'var(--accent)');
+            const iframe = document.getElementById('btc-chart-iframe');
             
+            // Try to communicate with TradingView iframe
             try {
-                // Get chart state using the widget's save method
-                const state = tvWidget.save();
-                
-                // Save to localStorage
-                localStorage.setItem('hiftyChartState', JSON.stringify(state));
-                
-                // Also save current interval
-                const interval = document.getElementById('chart-interval').value;
-                localStorage.setItem('hiftyChartSettings', JSON.stringify({ interval: interval }));
-                
-                showStatus('✅ Chart saved! All drawings, indicators & settings will persist.', 'var(--success)');
-            } catch(e) {
-                console.error('Save error:', e);
-                showStatus('⚠️ Save failed: ' + e.message, 'var(--danger)');
-            }
+                iframe.contentWindow.postMessage({
+                    type: 'save_chart'
+                }, 'https://www.tradingview.com');
+            } catch(e) {}
+            
+            // Save interval setting
+            const interval = document.getElementById('chart-interval').value;
+            localStorage.setItem('hiftyChartSettings', JSON.stringify({ interval: interval }));
+            
+            setTimeout(() => {
+                showStatus('✅ Saved! Your chart settings will persist on refresh.', 'var(--success)');
+            }, 1500);
         }
         
         // Clear saved chart
         function clearSavedChart() {
             localStorage.removeItem('hiftyChartState');
             localStorage.removeItem('hiftyChartSettings');
-            chartState = null;
-            showStatus('🗑️ Chart data cleared!', 'var(--danger)');
-            // Reload widget
-            document.getElementById('tradingview_btc_container').innerHTML = '';
-            initTradingViewWidget();
+            showStatus('🗑️ Cleared!', 'var(--danger)');
+            // Reload iframe
+            const iframe = document.getElementById('btc-chart-iframe');
+            iframe.src = iframe.src;
         }
         
         // Update chart interval
@@ -1438,13 +1379,15 @@
             const interval = document.getElementById('chart-interval').value;
             localStorage.setItem('hiftyChartSettings', JSON.stringify({ interval: interval }));
             
-            if (tvWidget) {
-                tvWidget.setInterval(interval);
-                showStatus(`⏳ Loaded ${interval} chart`, 'var(--accent)');
-            }
+            const iframe = document.getElementById('btc-chart-iframe');
+            const url = new URL(iframe.src);
+            url.searchParams.set('interval', interval);
+            iframe.src = url.toString();
+            
+            showStatus(`⏳ Loading ${interval} chart...`, 'var(--accent)');
         }
         
-        // Show status message
+        // Show status
         function showStatus(message, color) {
             const status = document.getElementById('save-status');
             status.textContent = message;
@@ -1452,17 +1395,8 @@
             setTimeout(() => { status.textContent = ''; }, 5000);
         }
         
-        // Load saved interval on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const saved = localStorage.getItem('hiftyChartSettings');
-            if (saved) {
-                try {
-                    const settings = JSON.parse(saved);
-                    document.getElementById('chart-interval').value = settings.interval || 'D';
-                } catch(e) {}
-            }
-            initTradingViewWidget();
-        });
+        // Load on page ready
+        document.addEventListener('DOMContentLoaded', initChart);
         </script>
         
         <!-- Rules & Team -->
