@@ -23,66 +23,34 @@
     <title>Hifty Co | Trading Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=SF+Pro+Text:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        /* Apple-Inspired Design System */
         :root {
-            /* Light Mode (default - Apple clean) */
-            --bg-start: #F5F5F7;
-            --bg-mid: #FFFFFF;
-            --bg-end: #FAFAFA;
+            --bg-start: #E8F4F8;
+            --bg-mid: #F0F5F9;
+            --bg-end: #FFFFFF;
             --card-bg: #FFFFFF;
-            --text-primary: #1D1D1F;
-            --text-secondary: #86868B;
-            --accent: #0071E3;
-            --accent-light: #007AFF;
-            --success: #34C759;
-            --danger: #FF3B30;
-            --warning: #FF9500;
-            --shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-            --shadow-hover: 0 12px 40px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.04);
-            --shadow-lg: 0 20px 60px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.06);
-            --border: rgba(0,0,0,0.08);
-            --glass: rgba(255,255,255,0.72);
-            --glass-border: rgba(255,255,255,0.5);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 20px;
-        }
-        
-        /* Dark Mode */
-        :root.dark-mode {
-            --bg-start: #000000;
-            --bg-mid: #1C1C1E;
-            --bg-end: #2C2C2E;
-            --card-bg: rgba(28, 28, 30, 0.95);
-            --text-primary: #F5F5F7;
-            --text-secondary: #98989D;
-            --accent: #0A84FF;
-            --accent-light: #64D2FF;
-            --success: #30D158;
-            --danger: #FF453A;
-            --warning: #FF9F0A;
-            --shadow: 0 2px 12px rgba(0,0,0,0.4);
-            --shadow-hover: 0 8px 32px rgba(0,0,0,0.5);
-            --shadow-lg: 0 12px 48px rgba(0,0,0,0.6);
-            --border: rgba(255,255,255,0.12);
-            --glass: rgba(28, 28, 30, 0.8);
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            --accent: #F59E0B;
+            --accent-light: #FCD34D;
+            --success: #10B981;
+            --danger: #EF4444;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --shadow-hover: 0 12px 40px rgba(0,0,0,0.12);
         }
         
         body {
-            font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
             background-attachment: fixed;
             color: var(--text-primary);
             min-height: 100vh;
-            line-height: 1.5;
+            line-height: 1.6;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transition: background 0.5s ease, color 0.5s ease;
             overflow-x: hidden;
         }
         
@@ -97,21 +65,52 @@
             pointer-events: none;
         }
         
+        /* Dark Mode (default) */
+        :root {
+            --bg-start: #0a0a1a;
+            --bg-mid: #1a1a3a;
+            --bg-end: #0d0d2a;
+            --card-bg: rgba(26, 26, 58, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --accent: #F7931A;
+            --accent-light: #FCD34D;
+            --success: #10B981;
+            --danger: #EF4444;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+            --shadow-hover: 0 12px 40px rgba(0,0,0,0.4);
+            --border: rgba(255,255,255,0.1);
+        }
+        
+        /* Light Mode */
+        body.light-mode {
+            --bg-start: #E8F4F8;
+            --bg-mid: #F0F5F9;
+            --bg-end: #FFFFFF;
+            --card-bg: #FFFFFF;
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --danger: #EF4444;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --shadow-hover: 0 12px 40px rgba(0,0,0,0.12);
+            --border: rgba(0,0,0,0.1);
+        }
+        
         /* Theme Toggle */
         .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
             z-index: 1000;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 10px 18px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            padding: 8px 16px;
             cursor: pointer;
-            font-size: 1.1rem;
-            transition: all 0.2s ease;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
             box-shadow: var(--shadow);
         }
         
@@ -136,8 +135,8 @@
         .hero h1 {
             font-size: 3.5rem;
             font-weight: 700;
-            letter-spacing: -0.03em;
-            background: linear-gradient(135deg, #5E5CE6, #0071E3, #64D2FF);
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #F59E0B, #EF4444);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 12px;
@@ -151,15 +150,12 @@
         
         /* Credo */
         .credo {
-            background: linear-gradient(135deg, rgba(0,113,227,0.08), rgba(94,92,230,0.08));
-            border: 1px solid rgba(0,113,227,0.12);
+            background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(239,68,68,0.1));
             padding: 20px 30px;
             border-radius: 16px;
             text-align: center;
             margin-bottom: 40px;
             animation: slideUp 0.6s ease;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
         }
         
         .credo p {
@@ -177,14 +173,11 @@
         
         /* Cards */
         .card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            background: var(--card-bg);
             border-radius: 20px;
             padding: 24px;
             box-shadow: var(--shadow);
-            transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             animation: slideUp 0.6s ease backwards;
         }
         
@@ -231,41 +224,30 @@
             outline: none;
             border-color: var(--accent);
             background: #fff;
-            box-shadow: 0 0 0 4px rgba(0,113,227,0.12);
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
         }
         
         .btn {
             width: 100%;
-            padding: 14px 24px;
-            background: var(--accent);
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent), #EF4444);
             color: #fff;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             font-family: inherit;
-            letter-spacing: -0.01em;
         }
         
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,113,227,0.35);
-            background: #0077ED;
-        }
-        
-        .btn:active {
-            transform: translateY(0);
+            box-shadow: 0 8px 20px rgba(245,158,11,0.3);
         }
         
         .btn-secondary {
-            background: var(--text-secondary);
-        }
-        
-        .btn-secondary:hover {
-            box-shadow: 0 8px 24px rgba(134,134,139,0.35);
-            background: #787880;
+            background: linear-gradient(135deg, #64748B, #475569);
         }
         
         .btn-small {
@@ -328,9 +310,8 @@
         
         .rsi-meter-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
+            background: linear-gradient(90deg, #10B981, #F59E0B, #EF4444);
             transition: width 0.5s ease;
-            border-radius: 4px;
         }
         
         /* News */
@@ -476,17 +457,16 @@
             height: 100%;
             border-radius: 50%;
             background: conic-gradient(
-                var(--danger) 0deg,
-                var(--danger) 54deg,
-                var(--warning) 54deg,
-                var(--warning) 126deg,
-                var(--success) 126deg,
-                var(--success) 180deg
+                #EF4444 0deg,
+                #EF4444 54deg,
+                #FBBF24 54deg,
+                #FBBF24 126deg,
+                #10B981 126deg,
+                #10B981 180deg
             );
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         
         .rsi-inner {
@@ -498,7 +478,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
         }
         
         .rsi-value {
@@ -514,12 +493,10 @@
         }
         
         .rsi-signal {
-            padding: 12px 20px;
-            border-radius: 12px;
+            padding: 10px 16px;
+            border-radius: 10px;
             font-weight: 600;
             font-size: 0.9rem;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
         }
         
         /* Fear & Greed */
@@ -532,11 +509,10 @@
         
         .fear-bar {
             height: 10px;
-            background: linear-gradient(to right, var(--danger), var(--warning), var(--success), var(--warning), var(--danger));
+            background: linear-gradient(to right, #EF4444, #FBBF24, #10B981, #FBBF24, #EF4444);
             border-radius: 5px;
             margin: 16px 0;
             position: relative;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
         }
         
         .fear-indicator {
@@ -594,10 +570,9 @@
         
         .sr-item {
             padding: 14px 10px;
-            background: linear-gradient(135deg, rgba(0,113,227,0.08), rgba(94,92,230,0.05));
-            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+            border-radius: 10px;
             text-align: center;
-            border: 1px solid rgba(0,113,227,0.1);
         }
         
         .sr-label {
@@ -826,56 +801,6 @@
             <p>✨ "Teamwork makes the dream work! We can do this!" ✨</p>
             <p style="margin-top: 8px; font-size: 0.9rem;">⚡ "Cura et Celeritas" - Fast and Precision ⚡</p>
             <p style="margin-top: 8px; font-size: 0.85rem;">🎯 "With Integrity, we combine Teamwork and Speed to achieve Precision"</p>
-        </div>
-        
-        <!-- Bitcoin Education Portal -->
-        <div class="card" style="margin-top: 24px; background: linear-gradient(135deg, rgba(247,147,26,0.15), rgba(247,147,26,0.05)); border: 1px solid rgba(247,147,26,0.3);">
-            <h2 style="color: #f7931a;">📚 Bitcoin Education Portal</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 16px;">Learn to trade like the 1%. Free courses on RSI, Risk Management, and Bitcoin Protocol.</p>
-            <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 12px;">
-                <a href="https://hiftyco.github.io/HiftyCo-Bitcoin-Education/" target="_blank" style="display: block; background: rgba(247,147,26,0.1); padding: 16px; border-radius: 12px; text-align: center; text-decoration: none; transition: all 0.2s;">
-                    <div style="font-size: 2rem;">📈</div>
-                    <div style="color: #f7931a; font-weight: 600; margin-top: 8px;">Trading RSI</div>
-                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Learn entry signals</div>
-                </a>
-                <a href="https://hiftyco.github.io/HiftyCo-Bitcoin-Education/" target="_blank" style="display: block; background: rgba(247,147,26,0.1); padding: 16px; border-radius: 12px; text-align: center; text-decoration: none; transition: all 0.2s;">
-                    <div style="font-size: 2rem;">🛡️</div>
-                    <div style="color: #f7931a; font-weight: 600; margin-top: 8px;">Risk Management</div>
-                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Protect your capital</div>
-                </a>
-                <a href="https://hiftyco.github.io/HiftyCo-Bitcoin-Education/" target="_blank" style="display: block; background: rgba(247,147,26,0.1); padding: 16px; border-radius: 12px; text-align: center; text-decoration: none; transition: all 0.2s;">
-                    <div style="font-size: 2rem;">🔮</div>
-                    <div style="color: #f7931a; font-weight: 600; margin-top: 8px;">Bitcoin Protocol</div>
-                    <div style="font-size: 0.8rem; color: var(--text-secondary);">UTXO, Mempool & more</div>
-                </a>
-            </div>
-            <p style="text-align: center; margin-top: 16px; font-size: 0.9rem; color: var(--text-secondary);">🚀 Start learning now → <a href="https://hiftyco.github.io/HiftyCo-Bitcoin-Education/" target="_blank" style="color: #f7931a;">hiftyco.github.io/HiftyCo-Bitcoin-Education</a></p>
-        </div>
-        
-        <!-- NEW: System Health Dashboard -->
-        <div class="card" style="margin-top: 24px; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.08));">
-            <h2>🔧 System Health</h2>
-            <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 12px;">
-                <div class="perf-stat" id="health-scheduler">
-                    <div class="perf-value" style="font-size: 1.2rem;">🔴</div>
-                    <div class="perf-label">Scheduler</div>
-                </div>
-                <div class="perf-stat" id="health-morning">
-                    <div class="perf-value" style="font-size: 1.2rem;">⚪</div>
-                    <div class="perf-label">Morning Briefing</div>
-                </div>
-                <div class="perf-stat" id="health-analyst">
-                    <div class="perf-value" style="font-size: 1.2rem;">⚪</div>
-                    <div class="perf-label">HiftyAnalyst</div>
-                </div>
-                <div class="perf-stat" id="health-apis">
-                    <div class="perf-value" style="font-size: 1.2rem;">⚪</div>
-                    <div class="perf-label">APIs</div>
-                </div>
-            </div>
-            <div id="health-details" style="margin-top: 12px; font-size: 0.75rem; color: var(--text-secondary); text-align: center;">
-                Loading system status...
-            </div>
         </div>
         
         <!-- Main Grid -->
@@ -1206,88 +1131,8 @@
             </div>
             <div class="form-group">
                 <label>RSI Entry</label>
-                <input type="number" id="trade-rsi" placeholder="28" step="1" onchange="updateEntryQuality()">
+                <input type="number" id="trade-rsi" placeholder="28" step="1">
             </div>
-            
-            <!-- NEW: Pre-Trade Compliance Checklist -->
-            <div style="margin: 16px 0; padding: 12px; background: rgba(16,185,129,0.08); border-radius: 10px; border: 1px solid var(--success);">
-                <div class="perf-label" style="margin-bottom: 10px;">🎯 Pre-Trade Compliance Checklist</div>
-                
-                <!-- RSI Check -->
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <input type="checkbox" id="check-rsi" onchange="updateEntryQuality()">
-                    <label for="check-rsi" style="font-size: 0.85rem; cursor: pointer;">
-                        RSI ≤30 (LONG) or ≥70 (SHORT)
-                    </label>
-                    <span id="rsi-check-status" style="font-size: 0.75rem; margin-left: auto;">⚪ Not checked</span>
-                </div>
-                
-                <!-- Multi-Timeframe Check -->
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <input type="checkbox" id="check-tf" onchange="updateEntryQuality()">
-                    <label for="check-tf" style="font-size: 0.85rem; cursor: pointer;">
-                        2+ Timeframes Confirm Signal
-                    </label>
-                    <span id="tf-check-status" style="font-size: 0.75rem; margin-left: auto;">⚪ Not checked</span>
-                </div>
-                
-                <!-- Ratio Check -->
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <input type="checkbox" id="check-ratio" onchange="updateEntryQuality()">
-                    <label for="check-ratio" style="font-size: 0.85rem; cursor: pointer;">
-                        2:1 or Better Risk:Reward
-                    </label>
-                    <span id="ratio-check-status" style="font-size: 0.75rem; margin-left: auto;">⚪ Not checked</span>
-                </div>
-                
-                <!-- Entry Quality Score -->
-                <div id="entry-quality-box" style="margin-top: 12px; padding: 10px; background: var(--card-bg); border-radius: 8px; text-align: center;">
-                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Entry Quality Score</span>
-                    <div id="entry-quality-score" style="font-size: 1.8rem; font-weight: 700; color: var(--danger);">0%</div>
-                    <div id="entry-quality-message" style="font-size: 0.75rem; color: var(--text-secondary);">Complete checklist above</div>
-                </div>
-                
-                <!-- Multi-Timeframe Details (collapsible) -->
-                <details style="margin-top: 10px;">
-                    <summary style="font-size: 0.8rem; cursor: pointer; color: var(--accent);">📊 Multi-Timeframe Details</summary>
-                    <div style="margin-top: 8px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
-                        <div style="display: flex; align-items: center; gap: 4px;">
-                            <label style="font-size: 0.7rem;">5m:</label>
-                            <select id="tf-5m" style="width: 70px; padding: 4px; font-size: 0.7rem;" onchange="updateEntryQuality()">
-                                <option value="">-</option>
-                                <option value="bullish">↗ Bull</option>
-                                <option value="bearish">↘ Bear</option>
-                            </select>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 4px;">
-                            <label style="font-size: 0.7rem;">1H:</label>
-                            <select id="tf-1h" style="width: 70px; padding: 4px; font-size: 0.7rem;" onchange="updateEntryQuality()">
-                                <option value="">-</option>
-                                <option value="bullish">↗ Bull</option>
-                                <option value="bearish">↘ Bear</option>
-                            </select>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 4px;">
-                            <label style="font-size: 0.7rem;">4H:</label>
-                            <select id="tf-4h" style="width: 70px; padding: 4px; font-size: 0.7rem;" onchange="updateEntryQuality()">
-                                <option value="">-</option>
-                                <option value="bullish">↗ Bull</option>
-                                <option value="bearish">↘ Bear</option>
-                            </select>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 4px;">
-                            <label style="font-size: 0.7rem;">1D:</label>
-                            <select id="tf-1d" style="width: 70px; padding: 4px; font-size: 0.7rem;" onchange="updateEntryQuality()">
-                                <option value="">-</option>
-                                <option value="bullish">↗ Bull</option>
-                                <option value="bearish">↘ Bear</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div id="tf-confirm-status" style="font-size: 0.7rem; margin-top: 6px; color: var(--text-secondary);">Select timeframes to see confirmation</div>
-                </details>
-            </div>
-            
             <div class="form-group">
                 <label>Direction</label>
                 <select id="trade-direction">
@@ -1813,72 +1658,6 @@
         
         initTheme();
         
-        // ==========================================
-        // SYSTEM HEALTH CHECK
-        // ==========================================
-        function checkSystemHealth() {
-            const now = new Date();
-            const today = now.toISOString().split('T')[0];
-            
-            // Check scheduler state
-            let schedulerStatus = '🔴';
-            let morningStatus = '⚪';
-            let analystStatus = '⚪';
-            let apiStatus = '⚪';
-            let details = [];
-            
-            // Try to load scheduler state from localStorage (if scheduler.js ran)
-            try {
-                const state = localStorage.getItem('hifty-scheduler-state');
-                if (state) {
-                    const parsed = JSON.parse(state);
-                    schedulerStatus = '🟢';
-                    details.push('Scheduler: Running');
-                    
-                    // Check each task
-                    for (const [task, info] of Object.entries(parsed.lastRuns || {})) {
-                        const runDate = info.date;
-                        if (runDate === today) {
-                            if (task.includes('morning')) morningStatus = info.status === 'success' ? '🟢' : '🔴';
-                            if (task.includes('analyst')) analystStatus = info.status === 'success' ? '🟢' : '🔴';
-                        }
-                    }
-                }
-            } catch(e) {
-                // Scheduler state not available
-                details.push('Scheduler: Not initialized (run node scheduler.js)');
-            }
-            
-            // Check API connectivity (fake check - just shows we're trying)
-            apiStatus = '🟢';
-            details.push('APIs: CryptoCompare connected');
-            
-            // Update UI
-            const schedEl = document.getElementById('health-scheduler');
-            const mornEl = document.getElementById('health-morning');
-            const analEl = document.getElementById('health-analyst');
-            const apiEl = document.getElementById('health-apis');
-            const detailsEl = document.getElementById('health-details');
-            
-            if (schedEl) schedEl.querySelector('.perf-value').textContent = schedulerStatus;
-            if (mornEl) mornEl.querySelector('.perf-value').textContent = morningStatus;
-            if (analEl) analEl.querySelector('.perf-value').textContent = analystStatus;
-            if (apiEl) apiEl.querySelector('.perf-value').textContent = apiStatus;
-            if (detailsEl) detailsEl.textContent = details.join(' | ') || 'All systems operational';
-            
-            // Update morning label with time
-            if (morningStatus === '🟢') {
-                if (mornEl) mornEl.querySelector('.perf-label').textContent = 'Morning (Today)';
-            }
-            if (analystStatus === '🟢') {
-                if (analEl) analEl.querySelector('.perf-label').textContent = 'Research (Today)';
-            }
-        }
-        
-        // Run health check on load
-        checkSystemHealth();
-        setInterval(checkSystemHealth, 60000); // Check every minute
-        
         // Load trade journal and history on page start
         loadTradeJournal();
         loadTradeHistory();
@@ -1994,120 +1773,6 @@
         function updateTradeAmount() {
             // Auto-fill based on direction and risk if needed
         }
-        
-        // ==========================================
-        // ENTRY QUALITY SCORE - Real-time compliance check
-        // ==========================================
-        function updateEntryQuality() {
-            let score = 0;
-            let checks = { rsi: false, tf: false, ratio: false };
-            const direction = document.getElementById('trade-direction').value;
-            const rsi = parseFloat(document.getElementById('trade-rsi').value) || 50;
-            const ratio = parseInt(document.getElementById('trade-ratio').value) || 2;
-            
-            // RSI Check (33% of score)
-            const rsiCheck = document.getElementById('check-rsi');
-            if (direction === 'long' && rsi <= 30) {
-                checks.rsi = true;
-                rsiCheck.checked = true;
-            } else if (direction === 'short' && rsi >= 70) {
-                checks.rsi = true;
-                rsiCheck.checked = true;
-            }
-            
-            const rsiStatus = document.getElementById('rsi-check-status');
-            if (checks.rsi) {
-                score += 33;
-                rsiStatus.textContent = '✅ Valid';
-                rsiStatus.style.color = '#10B981';
-            } else if (rsi > 0) {
-                rsiStatus.textContent = rsi <= 30 || rsi >= 70 ? '⚠️ Valid but check direction' : '⚪ Outside zone';
-                rsiStatus.style.color = '#F59E0B';
-            }
-            
-            // Timeframe Check (34% of score)
-            const tf5m = document.getElementById('tf-5m').value;
-            const tf1h = document.getElementById('tf-1h').value;
-            const tf4h = document.getElementById('tf-4h').value;
-            const tf1d = document.getElementById('tf-1d').value;
-            
-            const tfValues = [tf5m, tf1h, tf4h, tf1d].filter(v => v !== '');
-            const confirmCount = tfValues.filter(v => v === (direction === 'long' ? 'bullish' : 'bearish')).length;
-            
-            const tfCheck = document.getElementById('check-tf');
-            const tfStatus = document.getElementById('tf-check-status');
-            const tfDetail = document.getElementById('tf-confirm-status');
-            
-            if (confirmCount >= 2) {
-                checks.tf = true;
-                tfCheck.checked = true;
-                score += 34;
-                tfStatus.textContent = `✅ ${confirmCount} of ${tfValues.length} confirm`;
-                tfStatus.style.color = '#10B981';
-                tfDetail.textContent = `✅ ${confirmCount} timeframes aligned - GOOD TO GO`;
-                tfDetail.style.color = '#10B981';
-            } else if (tfValues.length > 0) {
-                tfStatus.textContent = `⚠️ Only ${confirmCount}/${tfValues.length} confirm`;
-                tfStatus.style.color = '#F59E0B';
-                tfDetail.textContent = `⚠️ Need at least 2 timeframes to confirm`;
-                tfDetail.style.color = '#F59E0B';
-            } else {
-                tfStatus.textContent = '⚪ Not checked';
-                tfStatus.style.color = '#888';
-                tfDetail.textContent = 'Select timeframes above to check alignment';
-            }
-            
-            // Ratio Check (33% of score)
-            const ratioCheck = document.getElementById('check-ratio');
-            const ratioStatus = document.getElementById('ratio-check-status');
-            
-            if (ratio >= 2) {
-                checks.ratio = true;
-                ratioCheck.checked = true;
-                score += 33;
-                ratioStatus.textContent = '✅ Good ratio';
-                ratioStatus.style.color = '#10B981';
-            } else {
-                ratioStatus.textContent = '⚠️ Below 2:1';
-                ratioStatus.style.color = '#F59E0B';
-            }
-            
-            // Update Score Display
-            const scoreEl = document.getElementById('entry-quality-score');
-            const msgEl = document.getElementById('entry-quality-message');
-            
-            scoreEl.textContent = score + '%';
-            
-            if (score >= 66) {
-                scoreEl.style.color = '#10B981';
-                msgEl.textContent = '✅ Trade quality GOOD - Ready to enter';
-            } else if (score >= 33) {
-                scoreEl.style.color = '#F59E0B';
-                msgEl.textContent = '⚠️ Review checklist - Some items unchecked';
-            } else {
-                scoreEl.style.color = '#EF4444';
-                msgEl.textContent = '❌ Low quality - Follow trading rules';
-            }
-            
-            // Return score for save validation
-            return score;
-        }
-        
-        // Modify saveTrade to validate compliance
-        const originalSaveTrade = saveTrade;
-        saveTrade = function() {
-            const quality = updateEntryQuality();
-            const rsi = parseFloat(document.getElementById('trade-rsi').value) || 50;
-            
-            // Warn if low quality but allow override
-            if (quality < 66) {
-                const proceed = confirm(`⚠️ Entry Quality Score: ${quality}%\n\nYour trade doesn't fully comply with RSI rules. Are you sure you want to proceed?\n\nTip: Wait for RSI ≤30 (LONG) or ≥70 (SHORT) for better entries.`);
-                if (!proceed) return;
-            }
-            
-            // Call original function
-            originalSaveTrade();
-        };
         
         function saveTrade() {
             const entry = parseFloat(document.getElementById('trade-entry').value);

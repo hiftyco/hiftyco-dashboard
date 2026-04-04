@@ -6,10 +6,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static('.'));
-
-// Serve Bitcoin Education at /education
-app.use('/education', express.static('../hiftyco-education'));
+app.use(express.static('public'));
 
 // Run script helper
 function runScript(scriptPath) {
