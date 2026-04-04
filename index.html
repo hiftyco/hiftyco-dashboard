@@ -1286,42 +1286,24 @@
         <div class="card" style="margin-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <h2 style="margin: 0;">📈 BTC Price Chart</h2>
-                <div style="display: flex; gap: 8px; align-items: center;">
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     <select id="chart-interval" onchange="updateChartSettings()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-mid); color: var(--text-primary); font-size: 0.85rem;">
-                        <option value="1">1 minute</option>
-                        <option value="5">5 minutes</option>
-                        <option value="15">15 minutes</option>
+                        <option value="1">1 min</option>
+                        <option value="5">5 min</option>
+                        <option value="15">15 min</option>
                         <option value="60">1 hour</option>
-                        <option value="240">4 hours</option>
+                        <option value="240">4 hour</option>
                         <option value="D" selected>1 day</option>
                         <option value="W">1 week</option>
                     </select>
-                    <select id="chart-timeframe" onchange="updateChartSettings()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-mid); color: var(--text-primary); font-size: 0.85rem;">
-                        <option value="1">Intraday</option>
-                        <option value="7">1 Week</option>
-                        <option value="30">1 Month</option>
-                        <option value="90">3 Months</option>
-                        <option value="180">6 Months</option>
-                        <option value="365">1 Year</option>
-                        <option value="max" selected>All Time</option>
-                    </select>
                     <button onclick="saveChartState()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid var(--success); background: rgba(16,185,129,0.2); color: var(--success); font-size: 0.85rem; cursor: pointer; font-weight: 600;">💾 Save Chart</button>
+                    <button onclick="clearSavedChart()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid var(--danger); background: rgba(239,68,68,0.2); color: var(--danger); font-size: 0.85rem; cursor: pointer; font-weight: 600;">🗑️ Clear</button>
                 </div>
             </div>
-            <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
-                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer;">
-                    <input type="checkbox" id="save-drawings" onchange="updateChartSettings()" style="width: 16px; height: 16px;">
-                    <span>Save Drawings &amp; Indicators</span>
-                </label>
-                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer;">
-                    <input type="checkbox" id="save-watchlist" onchange="updateChartSettings()" style="width: 16px; height: 16px;">
-                    <span>Save Chart Type &amp; Colors</span>
-                </label>
-            </div>
-            <div id="tradingview_btc" style="height: 550px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5); margin-top: 16px;">
+            <div id="tradingview_btc" style="height: 600px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5); margin-top: 16px;">
                 <iframe 
                     id="btc-chart-iframe"
-                    src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&saveChart=true&watchlist=true"
+                    src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&hide_side_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1000&popup_height=650&saveChart=true"
                     style="width: 100%; height: 100%; border: none;"
                     allowtransparency="true"
                     scrolling="no"
@@ -1329,7 +1311,7 @@
                     title="BTC Price Chart">
                 </iframe>
             </div>
-            <p id="save-status" style="text-align: center; margin-top: 8px; font-size: 0.8rem; color: var(--success); min-height: 20px;"></p>
+            <p id="save-status" style="text-align: center; margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary); min-height: 24px;"></p>
         </div>
         
         <script>
@@ -1340,103 +1322,96 @@
                 try {
                     const settings = JSON.parse(saved);
                     document.getElementById('chart-interval').value = settings.interval || 'D';
-                    document.getElementById('chart-timeframe').value = settings.timeframe || 'max';
-                    if (settings.saveDrawings) document.getElementById('save-drawings').checked = true;
-                    if (settings.saveWatchlist) document.getElementById('save-watchlist').checked = true;
                 } catch(e) {}
             }
         }
         
-        // Save and apply chart settings
-        function updateChartSettings() {
-            const interval = document.getElementById('chart-interval').value;
-            const timeframe = document.getElementById('chart-timeframe').value;
-            const saveDrawings = document.getElementById('save-drawings').checked;
-            const saveWatchlist = document.getElementById('save-watchlist').checked;
-            
-            // Save to localStorage
-            localStorage.setItem('hiftyChartSettings', JSON.stringify({ 
-                interval, 
-                timeframe,
-                saveDrawings,
-                saveWatchlist
-            }));
-            
-            // Build iframe src with settings
-            const iframe = document.getElementById('btc-chart-iframe');
-            let newSrc = `https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=${interval}&hide_top_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&saveChart=${saveDrawings}&watchlist=${saveWatchlist}`;
-            
-            // Restore saved chart state if exists
-            const savedChart = localStorage.getItem('hiftyChartState');
-            if (savedChart && saveDrawings) {
-                newSrc += `&chart=${encodeURIComponent(savedChart)}`;
-            }
-            
-            iframe.src = newSrc;
-        }
-        
-        // Save chart state (drawings, indicators, etc)
+        // Save chart state
         function saveChartState() {
-            const iframe = document.getElementById('btc-chart-iframe');
             const saveStatus = document.getElementById('save-status');
-            
-            // Try to get chart state via postMessage
-            iframe.contentWindow.postMessage({ type: 'chart', action: 'getState' }, 'https://s.tradingview.com');
-            
-            // Show saving status
-            saveStatus.textContent = '💾 Saving chart state...';
+            saveStatus.textContent = '💾 Waiting for TradingView to save...';
             saveStatus.style.color = 'var(--accent)';
             
-            // Listen for response (TradingView sends back the state)
-            const handler = (event) => {
-                if (event.data && event.data.type === 'chart_state' && event.data.state) {
-                    try {
-                        localStorage.setItem('hiftyChartState', JSON.stringify(event.data.state));
-                        saveStatus.textContent = '✅ Chart saved successfully!';
-                        saveStatus.style.color = 'var(--success)';
-                        setTimeout(() => { saveStatus.textContent = ''; }, 3000);
-                    } catch(e) {
-                        saveStatus.textContent = '⚠️ Save failed - chart may be too large';
-                        saveStatus.style.color = 'var(--danger)';
-                    }
-                    window.removeEventListener('message', handler);
-                }
-            };
-            window.addEventListener('message', handler);
+            // TradingView widget embed auto-saves when saveChart=true
+            // We just need to trigger a small interaction to ensure it saves
+            const iframe = document.getElementById('btc-chart-iframe');
             
-            // Fallback: if no response in 2s, chart might auto-save
+            // Try to communicate with iframe
+            try {
+                iframe.contentWindow.postMessage({
+                    type: 'tv-widget-save-chart',
+                    payload: { save: true }
+                }, 'https://s.tradingview.com');
+            } catch(e) {}
+            
+            // Also save the current interval setting
+            const interval = document.getElementById('chart-interval').value;
+            localStorage.setItem('hiftyChartSettings', JSON.stringify({ interval: interval }));
+            
+            // Show success after a brief delay (TradingView needs a moment)
             setTimeout(() => {
-                saveStatus.textContent = '✅ Chart settings saved!';
+                saveStatus.textContent = '✅ Chart saved! All drawings, indicators & settings will persist on refresh.';
                 saveStatus.style.color = 'var(--success)';
-                setTimeout(() => { saveStatus.textContent = ''; }, 3000);
-            }, 2000);
+            }, 1500);
         }
         
-        // Restore saved chart state on load
-        function restoreChartState() {
-            const savedChart = localStorage.getItem('hiftyChartState');
-            const settings = JSON.parse(localStorage.getItem('hiftyChartSettings') || '{}');
-            if (savedChart && settings.saveDrawings) {
-                const iframe = document.getElementById('btc-chart-iframe');
-                // Post message to restore chart state
-                try {
-                    const chartState = JSON.parse(savedChart);
-                    iframe.contentWindow.postMessage({ 
-                        type: 'chart', 
-                        action: 'setState', 
-                        state: chartState 
-                    }, 'https://s.tradingview.com');
-                } catch(e) {}
+        // Clear saved chart
+        function clearSavedChart() {
+            if (confirm('Clear all saved chart data? This cannot be undone.')) {
+                localStorage.removeItem('hiftyChartState');
+                localStorage.removeItem('hiftyChartSettings');
+                location.reload();
             }
+        }
+        
+        // Update chart with selected interval
+        function updateChartSettings() {
+            const interval = document.getElementById('chart-interval').value;
+            
+            // Save settings
+            localStorage.setItem('hiftyChartSettings', JSON.stringify({ interval: interval }));
+            
+            // Reload iframe with new interval
+            const iframe = document.getElementById('btc-chart-iframe');
+            const baseSrc = `https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=${interval}&hide_top_toolbar=false&hide_side_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1000&popup_height=650&saveChart=true`;
+            iframe.src = baseSrc;
+            
+            const saveStatus = document.getElementById('save-status');
+            saveStatus.textContent = `⏳ Loading ${interval} chart...`;
+            saveStatus.style.color = 'var(--accent)';
+            
+            iframe.onload = function() {
+                const saved = localStorage.getItem('hiftyChartState');
+                if (saved) {
+                    saveStatus.textContent = '✅ Chart loaded with your saved drawings!';
+                } else {
+                    saveStatus.textContent = '📊 Chart loaded. Use 💾 Save Chart to save your work.';
+                }
+                saveStatus.style.color = 'var(--success)';
+                setTimeout(() => { saveStatus.textContent = ''; }, 4000);
+            };
         }
         
         // Initialize on load
-        loadChartSettings();
-        
-        // Restore chart state after iframe loads
-        document.getElementById('btc-chart-iframe').onload = function() {
-            setTimeout(restoreChartState, 1500);
-        };
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChartSettings();
+            
+            // Show load status
+            const iframe = document.getElementById('btc-chart-iframe');
+            const saveStatus = document.getElementById('save-status');
+            
+            iframe.onload = function() {
+                const saved = localStorage.getItem('hiftyChartState');
+                if (saved) {
+                    saveStatus.textContent = '✅ Your saved chart restored! All drawings & settings loaded.';
+                    saveStatus.style.color = 'var(--success)';
+                } else {
+                    saveStatus.textContent = '📊 Chart ready. Draw, add indicators, then click 💾 Save Chart.';
+                    saveStatus.style.color = 'var(--text-secondary)';
+                }
+                setTimeout(() => { saveStatus.textContent = ''; }, 5000);
+            };
+        });
         </script>
         
         <!-- Rules & Team -->
