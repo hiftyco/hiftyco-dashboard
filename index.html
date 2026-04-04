@@ -1282,11 +1282,34 @@
             <button onclick="calculateSignal()" style="width: 100%; margin-top: 12px; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">📊 Calculate Signal</button>
         </div>
         
-        <!-- Chart -->
+        <!-- Chart Settings -->
         <div class="card" style="margin-top: 24px;">
-            <h2>📈 BTC Price Chart</h2>
-            <div id="tradingview_btc" style="height: 450px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <h2 style="margin: 0;">📈 BTC Price Chart</h2>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <select id="chart-interval" onchange="updateChartSettings()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-mid); color: var(--text-primary); font-size: 0.85rem;">
+                        <option value="1">1 minute</option>
+                        <option value="5">5 minutes</option>
+                        <option value="15">15 minutes</option>
+                        <option value="60">1 hour</option>
+                        <option value="240">4 hours</option>
+                        <option value="D" selected>1 day</option>
+                        <option value="W">1 week</option>
+                    </select>
+                    <select id="chart-timeframe" onchange="updateChartSettings()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-mid); color: var(--text-primary); font-size: 0.85rem;">
+                        <option value="1">Intraday</option>
+                        <option value="7">1 Week</option>
+                        <option value="30">1 Month</option>
+                        <option value="90">3 Months</option>
+                        <option value="180">6 Months</option>
+                        <option value="365">1 Year</option>
+                        <option value="max" selected>All Time</option>
+                    </select>
+                </div>
+            </div>
+            <div id="tradingview_btc" style="height: 550px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5); margin-top: 16px;">
                 <iframe 
+                    id="btc-chart-iframe"
                     src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York"
                     style="width: 100%; height: 100%; border: none;"
                     allowtransparency="true"
@@ -1296,6 +1319,37 @@
                 </iframe>
             </div>
         </div>
+        
+        <script>
+        // Load saved chart settings from localStorage
+        function loadChartSettings() {
+            const saved = localStorage.getItem('hiftyChartSettings');
+            if (saved) {
+                try {
+                    const settings = JSON.parse(saved);
+                    document.getElementById('chart-interval').value = settings.interval || 'D';
+                    document.getElementById('chart-timeframe').value = settings.timeframe || 'max';
+                } catch(e) {}
+            }
+        }
+        
+        // Save and apply chart settings
+        function updateChartSettings() {
+            const interval = document.getElementById('chart-interval').value;
+            const timeframe = document.getElementById('chart-timeframe').value;
+            
+            // Save to localStorage
+            localStorage.setItem('hiftyChartSettings', JSON.stringify({ interval, timeframe }));
+            
+            // Update iframe src with new settings
+            const iframe = document.getElementById('btc-chart-iframe');
+            const newSrc = `https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=${interval}&hide_top_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York`;
+            iframe.src = newSrc;
+        }
+        
+        // Initialize on load
+        loadChartSettings();
+        </script>
         
         <!-- Rules & Team -->
         <div class="grid" style="margin-top: 24px;">
