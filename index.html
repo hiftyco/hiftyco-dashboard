@@ -840,11 +840,26 @@
                         <div class="rsi-circle">
                             <div class="rsi-inner">
                                 <span class="rsi-value" id="rsi-value">--</span>
-                                <span class="rsi-label">RSI</span>
+                                <span class="rsi-label">RSI 1H</span>
                             </div>
                         </div>
                     </div>
                     <div class="rsi-signal" id="rsi-signal">Loading...</div>
+                    <!-- Multiple timeframes -->
+                    <div style="display: flex; justify-content: center; gap: 16px; margin-top: 12px; font-size: 0.85rem;">
+                        <div style="text-align: center;">
+                            <div style="font-weight: 600;" id="rsi-1h-value">--</div>
+                            <div style="color: var(--text-secondary);">1H</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-weight: 600;" id="rsi-4h-value">--</div>
+                            <div style="color: var(--text-secondary);">4H</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-weight: 600;" id="rsi-1d-value">--</div>
+                            <div style="color: var(--text-secondary);">1D</div>
+                        </div>
+                    </div>
                     <p class="status" id="rsi-source">Loading...</p>
                 </div>
             </div>
@@ -1344,13 +1359,189 @@
     
     <script>
         // ==========================================
-        // LIVE BINANCE WEBSOCKET - Real-time prices
+        // RSI DATA - Multiple timeframes using Binance klines
+        // ==========================================
+        let rsiData = {
+            '1h': { closes: [], rsi: null, ws: null },
+            '4h': { closes: [], rsi: null },
+            '1d': { closes: [], rsi: null }
+        };
+        
+        // Calculate RSI from close prices array (Wilder's smoothing method)
+        function calculateRSI(closes, period = 14) {
+            if (!closes || closes.length < period + 1) return null;
+            
+            // Calculate price changes
+            const changes = [];
+            for (let i = 1; i < closes.length; i++) {
+                changes.push(closes[i] - closes[i - 1]);
+            }
+            
+            // Separate gains and losses for the first calculation
+            let avgGain = 0, avgLoss = 0;
+            for (let i = 0; i < period; i++) {
+                if (changes[i] > 0) avgGain += changes[i];
+                else avgLoss += Math.abs(changes[i]);
+            }
+            avgGain /= period;
+            avgLoss /= period;
+            
+            // Wilder's smoothing for subsequent values
+            for (let i = period; i < changes.length; i++) {
+                const change = changes[i];
+                avgGain = (avgGain * (period - 1) + (change > 0 ? change : 0)) / period;
+                avgLoss = (avgLoss * (period - 1) + (change < 0 ? Math.abs(change) : 0)) / period;
+            }
+            
+            if (avgLoss === 0) return 100;
+            const rs = avgGain / avgLoss;
+            const rsi = 100 - (100 / (1 + rs));
+            
+            return Math.round(rsi * 10) / 10;
+        }
+        
+        // Fetch klines from Binance REST API
+        async function fetchKlines(symbol = 'BTCUSDT', interval = '1h', limit = 15) {
+            try {
+                const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Klines fetch failed');
+                const data = await res.json();
+                // data format: [openTime, open, high, low, close, volume, closeTime, ...]
+                return data.map(d => parseFloat(d[4])); // Return close prices
+            } catch (e) {
+                console.error('Failed to fetch klines:', e);
+                return null;
+            }
+        }
+        
+        // Initialize RSI data for all timeframes
+        async function initRSIData() {
+            // Fetch all timeframes in parallel
+            const [klines1h, klines4h, klines1d] = await Promise.all([
+                fetchKlines('BTCUSDT', '1h', 15),
+                fetchKlines('BTCUSDT', '4h', 15),
+                fetchKlines('BTCUSDT', '1d', 15)
+            ]);
+            
+            if (klines1h) {
+                rsiData['1h'].closes = klines1h;
+                rsiData['1h'].rsi = calculateRSI(klines1h, 14);
+            }
+            if (klines4h) {
+                rsiData['4h'].closes = klines4h;
+                rsiData['4h'].rsi = calculateRSI(klines4h, 14);
+            }
+            if (klines1d) {
+                rsiData['1d'].closes = klines1d;
+                rsiData['1d'].rsi = calculateRSI(klines1d, 14);
+            }
+            
+            updateAllRSIDisplays();
+        }
+        
+        // Update all RSI displays
+        function updateAllRSIDisplays() {
+            // Update main RSI gauge with 1H RSI
+            const rsi1h = rsiData['1h'].rsi;
+            updateRSIDisplay(rsi1h);
+            
+            // Update timeframe RSI values
+            document.getElementById('rsi-1h-value').textContent = rsi1h !== null ? rsi1h.toFixed(1) : '--';
+            document.getElementById('rsi-4h-value').textContent = rsiData['4h'].rsi !== null ? rsiData['4h'].rsi.toFixed(1) : '--';
+            document.getElementById('rsi-1d-value').textContent = rsiData['1d'].rsi !== null ? rsiData['1d'].rsi.toFixed(1) : '--';
+            
+            // Color code the timeframe values
+            colorRSIValue('rsi-1h-value', rsiData['1h'].rsi);
+            colorRSIValue('rsi-4h-value', rsiData['4h'].rsi);
+            colorRSIValue('rsi-1d-value', rsiData['1d'].rsi);
+            
+            // Update RSI source
+            document.getElementById('rsi-source').textContent = '✓ Live RSI (Binance Klines)';
+        }
+        
+        function colorRSIValue(elementId, rsi) {
+            const el = document.getElementById(elementId);
+            if (!el || rsi === null) return;
+            if (rsi <= 30) el.style.color = '#10B981';
+            else if (rsi >= 70) el.style.color = '#EF4444';
+            else el.style.color = '#F59E0B';
+        }
+        
+        // Connect to Binance WebSocket for live kline updates
+        function connectKlineWebSocket(symbol = 'BTCUSDT') {
+            // Close existing connection if any
+            if (rsiData['1h'].ws) {
+                rsiData['1h'].ws.close();
+            }
+            
+            const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@kline_1h`);
+            
+            ws.onopen = function() {
+                console.log('✓ Connected to BTC/USDT kline_1h WebSocket');
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                const kline = data.k; // kline data
+                const closePrice = parseFloat(kline.c);
+                const isClosed = kline.x; // true if candle closed
+                
+                if (isClosed) {
+                    // Candle closed - add to history and recalculate RSI
+                    rsiData['1h'].closes.push(closePrice);
+                    if (rsiData['1h'].closes.length > 15) {
+                        rsiData['1h'].closes.shift(); // Keep only last 15
+                    }
+                    rsiData['1h'].rsi = calculateRSI(rsiData['1h'].closes, 14);
+                    updateAllRSIDisplays();
+                    
+                    // Also refresh 4H and 1D periodically (every 4 hours for 4H, daily for 1D)
+                    // For now, refresh 4H and 1D every hour
+                } else {
+                    // Live update - use current price but don't recalculate until close
+                    // Optionally update with "live" indicator
+                }
+            };
+            
+            ws.onerror = function(error) {
+                console.error('Kline WebSocket error:', error);
+            };
+            
+            ws.onclose = function() {
+                console.log('Kline WebSocket closed, reconnecting in 5s...');
+                setTimeout(() => connectKlineWebSocket(symbol), 5000);
+            };
+            
+            rsiData['1h'].ws = ws;
+        }
+        
+        // Periodic refresh of 4H and 1D RSI (since they don't have dedicated WebSockets)
+        function refreshHigherTimeframes() {
+            Promise.all([
+                fetchKlines('BTCUSDT', '4h', 15).then(closes => {
+                    if (closes) {
+                        rsiData['4h'].closes = closes;
+                        rsiData['4h'].rsi = calculateRSI(closes, 14);
+                    }
+                }),
+                fetchKlines('BTCUSDT', '1d', 15).then(closes => {
+                    if (closes) {
+                        rsiData['1d'].closes = closes;
+                        rsiData['1d'].rsi = calculateRSI(closes, 14);
+                    }
+                })
+            ]).then(() => {
+                updateAllRSIDisplays();
+            });
+        }
+        
+        // ==========================================
+        // LIVE BINANCE WEBSOCKET - Real-time prices (separate from RSI)
         // ==========================================
         let wsConnections = {};
-        let priceHistory = { btc: [], eth: [] };
-        const RSI_PERIOD = 14;
         
-        // Connect to Binance WebSocket
+        // Connect to Binance WebSocket for live prices
         function connectWebSocket(symbol, elementId, changeId) {
             const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}usdt@ticker`);
             
@@ -1379,13 +1570,6 @@
                     changeEl.className = 'price-change ' + (change >= 0 ? 'positive' : 'negative');
                 }
                 
-                // Store for RSI calculation
-                if (symbol === 'BTC') {
-                    priceHistory.btc.push(price);
-                    if (priceHistory.btc.length > RSI_PERIOD + 1) priceHistory.btc.shift();
-                    calculateAndUpdateRSI();
-                }
-                
                 // Check price alerts
                 if (typeof checkPriceAlerts === 'function') {
                     checkPriceAlerts(price);
@@ -1404,109 +1588,51 @@
             wsConnections[symbol] = ws;
         }
         
-        // Fallback REST API
-        async function fetchFallbackPrices() {
-            try {
-                const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
-                const data = await res.json();
-                return {
-                    price: parseFloat(data.lastPrice),
-                    change: parseFloat(data.priceChangePercent)
-                };
-            } catch(e) {
-                return null;
-            }
-        }
-        
-        // Initialize WebSocket connections
+        // Initialize price WebSocket connections
         function initWebSocket() {
             connectWebSocket('BTC', 'btc-price', 'btc-change');
             connectWebSocket('ETH', 'eth-price', 'eth-change');
         }
         
-        // Calculate RSI from price history
-        function calculateRSIFromPrices(prices, period = 14) {
-            if (!prices || prices.length < period + 1) return null;
-            
-            const changes = [];
-            for (let i = 1; i < prices.length; i++) {
-                changes.push(prices[i] - prices[i - 1]);
-            }
-            
-            const recentChanges = changes.slice(-period);
-            const gains = recentChanges.filter(c => c > 0);
-            const losses = recentChanges.filter(c => c < 0).map(c => Math.abs(c));
-            
-            const avgGain = gains.length > 0 ? gains.reduce((a, b) => a + b, 0) / period : 0;
-            const avgLoss = losses.length > 0 ? losses.reduce((a, b) => a + b, 0) / period : 0;
-            
-            if (avgLoss === 0) return 100;
-            
-            const rs = avgGain / avgLoss;
-            const rsi = 100 - (100 / (1 + rs));
-            
-            return Math.round(rsi * 10) / 10;
-        }
+        // Initialize on page load
+        initWebSocket();
         
-        // Calculate and update RSI display
-        function calculateAndUpdateRSI() {
-            if (priceHistory.btc.length < RSI_PERIOD + 1) {
-                // Not enough data yet, try to fetch historical data
-                fetchHistoricalRSI();
-                return;
-            }
-            
-            const rsi = calculateRSIFromPrices(priceHistory.btc, RSI_PERIOD);
-            if (rsi !== null) {
-                updateRSIDisplay(rsi);
-            }
-        }
+        // Initialize RSI data and kline WebSocket
+        initRSIData().then(() => {
+            connectKlineWebSocket();
+            // Refresh higher timeframes every 5 minutes
+            setInterval(refreshHigherTimeframes, 5 * 60 * 1000);
+        });
         
-        // Fetch historical data for RSI calculation
-        async function fetchHistoricalRSI() {
-            try {
-                const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=50');
-                const data = await res.json();
-                const closes = data.map(d => parseFloat(d[4])); // Close prices
-                
-                // Update price history
-                priceHistory.btc = closes.slice(-20);
-                
-                const rsi = calculateRSIFromPrices(priceHistory.btc, RSI_PERIOD);
-                if (rsi !== null) {
-                    updateRSIDisplay(rsi);
-                    document.getElementById('rsi-source').textContent = '✓ Live RSI: ' + rsi.toFixed(1);
-                }
-            } catch(e) {
-                console.error('Failed to fetch historical RSI:', e);
-            }
-        }
+        // Legacy functions for backward compatibility
+        const priceHistory = { btc: [], eth: [] };
+        const RSI_PERIOD = 14;
         
-        // Update RSI display
+        // Update RSI display (main gauge)
         function updateRSIDisplay(rsi) {
             const rsiEl = document.getElementById('rsi-value');
             const signalEl = document.getElementById('rsi-signal');
             
             if (rsiEl) {
-                rsiEl.textContent = rsi.toFixed(1);
+                rsiEl.textContent = rsi !== null ? rsi.toFixed(1) : '--';
                 rsiEl.style.transform = 'scale(1.1)';
                 setTimeout(() => rsiEl.style.transform = 'scale(1)', 200);
             }
             
             if (signalEl) {
-                if (rsi <= 30) {
+                if (rsi !== null && rsi <= 30) {
                     signalEl.innerHTML = '🟢 BUY SIGNAL';
                     signalEl.style.background = 'rgba(16,185,129,0.15)';
                     signalEl.style.color = '#10B981';
-                } else if (rsi >= 70) {
+                } else if (rsi !== null && rsi >= 70) {
                     signalEl.innerHTML = '🔴 SELL SIGNAL';
                     signalEl.style.background = 'rgba(239,68,68,0.15)';
                     signalEl.style.color = '#EF4444';
-                } else if (rsi <= 40) {
+                } else if (rsi !== null && rsi <= 40) {
                     signalEl.innerHTML = '🟡 APPROACHING BUY';
                     signalEl.style.background = 'rgba(251,191,36,0.15)';
                     signalEl.style.color = '#D97706';
-                } else if (rsi >= 60) {
+                } else if (rsi !== null && rsi >= 60) {
                     signalEl.innerHTML = '🟡 APPROACHING SELL';
                     signalEl.style.background = 'rgba(251,191,36,0.15)';
                     signalEl.style.color = '#D97706';
@@ -1517,14 +1643,26 @@
                 }
             }
             
-            // Check RSI alerts
-            if (typeof checkAlerts === 'function') {
+            // Check alerts when RSI updates
+            if (typeof checkAlerts === 'function' && rsi !== null) {
                 checkAlerts(rsi);
             }
         }
         
-        // Initialize on page load
-        initWebSocket();
+        // Legacy function for backward compatibility
+        function calculateRSIFromPrices(prices, period = 14) {
+            return calculateRSI(prices, period);
+        }
+        
+        function calculateAndUpdateRSI() {
+            // Legacy function - now handled by initRSIData
+            initRSIData();
+        }
+        
+        function fetchHistoricalRSI() {
+            // Legacy function - now handled by initRSIData
+            initRSIData();
+        }
         
         // ==========================================
         // CONFIGURATION - Default values & trades
@@ -1594,22 +1732,8 @@
                     document.getElementById('price-status').textContent = '⚠ Using cached';
                 }
                 
-                try {
-                    // Fetch hourly data for accurate RSI (like TradingView)
-                    const histoRes = await fetch('https://min-api.cryptocompare.com/data/v2/histohour?fsym=BTC&tsym=USD&limit=50');
-                    const histoData = await histoRes.json();
-                    
-                    if (histoData.Data && histoData.Data.Data) {
-                        const closes = histoData.Data.Data.map(d => d.close);
-                        const rsi = calculateRSI(closes, 14);
-                        updateRSI(rsi);
-                        document.getElementById('rsi-source').textContent = '✓ Live RSI: ' + rsi.toFixed(1);
-                    } else {
-                        updateRSI(FALLBACK.rsi);
-                    }
-                } catch(e) {
-                    updateRSI(FALLBACK.rsi);
-                }
+                // Note: RSI is now calculated from Binance Klines API (see initRSIData)
+                // This is handled separately from the fetchData function to ensure proper OHLCV candle data
                 
                 try {
                     const fearRes = await fetch('https://alternative.me/crypto/fear-and-greed-index/');
@@ -1647,7 +1771,7 @@
             } catch(e) {
                 updatePrices(FALLBACK);
                 updateFear(FALLBACK.fear);
-                updateRSI(FALLBACK.rsi);
+                // RSI falls back to Binance Klines data (initRSIData handles this)
                 document.getElementById('price-status').textContent = '⚠ Using cached';
                 document.getElementById('fear-status').textContent = '⚠ Using cached';
             }
@@ -1655,41 +1779,8 @@
             document.getElementById('last-updated').textContent = '🕐 ' + new Date().toLocaleTimeString();
         }
         
-        // Calculate RSI from closing prices
-        // ==========================================
-        // RSI CALCULATION - Wilder's smoothing method
-        // ==========================================
-        function calculateRSI(closes, period = 14) {
-            if (!closes || closes.length < period + 1) return 50;
-            
-            // Calculate price changes
-            const changes = [];
-            for (let i = 1; i < closes.length; i++) {
-                changes.push(closes[i] - closes[i - 1]);
-            }
-            
-            // Get last 'period' gains and losses
-            const gains = changes.slice(-period).filter(c => c > 0);
-            const losses = changes.slice(-period).filter(c => c < 0).map(c => Math.abs(c));
-            
-            // Initial averages (simple)
-            let avgGain = gains.reduce((a, b) => a + b, 0) / period;
-            let avgLoss = losses.reduce((a, b) => a + b, 0) / period;
-            
-            // Wilder's smoothing for subsequent values
-            for (let i = period; i < changes.length; i++) {
-                const change = changes[i];
-                avgGain = (avgGain * (period - 1) + (change > 0 ? change : 0)) / period;
-                avgLoss = (avgLoss * (period - 1) + (change < 0 ? Math.abs(change) : 0)) / period;
-            }
-            
-            if (avgLoss === 0) return 100;
-            
-            const rs = avgGain / avgLoss;
-            const rsi = 100 - (100 / (1 + rs));
-            
-            return Math.round(rsi * 10) / 10; // 1 decimal place
-        }
+        // Note: calculateRSI is defined in the RSI DATA section above (uses Wilder's smoothing)
+        // This section handles price/SR/fear updates only
         
         // ==========================================
         // UPDATE UI - Display fetched prices
@@ -1726,31 +1817,8 @@
             document.getElementById('s2').textContent = '$' + Math.round(price * 0.95).toLocaleString();
         }
         
-        // ==========================================
-        // UPDATE UI - Display RSI value & signal
-        // ==========================================
-        function updateRSI(rsi) {
-            document.getElementById('rsi-value').textContent = rsi;
-            const signal = document.getElementById('rsi-signal');
-            if (rsi <= 30) {
-                signal.innerHTML = '🟢 BUY SIGNAL';
-                signal.style.background = 'rgba(16,185,129,0.15)';
-                signal.style.color = '#10B981';
-            } else if (rsi >= 70) {
-                signal.innerHTML = '🔴 SELL SIGNAL';
-                signal.style.background = 'rgba(239,68,68,0.15)';
-                signal.style.color = '#EF4444';
-            } else {
-                signal.innerHTML = '🟡 NEUTRAL - WAIT';
-                signal.style.background = 'rgba(251,191,36,0.15)';
-                signal.style.color = '#D97706';
-            }
-            
-            // Check alerts when RSI updates
-            if (typeof checkAlerts === 'function') {
-                checkAlerts(rsi);
-            }
-        }
+        // Note: updateRSIDisplay is defined in the RSI DATA section above
+        // This section handles Fear & Greed updates only
         
         // ==========================================
         // UPDATE UI - Display Fear & Greed index
