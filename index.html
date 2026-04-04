@@ -1300,7 +1300,7 @@
                     <button onclick="clearSavedChart()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid var(--danger); background: rgba(239,68,68,0.2); color: var(--danger); font-size: 0.85rem; cursor: pointer; font-weight: 600;">🗑️ Clear</button>
                 </div>
             </div>
-            <div id="tradingview_btc" style="height: 600px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5); margin-top: 16px;">
+            <div id="tradingview_btc" style="height: 700px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5); margin-top: 16px;">
                 <iframe 
                     id="btc-chart-iframe"
                     src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&hide_side_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1000&popup_height=650&saveChart=true"
@@ -1357,11 +1357,13 @@
         
         // Clear saved chart
         function clearSavedChart() {
-            if (confirm('Clear all saved chart data? This cannot be undone.')) {
-                localStorage.removeItem('hiftyChartState');
-                localStorage.removeItem('hiftyChartSettings');
-                location.reload();
-            }
+            localStorage.removeItem('hiftyChartState');
+            localStorage.removeItem('hiftyChartSettings');
+            document.getElementById('save-status').textContent = '🗑️ Chart data cleared!';
+            document.getElementById('save-status').style.color = 'var(--danger)';
+            // Reload iframe to reset chart
+            const iframe = document.getElementById('btc-chart-iframe');
+            iframe.src = 'https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&hide_side_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1000&popup_height=650&saveChart=true';
         }
         
         // Update chart with selected interval
