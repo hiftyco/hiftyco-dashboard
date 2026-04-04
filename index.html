@@ -408,6 +408,36 @@
             margin-bottom: 18px;
         }
         
+        /* TradingView Widget Containers - Dark theme blending */
+        .tradingview-widget-container {
+            border: none !important;
+            border-radius: 12px;
+            overflow: hidden;
+            background: transparent !important;
+        }
+        
+        .tradingview-widget-container__widget {
+            border-radius: 12px;
+            border: none;
+        }
+        
+        #tradingview_btc {
+            border-radius: 12px;
+            overflow: hidden;
+            border: none;
+            background: transparent;
+        }
+        
+        #tradingview_btc iframe {
+            border-radius: 12px;
+        }
+        
+        /* Remove any ugly borders from TradingView iframes */
+        .tradingview-widget-container iframe {
+            border: none !important;
+            outline: none !important;
+        }
+        
         /* Prices */
         .price-item {
             display: flex;
@@ -1255,10 +1285,11 @@
         new TradingView.widget({
             "width": "100%",
             "height": 450,
+            "isTransparent": true,
             "symbol": "BINANCE:BTCUSDT",
             "interval": "D",
             "timezone": "America/New_York",
-            "theme": "light",
+            "colorTheme": "dark",
             "style": "1",
             "locale": "en",
             "hide_top_toolbar": false,
