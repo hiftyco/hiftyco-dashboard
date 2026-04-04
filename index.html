@@ -1344,6 +1344,189 @@
     
     <script>
         // ==========================================
+        // LIVE BINANCE WEBSOCKET - Real-time prices
+        // ==========================================
+        let wsConnections = {};
+        let priceHistory = { btc: [], eth: [] };
+        const RSI_PERIOD = 14;
+        
+        // Connect to Binance WebSocket
+        function connectWebSocket(symbol, elementId, changeId) {
+            const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}usdt@ticker`);
+            
+            ws.onopen = function() {
+                console.log(`✓ Connected to ${symbol}/USDT WebSocket`);
+                document.getElementById('price-status').textContent = '✓ Live WebSocket';
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                const price = parseFloat(data.c);
+                const change = parseFloat(data.P);
+                
+                // Update price display
+                const priceEl = document.getElementById(elementId);
+                const changeEl = document.getElementById(changeId);
+                
+                if (priceEl) {
+                    priceEl.textContent = '$' + price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    priceEl.style.transform = 'scale(1.05)';
+                    setTimeout(() => priceEl.style.transform = 'scale(1)', 150);
+                }
+                
+                if (changeEl) {
+                    changeEl.textContent = (change >= 0 ? '↑' : '↓') + Math.abs(change).toFixed(2) + '%';
+                    changeEl.className = 'price-change ' + (change >= 0 ? 'positive' : 'negative');
+                }
+                
+                // Store for RSI calculation
+                if (symbol === 'BTC') {
+                    priceHistory.btc.push(price);
+                    if (priceHistory.btc.length > RSI_PERIOD + 1) priceHistory.btc.shift();
+                    calculateAndUpdateRSI();
+                }
+                
+                // Check price alerts
+                if (typeof checkPriceAlerts === 'function') {
+                    checkPriceAlerts(price);
+                }
+            };
+            
+            ws.onerror = function(error) {
+                console.error(`WebSocket error for ${symbol}:`, error);
+            };
+            
+            ws.onclose = function() {
+                console.log(`WebSocket closed for ${symbol}, reconnecting...`);
+                setTimeout(() => connectWebSocket(symbol, elementId, changeId), 5000);
+            };
+            
+            wsConnections[symbol] = ws;
+        }
+        
+        // Fallback REST API
+        async function fetchFallbackPrices() {
+            try {
+                const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+                const data = await res.json();
+                return {
+                    price: parseFloat(data.lastPrice),
+                    change: parseFloat(data.priceChangePercent)
+                };
+            } catch(e) {
+                return null;
+            }
+        }
+        
+        // Initialize WebSocket connections
+        function initWebSocket() {
+            connectWebSocket('BTC', 'btc-price', 'btc-change');
+            connectWebSocket('ETH', 'eth-price', 'eth-change');
+        }
+        
+        // Calculate RSI from price history
+        function calculateRSIFromPrices(prices, period = 14) {
+            if (!prices || prices.length < period + 1) return null;
+            
+            const changes = [];
+            for (let i = 1; i < prices.length; i++) {
+                changes.push(prices[i] - prices[i - 1]);
+            }
+            
+            const recentChanges = changes.slice(-period);
+            const gains = recentChanges.filter(c => c > 0);
+            const losses = recentChanges.filter(c => c < 0).map(c => Math.abs(c));
+            
+            const avgGain = gains.length > 0 ? gains.reduce((a, b) => a + b, 0) / period : 0;
+            const avgLoss = losses.length > 0 ? losses.reduce((a, b) => a + b, 0) / period : 0;
+            
+            if (avgLoss === 0) return 100;
+            
+            const rs = avgGain / avgLoss;
+            const rsi = 100 - (100 / (1 + rs));
+            
+            return Math.round(rsi * 10) / 10;
+        }
+        
+        // Calculate and update RSI display
+        function calculateAndUpdateRSI() {
+            if (priceHistory.btc.length < RSI_PERIOD + 1) {
+                // Not enough data yet, try to fetch historical data
+                fetchHistoricalRSI();
+                return;
+            }
+            
+            const rsi = calculateRSIFromPrices(priceHistory.btc, RSI_PERIOD);
+            if (rsi !== null) {
+                updateRSIDisplay(rsi);
+            }
+        }
+        
+        // Fetch historical data for RSI calculation
+        async function fetchHistoricalRSI() {
+            try {
+                const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=50');
+                const data = await res.json();
+                const closes = data.map(d => parseFloat(d[4])); // Close prices
+                
+                // Update price history
+                priceHistory.btc = closes.slice(-20);
+                
+                const rsi = calculateRSIFromPrices(priceHistory.btc, RSI_PERIOD);
+                if (rsi !== null) {
+                    updateRSIDisplay(rsi);
+                    document.getElementById('rsi-source').textContent = '✓ Live RSI: ' + rsi.toFixed(1);
+                }
+            } catch(e) {
+                console.error('Failed to fetch historical RSI:', e);
+            }
+        }
+        
+        // Update RSI display
+        function updateRSIDisplay(rsi) {
+            const rsiEl = document.getElementById('rsi-value');
+            const signalEl = document.getElementById('rsi-signal');
+            
+            if (rsiEl) {
+                rsiEl.textContent = rsi.toFixed(1);
+                rsiEl.style.transform = 'scale(1.1)';
+                setTimeout(() => rsiEl.style.transform = 'scale(1)', 200);
+            }
+            
+            if (signalEl) {
+                if (rsi <= 30) {
+                    signalEl.innerHTML = '🟢 BUY SIGNAL';
+                    signalEl.style.background = 'rgba(16,185,129,0.15)';
+                    signalEl.style.color = '#10B981';
+                } else if (rsi >= 70) {
+                    signalEl.innerHTML = '🔴 SELL SIGNAL';
+                    signalEl.style.background = 'rgba(239,68,68,0.15)';
+                    signalEl.style.color = '#EF4444';
+                } else if (rsi <= 40) {
+                    signalEl.innerHTML = '🟡 APPROACHING BUY';
+                    signalEl.style.background = 'rgba(251,191,36,0.15)';
+                    signalEl.style.color = '#D97706';
+                } else if (rsi >= 60) {
+                    signalEl.innerHTML = '🟡 APPROACHING SELL';
+                    signalEl.style.background = 'rgba(251,191,36,0.15)';
+                    signalEl.style.color = '#D97706';
+                } else {
+                    signalEl.innerHTML = '🟡 NEUTRAL - WAIT';
+                    signalEl.style.background = 'rgba(251,191,36,0.15)';
+                    signalEl.style.color = '#D97706';
+                }
+            }
+            
+            // Check RSI alerts
+            if (typeof checkAlerts === 'function') {
+                checkAlerts(rsi);
+            }
+        }
+        
+        // Initialize on page load
+        initWebSocket();
+        
+        // ==========================================
         // CONFIGURATION - Default values & trades
         // ==========================================
         const FALLBACK = {
