@@ -877,27 +877,15 @@
             <div class="card" style="overflow: hidden;">
                 <h2>📊 RSI Indicator</h2>
                 <div style="background: rgba(26,26,30,0.8); border-radius: 12px; overflow: hidden;">
-                    <div id="tradingview_rsi_widget" style="height: 200px; width: 100%;"></div>
-                    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-                    <script type="text/javascript">
-                    window.addEventListener('DOMContentLoaded', function() {
-                        new TradingView.widget({
-                            "width": "100%",
-                            "height": 200,
-                            "symbol": "BINANCE:BTCUSDT",
-                            "interval": "60",
-                            "timezone": "Etc/UTC",
-                            "theme": "dark",
-                            "style": "3",
-                            "locale": "en",
-                            "toolbar_bg": "#1a1a2e",
-                            "enable_publishing": false,
-                            "allow_symbol_change": false,
-                            "container_id": "tradingview_rsi_widget",
-                            "studies": ["RSI@tv-basicstudies"]
-                        });
-                    });
-                    </script>
+                    <iframe 
+                        id="tradingview_rsi_widget"
+                        src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=60&hide_top_toolbar=true&allow_symbol_change=false&studies=RSI@tv-basicstudies&theme=dark&style=3&locale=en&timezone=Etc%2FUTC"
+                        style="height: 200px; width: 100%; border: none;"
+                        allowtransparency="true"
+                        scrolling="no"
+                        frameborder="0"
+                        title="RSI Indicator">
+                    </iframe>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; text-align: center;">
                     <div style="padding: 8px; background: var(--bg-mid); border-radius: 8px;"><span style="font-size: 0.65rem; color: var(--text-secondary);">1H RSI</span><br><span id="rsi-1h-value" style="font-weight: 700; font-size: 1.1rem;">--</span></div>
@@ -1297,7 +1285,16 @@
         <!-- Chart -->
         <div class="card" style="margin-top: 24px;">
             <h2>📈 BTC Price Chart</h2>
-            <div id="tradingview_btc" style="height: 450px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5);"><div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);">Loading TradingView chart...</div></div>
+            <div id="tradingview_btc" style="height: 450px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5);">
+                <iframe 
+                    src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York"
+                    style="width: 100%; height: 100%; border: none;"
+                    allowtransparency="true"
+                    scrolling="no"
+                    frameborder="0"
+                    title="BTC Price Chart">
+                </iframe>
+            </div>
         </div>
         
         <!-- Rules & Team -->
