@@ -1303,7 +1303,7 @@
             <div id="tradingview_btc" style="height: 700px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5); margin-top: 16px;">
                 <iframe 
                     id="btc-chart-iframe"
-                    src="https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&hide_side_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1000&popup_height=650&saveChart=true"
+                    src="https://www.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1200&popup_height=800&hide_side_toolbar=false&saveChart=true"
                     style="width: 100%; height: 100%; border: none;"
                     allowtransparency="true"
                     scrolling="no"
@@ -1363,7 +1363,7 @@
             document.getElementById('save-status').style.color = 'var(--danger)';
             // Reload iframe to reset chart
             const iframe = document.getElementById('btc-chart-iframe');
-            iframe.src = 'https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&hide_side_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1000&popup_height=650&saveChart=true';
+            iframe.src = 'https://www.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=D&hide_top_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1200&popup_height=800&hide_side_toolbar=false&saveChart=true';
         }
         
         // Update chart with selected interval
@@ -1375,7 +1375,7 @@
             
             // Reload iframe with new interval
             const iframe = document.getElementById('btc-chart-iframe');
-            const baseSrc = `https://s.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=${interval}&hide_top_toolbar=false&hide_side_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1000&popup_height=650&saveChart=true`;
+            const baseSrc = `https://www.tradingview.com/widgetembed/?symbol=BINANCE:BTCUSDT&interval=${interval}&hide_top_toolbar=false&allow_symbol_change=true&studies=RSI@tv-basicstudies&theme=dark&style=1&locale=en&timezone=America%2FNew_York&toolbar_bg=%231a1a2e&enable_publishing=false&hide_legend=false&show_popup_button=true&popup_width=1200&popup_height=800&hide_side_toolbar=false&saveChart=true`;
             iframe.src = baseSrc;
             
             const saveStatus = document.getElementById('save-status');
