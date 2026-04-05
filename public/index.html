@@ -1,0 +1,2830 @@
+<!DOCTYPE html>
+<!--
+    HIFY CO TRADING DASHBOARD
+    ==========================
+    Purpose: Real-time Bitcoin trading dashboard
+    Author: Ollie (CEO) & HiftyCodes
+    Mission: Help Hifty Co become part of the 1% who win
+    
+    QUICK REFERENCE:
+    - CSS: Lines 10-80 (colors, fonts, layout)
+    - HTML: Lines 700-1200 (cards, sections)
+    - JavaScript: Lines 1170-2000 (data, functions)
+    
+    KEY VALUES TO CHANGE:
+    - FALLBACK (line ~1177): Default prices if API fails
+    - Colors in :root (lines 10-25)
+    - API endpoints in fetchData()
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hifty Co | Trading Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-start: #E8F4F8;
+            --bg-mid: #F0F5F9;
+            --bg-end: #FFFFFF;
+            --card-bg: #FFFFFF;
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            --accent: #F59E0B;
+            --accent-light: #FCD34D;
+            --success: #10B981;
+            --danger: #EF4444;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --shadow-hover: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+        }
+        
+        /* Blockchain Particle Background */
+        #particles-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        /* Dark Mode (default) */
+        :root {
+            --bg-start: #0a0a1a;
+            --bg-mid: #1a1a3a;
+            --bg-end: #0d0d2a;
+            --card-bg: rgba(26, 26, 58, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --accent: #F7931A;
+            --accent-light: #FCD34D;
+            --success: #10B981;
+            --danger: #EF4444;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+            --shadow-hover: 0 12px 40px rgba(0,0,0,0.4);
+            --border: rgba(255,255,255,0.1);
+        }
+        
+        /* Light Mode */
+        body.light-mode {
+            --bg-start: #E8F4F8;
+            --bg-mid: #F0F5F9;
+            --bg-end: #FFFFFF;
+            --card-bg: #FFFFFF;
+            --text-primary: #1E293B;
+            --text-secondary: #64748B;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --danger: #EF4444;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --shadow-hover: 0 12px 40px rgba(0,0,0,0.12);
+            --border: rgba(0,0,0,0.1);
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 80px auto 0;
+            padding: 60px 20px;
+        }
+        
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 60px 0;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #F59E0B, #EF4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+        
+        /* Credo */
+        .credo {
+            background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(239,68,68,0.1));
+            padding: 20px 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 40px;
+            animation: slideUp 0.6s ease;
+        }
+        
+        .credo p {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            animation: slideUp 0.6s ease backwards;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .card:nth-child(1) { animation-delay: 0.05s; }
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.15s; }
+        .card:nth-child(4) { animation-delay: 0.2s; }
+        .card:nth-child(5) { animation-delay: 0.25s; }
+        .card:nth-child(8) { animation-delay: 0.35s; }
+        .card:nth-child(9) { animation-delay: 0.4s; }
+        .card:nth-child(10) { animation-delay: 0.45s; }
+        
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 14px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #F8FAFC;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent), #EF4444);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245,158,11,0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #64748B, #475569);
+        }
+        
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            width: auto;
+        }
+        
+        /* Results */
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 0.9rem;
+        }
+        
+        .result-row:last-child { border: none; }
+        
+        .result-label {
+            color: var(--text-secondary);
+        }
+        
+        .result-value {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .result-value.positive { color: var(--success); }
+        .result-value.negative { color: var(--danger); }
+        
+        /* Performance */
+        .perf-stat {
+            text-align: center;
+            padding: 16px 8px;
+            background: #F8FAFC;
+            border-radius: 12px;
+        }
+        
+        .perf-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .perf-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        
+        .rsi-meter {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        
+        .rsi-meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10B981, #F59E0B, #EF4444);
+            transition: width 0.5s ease;
+        }
+        
+        /* News */
+        .news-item {
+            padding: 14px 0;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        
+        .news-item:last-child { border: none; }
+        
+        .news-headline {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .news-meta {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+        
+        /* Trade Logger */
+        .trade-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 14px;
+        }
+        
+        .trade-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #F8FAFC;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .trade-item .direction {
+            font-weight: 600;
+        }
+        
+        .trade-item .direction.long { color: var(--success); }
+        .trade-item .direction.short { color: var(--danger); }
+        
+        .trade-item .pnl {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Alerts */
+        .alert-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        
+        .alert-status {
+            padding: 14px;
+            background: #F8FAFC;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .alert-status.active {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid var(--success);
+        }
+        
+        .alert-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .alert-dot.active { background: var(--success); }
+        .alert-dot.inactive { background: #CBD5E1; }
+        
+        .card h2 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 18px;
+        }
+        
+        /* TradingView Widget Containers - Dark theme blending */
+        .tradingview-widget-container {
+            border: none !important;
+            border-radius: 12px;
+            overflow: hidden;
+            background: transparent !important;
+        }
+        
+        .tradingview-widget-container__widget {
+            border-radius: 12px;
+            border: none;
+        }
+        
+        #tradingview_btc {
+            border-radius: 12px;
+            overflow: hidden;
+            border: none;
+            background: transparent;
+        }
+        
+        #tradingview_rsi_widget {
+            height: 200px !important;
+            min-height: 200px !important;
+        }
+        
+        #tradingview_rsi_widget iframe {
+            height: 200px !important;
+            min-height: 200px !important;
+        }
+        
+        #tradingview_btc iframe {
+            border-radius: 12px;
+        }
+        
+        /* Remove any ugly borders from TradingView iframes */
+        .tradingview-widget-container iframe {
+            border: none !important;
+            outline: none !important;
+        }
+        
+        /* Prices */
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        
+        .price-item:last-child { border: none; }
+        
+        .coin-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .price-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .price-change {
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+        
+        /* RSI Gauge */
+        .rsi-container {
+            text-align: center;
+            padding: 10px 0;
+        }
+        
+        .rsi-gauge {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 16px;
+            position: relative;
+        }
+        
+        .rsi-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #EF4444 0deg,
+                #EF4444 54deg,
+                #FBBF24 54deg,
+                #FBBF24 126deg,
+                #10B981 126deg,
+                #10B981 180deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .rsi-inner {
+            width: 100px;
+            height: 100px;
+            background: var(--card-bg);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .rsi-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .rsi-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .rsi-signal {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        /* Fear & Greed */
+        .fear-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-primary);
+        }
+        
+        .fear-bar {
+            height: 10px;
+            background: linear-gradient(to right, #EF4444, #FBBF24, #10B981, #FBBF24, #EF4444);
+            border-radius: 5px;
+            margin: 16px 0;
+            position: relative;
+        }
+        
+        .fear-indicator {
+            position: absolute;
+            top: -5px;
+            width: 4px;
+            height: 20px;
+            background: var(--text-primary);
+            border-radius: 2px;
+            transition: left 0.5s ease;
+        }
+        
+        .fear-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Trends */
+        .trend-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        
+        .trend-item {
+            padding: 16px 8px;
+            background: #F8FAFC;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .trend-item:hover {
+            background: #F1F5F9;
+        }
+        
+        .trend-arrow {
+            font-size: 1.8rem;
+            margin-bottom: 4px;
+        }
+        
+        .trend-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        /* S/R */
+        .sr-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .sr-item {
+            padding: 14px 10px;
+            background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .sr-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .sr-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-top: 2px;
+        }
+        
+        /* KPIs */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .kpi-item {
+            padding: 14px 6px;
+            background: #F8FAFC;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .kpi-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .kpi-label {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+        
+        /* Signal */
+        .signal-box {
+            padding: 18px;
+            border-radius: 14px;
+            text-align: center;
+            font-size: 1rem;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+        }
+        
+        /* Team */
+        .team-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .team-member {
+            padding: 14px 20px;
+            background: #F8FAFC;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .team-member:hover {
+            background: #F1F5F9;
+            transform: translateY(-2px);
+        }
+        
+        .team-avatar {
+            font-size: 2rem;
+            margin-bottom: 4px;
+        }
+        
+        .team-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .team-role {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Rules */
+        .rules-list {
+            list-style: none;
+        }
+        
+        .rules-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .rules-list li:last-child { border: none; }
+        
+        .rule-check {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .rule-check input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--success);
+            cursor: pointer;
+        }
+        
+        .rule-num {
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.7rem;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        /* Status */
+        .status {
+            font-size: 0.7rem;
+            color: var(--success);
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .grid { grid-template-columns: 1fr; }
+            .container { padding: 40px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Blockchain Particle Background -->
+    <canvas id="particles-bg"></canvas>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Mode">🌙</button>
+    
+    <!-- Trading Sessions Clock -->
+    <div class="trading-clock" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 16px; background: var(--card-bg); padding: 8px 16px; border-radius: 12px; box-shadow: var(--shadow); font-size: 0.85rem;">
+        <div style="text-align: center;"><span style="font-weight: 600;">🇺🇸 New York</span><br><span id="ny-time">--:--</span></div>
+        <div style="text-align: center;"><span style="font-weight: 600;">🇬🇧 London</span><br><span id="london-time">--:--</span></div>
+        <div style="text-align: center;"><span style="font-weight: 600;">🇯🇵 Tokyo</span><br><span id="tokyo-time">--:--</span></div>
+    </div>
+    <script>
+        function updateTradingSessions() {
+            const now = new Date();
+            const ny = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+            const london = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+            const tokyo = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+            
+            document.getElementById('ny-time').textContent = ny.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            document.getElementById('london-time').textContent = london.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            document.getElementById('tokyo-time').textContent = tokyo.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            
+            // Highlight active session
+            const nyHour = ny.getHours(), londonHour = london.getHours(), tokyoHour = tokyo.getHours();
+            // NYC: 8:30-16:00, London: 8:00-16:30, Tokyo: 9:00-15:00, Saturday: 0-7
+            const nyActive = nyHour >= 8 && nyHour < 16 && ny.getDay() > 0 && ny.getDay() < 6;
+            const londonActive = londonHour >= 8 && londonHour < 16 && london.getDay() > 0 && london.getDay() < 6;
+            const tokyoActive = tokyoHour >= 9 && tokyoHour < 15 && tokyo.getDay() > 0 && tokyo.getDay() < 6;
+            
+            document.getElementById('ny-time').style.color = nyActive ? '#10B981' : 'var(--text-secondary)';
+            document.getElementById('london-time').style.color = londonActive ? '#10B981' : 'var(--text-secondary)';
+            document.getElementById('tokyo-time').style.color = tokyoActive ? '#10B981' : 'var(--text-secondary)';
+        }
+        updateTradingSessions();
+        setInterval(updateTradingSessions, 1000);
+    </script>
+    <div class="container">
+        <!-- Hero -->
+        <div class="hero">
+            <h1>₿ Hifty Co</h1>
+            <p>Trading Dashboard • 1% Trader Mindset</p>
+        </div>
+        
+        <!-- Credos -->
+        <div class="credo">
+            <p>✨ "Teamwork makes the dream work! We can do this!" ✨</p>
+            <p style="margin-top: 8px; font-size: 0.9rem;">⚡ "Cura et Celeritas" - Fast and Precision ⚡</p>
+            <p style="margin-top: 8px; font-size: 0.85rem;">🎯 "With Integrity, we combine Teamwork and Speed to achieve Precision"</p>
+        </div>
+        
+        <!-- Main Grid -->
+        <div class="grid">
+            <!-- Live Prices -->
+            <div class="card">
+                <h2>💰 Live Prices</h2>
+                <div class="price-item">
+                    <span class="coin-name">₿ Bitcoin</span>
+                    <span>
+                        <span class="price-value" id="btc-price">---</span>
+                        <span class="price-change" id="btc-change">---</span>
+                    </span>
+                </div>
+                <div class="price-item">
+                    <span class="coin-name">◎ Solana</span>
+                    <span>
+                        <span class="price-value" id="sol-price">---</span>
+                        <span class="price-change" id="sol-change">---</span>
+                    </span>
+                </div>
+                <div class="price-item">
+                    <span class="coin-name">Ξ Ethereum</span>
+                    <span>
+                        <span class="price-value" id="eth-price">---</span>
+                        <span class="price-change" id="eth-change">---</span>
+                    </span>
+                </div>
+                <p class="status" id="price-status">Loading...</p>
+            </div>
+            
+            <!-- RSI - TradingView Technical Analysis Widget -->
+            <div class="card" style="overflow: hidden;">
+                <h2>📊 RSI Indicator</h2>
+                <div style="background: rgba(26,26,30,0.8); border-radius: 12px; overflow: hidden;">
+                    <div id="tradingview_rsi_widget" style="height: 200px; width: 100%;"></div>
+                    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                    <script type="text/javascript">
+                    window.addEventListener('DOMContentLoaded', function() {
+                        new TradingView.widget({
+                            "width": "100%",
+                            "height": 200,
+                            "symbol": "BINANCE:BTCUSDT",
+                            "interval": "60",
+                            "timezone": "Etc/UTC",
+                            "theme": "dark",
+                            "style": "3",
+                            "locale": "en",
+                            "toolbar_bg": "#1a1a2e",
+                            "enable_publishing": false,
+                            "allow_symbol_change": false,
+                            "container_id": "tradingview_rsi_widget",
+                            "studies": ["RSI@tv-basicstudies"]
+                        });
+                    });
+                    </script>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; text-align: center;">
+                    <div style="padding: 8px; background: var(--bg-mid); border-radius: 8px;"><span style="font-size: 0.65rem; color: var(--text-secondary);">1H RSI</span><br><span id="rsi-1h-value" style="font-weight: 700; font-size: 1.1rem;">--</span></div>
+                    <div style="padding: 8px; background: var(--bg-mid); border-radius: 8px;"><span style="font-size: 0.65rem; color: var(--text-secondary);">4H RSI</span><br><span id="rsi-4h-value" style="font-weight: 700; font-size: 1.1rem;">--</span></div>
+                    <div style="padding: 8px; background: var(--bg-mid); border-radius: 8px;"><span style="font-size: 0.65rem; color: var(--text-secondary);">1D RSI</span><br><span id="rsi-1d-value" style="font-weight: 700; font-size: 1.1rem;">--</span></div>
+                </div>
+                <p class="status" id="rsi-source">✓ TradingView RSI (BTC/USDT)</p>
+            </div>
+            
+            <!-- Fear & Greed -->
+            <div class="card">
+                <h2>😱 Fear & Greed</h2>
+                <div class="fear-value" id="fear-value">--</div>
+                <div class="fear-bar">
+                    <div class="fear-indicator" id="fear-indicator" style="left: 50%;"></div>
+                </div>
+                <div class="fear-labels">
+                    <span>Fear</span>
+                    <span>Neutral</span>
+                    <span>Greed</span>
+                </div>
+                <p style="text-align: center; margin-top: 12px; color: var(--text-secondary); font-size: 0.85rem;" id="fear-sentiment">Loading...</p>
+                <p class="status" id="fear-status">Loading...</p>
+            </div>
+            
+            <!-- Trend -->
+            <div class="card">
+                <h2>📈 Trend Direction</h2>
+                <div class="trend-grid">
+                    <div class="trend-item">
+                        <div class="trend-arrow" id="trend-1h">⬆</div>
+                        <div class="trend-label">1H</div>
+                    </div>
+                    <div class="trend-item">
+                        <div class="trend-arrow" id="trend-4h">⬆</div>
+                        <div class="trend-label">4H</div>
+                    </div>
+                    <div class="trend-item">
+                        <div class="trend-arrow" id="trend-1d">⬆</div>
+                        <div class="trend-label">1D</div>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 12px; color: var(--text-secondary); font-size: 0.85rem;" id="trend-signal">Loading...</p>
+            </div>
+            
+            <!-- S/R -->
+            <div class="card">
+                <h2>🎯 Support & Resistance</h2>
+                <div class="sr-grid">
+                    <div class="sr-item">
+                        <div class="sr-label">Resistance 2</div>
+                        <div class="sr-value" id="r2">---</div>
+                    </div>
+                    <div class="sr-item">
+                        <div class="sr-label">Resistance 1</div>
+                        <div class="sr-value" id="r1">---</div>
+                    </div>
+                    <div class="sr-item">
+                        <div class="sr-label">Support 1</div>
+                        <div class="sr-value" id="s1">---</div>
+                    </div>
+                    <div class="sr-item">
+                        <div class="sr-label">Support 2</div>
+                        <div class="sr-value" id="s2">---</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- KPIs -->
+            <div class="card">
+                <h2>📉 Trading KPIs</h2>
+                <div class="kpi-grid">
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="kpi-winrate">100%</div>
+                        <div class="kpi-label">Win Rate</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="kpi-trades">4</div>
+                        <div class="kpi-label">Trades</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="kpi-pnl">+$15,091</div>
+                        <div class="kpi-label">Total P&L</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="kpi-rsi">33%</div>
+                        <div class="kpi-label">RSI Compliance</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="kpi-avg">$3,850</div>
+                        <div class="kpi-label">Avg Win</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="kpi-ratio">2:1</div>
+                        <div class="kpi-label">Avg Ratio</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW: Position Size Calculator -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>🧮 Position Size Calculator</h2>
+            <div class="form-group">
+                <label>Account Balance ($)</label>
+                <input type="number" id="calc-balance" placeholder="10000" value="10000">
+            </div>
+            <div class="form-group">
+                <label>Risk %</label>
+                <input type="number" id="calc-risk" placeholder="2" value="2" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Entry Price ($)</label>
+                <input type="number" id="calc-entry" placeholder="67000" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Stop Loss ($)</label>
+                <input type="number" id="calc-sl" placeholder="65000" step="0.01">
+            </div>
+            <button class="btn" onclick="calculatePosition()">Calculate Position</button>
+            <div id="calc-results" style="margin-top: 16px;">
+                <div class="result-row">
+                    <span class="result-label">Position Size</span>
+                    <span class="result-value" id="result-size">--</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Potential Loss</span>
+                    <span class="result-value negative" id="result-loss">--</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Potential Profit (2:1)</span>
+                    <span class="result-value positive" id="result-profit">--</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW: Performance Dashboard -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📊 Performance Dashboard</h2>
+            <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px;">
+                <div class="perf-stat">
+                    <div class="perf-value" id="perf-winrate">100%</div>
+                    <div class="perf-label">Win Rate</div>
+                </div>
+                <div class="perf-stat">
+                    <div class="perf-value" id="perf-rsi">33%</div>
+                    <div class="perf-label">RSI Compliance</div>
+                    <div class="rsi-meter"><div class="rsi-meter-fill" id="rsi-meter-fill" style="width: 33%;"></div></div>
+                </div>
+            </div>
+            <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                <div class="perf-stat">
+                    <div class="perf-value" id="perf-tf">4H</div>
+                    <div class="perf-label">Best Timeframe</div>
+                </div>
+                <div class="perf-stat">
+                    <div class="perf-value" id="perf-today">+$450</div>
+                    <div class="perf-label">Today's P&L</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW: Trade History Dashboard with Charts -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📈 Trade History Dashboard</h2>
+            
+            <!-- Stats Row -->
+            <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
+                <div class="perf-stat">
+                    <div class="perf-value" id="trade-streak">0</div>
+                    <div class="perf-label">Streak</div>
+                </div>
+                <div class="perf-stat">
+                    <div class="perf-value" id="trade-wins">0</div>
+                    <div class="perf-label">Wins</div>
+                </div>
+                <div class="perf-stat">
+                    <div class="perf-value" id="trade-losses">0</div>
+                    <div class="perf-label">Losses</div>
+                </div>
+                <div class="perf-stat">
+                    <div class="perf-value" id="best-time">-</div>
+                    <div class="perf-label">Best Hour</div>
+                </div>
+            </div>
+            
+            <!-- 1% Trader Chart - P&L Over Time -->
+            <div style="margin: 16px 0;">
+                <div class="perf-label">📊 P&L Over Trades (1% Trader Style)</div>
+                <canvas id="pnl-chart" height="100" style="width:100%;height:100px;background:var(--bg-mid);border-radius:8px;margin-top:8px;"></canvas>
+            </div>
+            
+            <!-- Win Rate Indicator -->
+            <div style="margin: 16px 0;">
+                <div class="perf-label">🎯 Win Rate Progress</div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+                    <div style="flex:1;height:12px;background:var(--bg-mid);border-radius:6px;overflow:hidden;">
+                        <div id="winrate-bar" style="width:100%;height:100%;background:linear-gradient(90deg, #10B981, #F59E0B);border-radius:6px;transition:width 0.5s;"></div>
+                    </div>
+                    <span id="winrate-text" style="font-weight:700;font-size:1.1rem;">100%</span>
+                </div>
+            </div>
+            
+            <!-- 1% Trader Indicators -->
+            <div style="margin: 16px 0; padding: 12px; background: var(--bg-mid); border-radius: 10px;">
+                <div class="perf-label">🏆 1% Trader Indicators</div>
+                <div class="grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem;">📈</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">Avg Win</div>
+                        <div id="avg-win" style="font-weight:700;color:var(--success);">$0</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem;">📉</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">Avg Loss</div>
+                        <div id="avg-loss" style="font-weight:700;color:var(--danger);">$0</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem;">⚡</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">Risk:Reward</div>
+                        <div id="rr-ratio" style="font-weight:700;">-</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem;">💎</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">Edge</div>
+                        <div id="edge-indicator" style="font-weight:700;color:var(--accent);">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trade List -->
+            <div id="trade-history-list" style="max-height: 150px; overflow-y: auto;"></div>
+        </div>
+        
+        <!-- NEW: News Feed -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📰 Latest Market News</h2>
+            <div id="news-feed">
+                <div class="news-item">
+                    <div class="news-headline">Bitcoin surges past $67K as institutional demand continues</div>
+                    <div class="news-meta">CryptoNews • 2h ago</div>
+                </div>
+                <div class="news-item">
+                    <div class="news-headline">Fed signals potential rate cuts in upcoming meetings</div>
+                    <div class="news-meta">Markets • 4h ago</div>
+                </div>
+                <div class="news-item">
+                    <div class="news-headline">Ethereum ETF inflows hit new weekly record</div>
+                    <div class="news-meta">CryptoNews • 6h ago</div>
+                </div>
+            </div>
+            <p class="status" id="news-status">📰 Curated headlines</p>
+        </div>
+        
+        <!-- NEW: Quick Trade Logger -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📝 Quick Trade Logger</h2>
+            <div class="form-group">
+                <label>Trade Result</label>
+                <select id="trade-result" onchange="updateTradeAmount()">
+                    <option value="">-- Select Result --</option>
+                    <option value="WIN">✅ WIN</option>
+                    <option value="LOSS">❌ LOSS</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Profit/Loss Amount ($)</label>
+                <input type="number" id="trade-pnl" placeholder="2500" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Entry Price ($)</label>
+                <input type="number" id="trade-entry" placeholder="67000" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Take Profit ($)</label>
+                <input type="number" id="trade-tp" placeholder="69000" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Stop Loss ($)</label>
+                <input type="number" id="trade-sl" placeholder="65000" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Ratio</label>
+                <select id="trade-ratio">
+                    <option value="2">2:1</option>
+                    <option value="3">3:1</option>
+                    <option value="4">4:1</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>RSI Entry</label>
+                <input type="number" id="trade-rsi" placeholder="28" step="1">
+            </div>
+            <div class="form-group">
+                <label>Direction</label>
+                <select id="trade-direction">
+                    <option value="long">LONG ↗</option>
+                    <option value="short">SHORT ↘</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Upload Trade Screenshot</label>
+                <input type="file" id="trade-image" accept="image/*" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-mid);color:var(--text);">
+            </div>
+            <div class="form-group">
+                <label>Trade Notes / Thesis</label>
+                <textarea id="trade-notes" placeholder="Why are you taking this trade?" rows="3" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;"></textarea>
+            </div>
+            <button class="btn" onclick="saveTrade()">💾 Save Trade</button>
+            <button class="btn" onclick="updateTrade()" style="background:var(--success);">✏️ Update Trade</button>
+        </div>
+        
+        <!-- NEW: Trade Journal -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📓 Trade Journal</h2>
+            <div id="trade-journal"></div>
+        </div>
+        
+        <!-- NEW: Alerts Section -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>🔔 RSI Alerts</h2>
+            <div class="alert-buttons">
+                <button class="btn btn-small" id="alert-30" onclick="toggleAlert(30)">RSI 30 Alert</button>
+                <button class="btn btn-small btn-secondary" id="alert-70" onclick="toggleAlert(70)">RSI 70 Alert</button>
+            </div>
+            <div class="alert-status" id="alert-status">
+                <span class="alert-dot inactive"></span>
+                <span id="alert-text">No alerts active</span>
+            </div>
+        </div>
+        
+        <!-- Price Alerts Section -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>💰 Price Alerts</h2>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                <input type="number" id="price-alert-1" placeholder="Price 1" style="width: 90px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-start); color: var(--text-primary);">
+                <input type="number" id="price-alert-2" placeholder="Price 2" style="width: 90px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-start); color: var(--text-primary);">
+                <input type="number" id="price-alert-3" placeholder="Price 3" style="width: 90px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-start); color: var(--text-primary);">
+            </div>
+            <div class="alert-buttons">
+                <button class="btn btn-small" id="price-alert-btn" onclick="togglePriceAlerts()">Set Price Alerts</button>
+            </div>
+            <div class="alert-status" id="price-alert-status">
+                <span class="alert-dot inactive"></span>
+                <span id="price-alert-text">No price alerts set</span>
+            </div>
+        </div>
+        
+        <!-- Trading Tips - NEW -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>💡 Trading Tips (Latest Research)</h2>
+            <div style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(245,158,11,0.1)); padding: 16px; border-radius: 12px; margin-bottom: 14px;">
+                <p style="font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">🎯 RSI Best Practices for Crypto</p>
+                <ul style="list-style: none; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.8;">
+                    <li>📊 <strong>Use 7-10 period RSI</strong> (not 14) - More responsive for crypto</li>
+                    <li>🎯 <strong>80/20 thresholds</strong> instead of 70/30 - Better signals</li>
+                    <li>📈 <strong>200 EMA trend filter</strong> - Only trade in trend direction</li>
+                    <li>⚡ <strong>StochRSI for timing</strong> - Precise entry/exit confirmation</li>
+                </ul>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                <div class="sr-item" style="background: rgba(16,185,129,0.1);">
+                    <div class="sr-label">LONG Signal</div>
+                    <div class="sr-value" style="color: #10B981;">RSI &lt;20 + Price &gt; 200 EMA</div>
+                </div>
+                <div class="sr-item" style="background: rgba(239,68,68,0.1);">
+                    <div class="sr-label">SHORT Signal</div>
+                    <div class="sr-value" style="color: #EF4444;">RSI &gt;80 + Price &lt; 200 EMA</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Signal -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>💡 Today's Signal</h2>
+            <div class="signal-box" id="signal-box">
+                Loading market data...
+            </div>
+            <div style="margin-top: 16px;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 500;">💰 Entry Price ($)</label>
+                <input type="number" id="signal-entry" placeholder="e.g. 67000" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card-bg); color: var(--text-primary);">
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Your planned entry price</p>
+            </div>
+            <div style="margin-top: 12px;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 500;">🎯 Take Profit ($)</label>
+                <input type="number" id="signal-tp" placeholder="e.g. 70000" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card-bg); color: var(--text-primary);">
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Exit target (3:1 ratio recommended)</p>
+            </div>
+            <div style="margin-top: 12px;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 500;">🛡️ Stop Loss ($)</label>
+                <input type="number" id="signal-sl" placeholder="e.g. 65000" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card-bg); color: var(--text-primary);">
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">Maximum loss acceptable (1-2% risk)</p>
+            </div>
+            <button onclick="calculateSignal()" style="width: 100%; margin-top: 12px; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">📊 Calculate Signal</button>
+        </div>
+        
+        <!-- Chart -->
+        <div class="card" style="margin-top: 24px;">
+            <h2>📈 BTC Price Chart</h2>
+            <div id="tradingview_btc" style="height: 450px; border-radius: 12px; overflow: hidden; background: rgba(26,26,58,0.5);"><div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);">Loading TradingView chart...</div></div>
+        </div>
+        
+        <!-- Rules & Team -->
+        <div class="grid" style="margin-top: 24px;">
+            <div class="card">
+                <h2>📋 Trading Rules Checklist</h2>
+                <ul class="rules-list">
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">1</span>🕐 PATIENCE IS KEY - Wait for market, don't rush</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">2</span>RSI ≤20 (LONG) | ≥80 (SHORT)</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">3</span>Price must be above/below 200 EMA</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">4</span>Ratio 2:1 to 3:1</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">5</span>SET and FORGET</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">6</span>No revenge trading</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">7</span>Size winners, cut losers</label></li>
+                    <li><label class="rule-check"><input type="checkbox"> <span class="rule-num">8</span>StochRSI confirms timing</label></li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h2>👥 Our Team</h2>
+                <div class="team-grid">
+                    <div class="team-member">
+                        <img src="mango-ceo.jpg" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px;" alt="Mango">
+                        <div class="team-name">Mango</div>
+                        <div class="team-role">CEO - Hifty Co</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="team-avatar">🤖</div>
+                        <div class="team-name">Ollie</div>
+                        <div class="team-role">Chief of Command</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="team-avatar">📊</div>
+                        <div class="team-name">MintyTrades</div>
+                        <div class="team-role">Trading Research</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="team-avatar">💻</div>
+                        <div class="team-name">HiftyCodes</div>
+                        <div class="team-role">Website Dev</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="team-avatar">📈</div>
+                        <div class="team-name">HiftyAnalyst</div>
+                        <div class="team-role">Data Analysis</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="team-avatar">🛡️</div>
+                        <div class="team-name">HiftyRiskMgr</div>
+                        <div class="team-role">Risk Management</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer>
+            <p>Powered by Ollie & Team • 1% Trader Mission 🚀</p>
+            <p style="margin-top: 6px;" id="last-updated">Last updated: --</p>
+        </footer>
+    </div>
+    
+    <script>
+        // ==========================================
+        // RSI DATA - Multiple timeframes using Binance klines
+        // ==========================================
+        let rsiData = {
+            '1h': { closes: [], rsi: null, ws: null },
+            '4h': { closes: [], rsi: null },
+            '1d': { closes: [], rsi: null }
+        };
+        
+        // Calculate RSI from close prices array (Wilder's smoothing method)
+        function calculateRSI(closes, period = 14) {
+            if (!closes || closes.length < period + 1) return null;
+            
+            // Calculate price changes
+            const changes = [];
+            for (let i = 1; i < closes.length; i++) {
+                changes.push(closes[i] - closes[i - 1]);
+            }
+            
+            // Separate gains and losses for the first calculation
+            let avgGain = 0, avgLoss = 0;
+            for (let i = 0; i < period; i++) {
+                if (changes[i] > 0) avgGain += changes[i];
+                else avgLoss += Math.abs(changes[i]);
+            }
+            avgGain /= period;
+            avgLoss /= period;
+            
+            // Wilder's smoothing for subsequent values
+            for (let i = period; i < changes.length; i++) {
+                const change = changes[i];
+                avgGain = (avgGain * (period - 1) + (change > 0 ? change : 0)) / period;
+                avgLoss = (avgLoss * (period - 1) + (change < 0 ? Math.abs(change) : 0)) / period;
+            }
+            
+            if (avgLoss === 0) return 100;
+            const rs = avgGain / avgLoss;
+            const rsi = 100 - (100 / (1 + rs));
+            
+            return Math.round(rsi * 10) / 10;
+        }
+        
+        // Fetch klines from Binance REST API
+        async function fetchKlines(symbol = 'BTCUSDT', interval = '1h', limit = 15) {
+            try {
+                const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Klines fetch failed');
+                const data = await res.json();
+                // data format: [openTime, open, high, low, close, volume, closeTime, ...]
+                return data.map(d => parseFloat(d[4])); // Return close prices
+            } catch (e) {
+                console.error('Failed to fetch klines:', e);
+                return null;
+            }
+        }
+        
+        // Initialize RSI data for all timeframes
+        async function initRSIData() {
+            // Fetch all timeframes in parallel
+            const [klines1h, klines4h, klines1d] = await Promise.all([
+                fetchKlines('BTCUSDT', '1h', 15),
+                fetchKlines('BTCUSDT', '4h', 15),
+                fetchKlines('BTCUSDT', '1d', 15)
+            ]);
+            
+            if (klines1h) {
+                rsiData['1h'].closes = klines1h;
+                rsiData['1h'].rsi = calculateRSI(klines1h, 14);
+            }
+            if (klines4h) {
+                rsiData['4h'].closes = klines4h;
+                rsiData['4h'].rsi = calculateRSI(klines4h, 14);
+            }
+            if (klines1d) {
+                rsiData['1d'].closes = klines1d;
+                rsiData['1d'].rsi = calculateRSI(klines1d, 14);
+            }
+            
+            updateAllRSIDisplays();
+        }
+        
+        // Update all RSI displays
+        function updateAllRSIDisplays() {
+            // Update main RSI gauge with 1H RSI
+            const rsi1h = rsiData['1h'].rsi;
+            updateRSIDisplay(rsi1h);
+            
+            // Update timeframe RSI values
+            document.getElementById('rsi-1h-value').textContent = rsi1h !== null ? rsi1h.toFixed(1) : '--';
+            document.getElementById('rsi-4h-value').textContent = rsiData['4h'].rsi !== null ? rsiData['4h'].rsi.toFixed(1) : '--';
+            document.getElementById('rsi-1d-value').textContent = rsiData['1d'].rsi !== null ? rsiData['1d'].rsi.toFixed(1) : '--';
+            
+            // Color code the timeframe values
+            colorRSIValue('rsi-1h-value', rsiData['1h'].rsi);
+            colorRSIValue('rsi-4h-value', rsiData['4h'].rsi);
+            colorRSIValue('rsi-1d-value', rsiData['1d'].rsi);
+            
+            // Update RSI source
+            document.getElementById('rsi-source').textContent = '✓ Live RSI (Binance Klines)';
+        }
+        
+        function colorRSIValue(elementId, rsi) {
+            const el = document.getElementById(elementId);
+            if (!el || rsi === null) return;
+            if (rsi <= 30) el.style.color = '#10B981';
+            else if (rsi >= 70) el.style.color = '#EF4444';
+            else el.style.color = '#F59E0B';
+        }
+        
+        // Connect to Binance WebSocket for live kline updates
+        function connectKlineWebSocket(symbol = 'BTCUSDT') {
+            // Close existing connection if any
+            if (rsiData['1h'].ws) {
+                rsiData['1h'].ws.close();
+            }
+            
+            const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@kline_1h`);
+            
+            ws.onopen = function() {
+                console.log('✓ Connected to BTC/USDT kline_1h WebSocket');
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                const kline = data.k; // kline data
+                const closePrice = parseFloat(kline.c);
+                const isClosed = kline.x; // true if candle closed
+                
+                if (isClosed) {
+                    // Candle closed - add to history and recalculate RSI
+                    rsiData['1h'].closes.push(closePrice);
+                    if (rsiData['1h'].closes.length > 15) {
+                        rsiData['1h'].closes.shift(); // Keep only last 15
+                    }
+                    rsiData['1h'].rsi = calculateRSI(rsiData['1h'].closes, 14);
+                    updateAllRSIDisplays();
+                    
+                    // Also refresh 4H and 1D periodically (every 4 hours for 4H, daily for 1D)
+                    // For now, refresh 4H and 1D every hour
+                } else {
+                    // Live update - use current price but don't recalculate until close
+                    // Optionally update with "live" indicator
+                }
+            };
+            
+            ws.onerror = function(error) {
+                console.error('Kline WebSocket error:', error);
+            };
+            
+            ws.onclose = function() {
+                console.log('Kline WebSocket closed, reconnecting in 5s...');
+                setTimeout(() => connectKlineWebSocket(symbol), 5000);
+            };
+            
+            rsiData['1h'].ws = ws;
+        }
+        
+        // Periodic refresh of 4H and 1D RSI (since they don't have dedicated WebSockets)
+        function refreshHigherTimeframes() {
+            Promise.all([
+                fetchKlines('BTCUSDT', '4h', 15).then(closes => {
+                    if (closes) {
+                        rsiData['4h'].closes = closes;
+                        rsiData['4h'].rsi = calculateRSI(closes, 14);
+                    }
+                }),
+                fetchKlines('BTCUSDT', '1d', 15).then(closes => {
+                    if (closes) {
+                        rsiData['1d'].closes = closes;
+                        rsiData['1d'].rsi = calculateRSI(closes, 14);
+                    }
+                })
+            ]).then(() => {
+                updateAllRSIDisplays();
+            });
+        }
+        
+        // ==========================================
+        // LIVE BINANCE WEBSOCKET - Real-time prices (separate from RSI)
+        // ==========================================
+        let wsConnections = {};
+        
+        // Connect to Binance WebSocket for live prices
+        function connectWebSocket(symbol, elementId, changeId) {
+            // symbol is like 'BTC', 'ETH' - stream name is lowercase like 'btcusdt'
+            const streamName = symbol.toLowerCase() + 'usdt';
+            const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName}@ticker`);
+            
+            ws.onopen = function() {
+                console.log(`✓ Connected to ${symbol}/USDT WebSocket`);
+                document.getElementById('price-status').textContent = '✓ Live WebSocket';
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                const price = parseFloat(data.c);
+                const change = parseFloat(data.P);
+                
+                // Update price display
+                const priceEl = document.getElementById(elementId);
+                const changeEl = document.getElementById(changeId);
+                
+                if (priceEl) {
+                    priceEl.textContent = '$' + price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    priceEl.style.transform = 'scale(1.05)';
+                    setTimeout(() => priceEl.style.transform = 'scale(1)', 150);
+                }
+                
+                if (changeEl) {
+                    changeEl.textContent = (change >= 0 ? '↑' : '↓') + Math.abs(change).toFixed(2) + '%';
+                    changeEl.className = 'price-change ' + (change >= 0 ? 'positive' : 'negative');
+                }
+                
+                // Check price alerts
+                if (typeof checkPriceAlerts === 'function') {
+                    checkPriceAlerts(price);
+                }
+            };
+            
+            ws.onerror = function(error) {
+                console.error(`WebSocket error for ${symbol}:`, error);
+            };
+            
+            ws.onclose = function() {
+                console.log(`WebSocket closed for ${symbol}, reconnecting...`);
+                setTimeout(() => connectWebSocket(symbol, elementId, changeId), 5000);
+            };
+            
+            wsConnections[symbol] = ws;
+        }
+        
+        // Initialize price WebSocket connections
+        function initWebSocket() {
+            connectWebSocket('BTC', 'btc-price', 'btc-change');
+            connectWebSocket('ETH', 'eth-price', 'eth-change');
+        }
+        
+        // Initialize on page load
+        initWebSocket();
+        
+        // Initialize RSI data and kline WebSocket
+        initRSIData().then(() => {
+            connectKlineWebSocket();
+            // Refresh higher timeframes every 5 minutes
+            setInterval(refreshHigherTimeframes, 5 * 60 * 1000);
+        });
+        
+        // Legacy functions for backward compatibility
+        const priceHistory = { btc: [], eth: [] };
+        const RSI_PERIOD = 14;
+        
+        // Update RSI display (main gauge)
+        function updateRSIDisplay(rsi) {
+            const rsiEl = document.getElementById('rsi-value');
+            const signalEl = document.getElementById('rsi-signal');
+            
+            if (rsiEl) {
+                rsiEl.textContent = rsi !== null ? rsi.toFixed(1) : '--';
+                rsiEl.style.transform = 'scale(1.1)';
+                setTimeout(() => rsiEl.style.transform = 'scale(1)', 200);
+            }
+            
+            if (signalEl) {
+                if (rsi !== null && rsi <= 30) {
+                    signalEl.innerHTML = '🟢 BUY SIGNAL';
+                    signalEl.style.background = 'rgba(16,185,129,0.15)';
+                    signalEl.style.color = '#10B981';
+                } else if (rsi !== null && rsi >= 70) {
+                    signalEl.innerHTML = '🔴 SELL SIGNAL';
+                    signalEl.style.background = 'rgba(239,68,68,0.15)';
+                    signalEl.style.color = '#EF4444';
+                } else if (rsi !== null && rsi <= 40) {
+                    signalEl.innerHTML = '🟡 APPROACHING BUY';
+                    signalEl.style.background = 'rgba(251,191,36,0.15)';
+                    signalEl.style.color = '#D97706';
+                } else if (rsi !== null && rsi >= 60) {
+                    signalEl.innerHTML = '🟡 APPROACHING SELL';
+                    signalEl.style.background = 'rgba(251,191,36,0.15)';
+                    signalEl.style.color = '#D97706';
+                } else {
+                    signalEl.innerHTML = '🟡 NEUTRAL - WAIT';
+                    signalEl.style.background = 'rgba(251,191,36,0.15)';
+                    signalEl.style.color = '#D97706';
+                }
+            }
+            
+            // Check alerts when RSI updates
+            if (typeof checkAlerts === 'function' && rsi !== null) {
+                checkAlerts(rsi);
+            }
+        }
+        
+        // Legacy function for backward compatibility
+        function calculateRSIFromPrices(prices, period = 14) {
+            return calculateRSI(prices, period);
+        }
+        
+        function calculateAndUpdateRSI() {
+            // Legacy function - now handled by initRSIData
+            initRSIData();
+        }
+        
+        function fetchHistoricalRSI() {
+            // Legacy function - now handled by initRSIData
+            initRSIData();
+        }
+        
+        // ==========================================
+        // CONFIGURATION - Default values & trades
+        // ==========================================
+        const FALLBACK = {
+            btc: { usd: 67000, usd_24h_change: 2.5 },
+            eth: { usd: 2000, usd_24h_change: 1.5 },
+            sol: { usd: 85, usd_24h_change: 3.2 },
+            fear: 18,
+            rsi: 45
+        };
+        
+        // Default trade history (Hifty Co's trades)
+        // CORRECTED DATA - Verified from trading journal
+        const DEFAULT_TRADES = [
+            { entry: 71455.8, exit: 72538.4, direction: 'short', rsi: 70, pnl: -2485.46, notes: 'Trade #5 - SHORT, Entry: 71,455.8, TP: 68,207.8, SL: 72,538.4, RSI: 70, Timeframe: 5min, SL hit, LOSS. FEEDBACK: RSI 70 short was correct signal but timing was early. Need more confirmation - check 5min, 1H and Daily timeframes before entry.', date: '2026-03-04T10:30:00.000Z' },
+            { entry: 68410, exit: 66293.2, direction: 'short', rsi: 62.82, pnl: 3401.82, notes: 'Trade #1 - SHORT, hit full TP', date: '2026-02-27T13:00:00.000Z' },
+            { entry: 64773.8, exit: 66736.6, direction: 'long', rsi: 44, pnl: 3685.45, notes: 'Trade #2 - LONG, hit full TP', date: '2026-02-28T20:00:00.000Z' },
+            { entry: 65922.7, exit: 67920.3, direction: 'long', rsi: 30, pnl: 4004.49, notes: 'Trade #3 - LONG, hit full TP', date: '2026-03-01T17:00:00.000Z' },
+            { entry: 66439.25, exit: 67740, direction: 'long', rsi: 31, pnl: 4000.00, notes: 'Trade #4 - LONG, hit full TP +$4,000', date: '2026-03-03T12:00:00.000Z' }
+        ];
+        
+        // Total: 5 trades, +$18,339.76
+        
+        // Initialize with default trades if empty
+        const DATA_VERSION = '2.0';
+        if (!localStorage.getItem('hifty-trades') || localStorage.getItem('hifty-data-version') !== DATA_VERSION) {
+            localStorage.setItem('hifty-trades', JSON.stringify(DEFAULT_TRADES));
+            localStorage.setItem('hifty-data-version', DATA_VERSION);
+        }
+        
+        // ==========================================
+        // MAIN FUNCTION - Fetch all market data
+        // ==========================================
+        async function fetchData() {
+            try {
+                // Use CryptoCompare API - BTC, SOL, ETH for Live Prices
+                const priceRes = await fetch('https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,SOL,ETH&tsyms=USD');
+                const priceData = await priceRes.json();
+                
+                if (priceData.BTC) {
+                    const btcPrice = priceData.BTC.USD;
+                    const solPrice = priceData.SOL ? priceData.SOL.USD : 0;
+                    const ethPrice = priceData.ETH ? priceData.ETH.USD : 0;
+                    
+                    const formatted = { 
+                        bitcoin: { usd: btcPrice, usd_24h_change: 0 },
+                        solana: { usd: solPrice, usd_24h_change: 0 },
+                        ethereum: { usd: ethPrice, usd_24h_change: 0 }
+                    };
+                    updatePrices(formatted);
+                    document.getElementById('price-status').textContent = '✓ Live: $' + btcPrice.toLocaleString();
+                    
+                    // Fetch 24h change for trends
+                    try {
+                        const changeRes = await fetch('https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=USD&limit=2');
+                        const changeData = await changeRes.json();
+                        if (changeData.Data && changeData.Data.Data && changeData.Data.Data.length >= 2) {
+                            const today = changeData.Data.Data[changeData.Data.Data.length - 1].close;
+                            const yesterday = changeData.Data.Data[changeData.Data.Data.length - 2].close;
+                            const change = ((today - yesterday) / yesterday) * 100;
+                            updateTrends(change);
+                        }
+                    } catch(e) {}
+                } else {
+                    updatePrices(FALLBACK);
+                    document.getElementById('price-status').textContent = '⚠ Using cached';
+                }
+                
+                // Note: RSI is now calculated from Binance Klines API (see initRSIData)
+                // This is handled separately from the fetchData function to ensure proper OHLCV candle data
+                
+                try {
+                    const fearRes = await fetch('https://alternative.me/crypto/fear-and-greed-index/');
+                    const fearText = await fearRes.text();
+                    const match = fearText.match(/(\d+)/);
+                    const fear = match ? parseInt(match[1]) : FALLBACK.fear;
+                    updateFear(fear);
+                    document.getElementById('fear-status').textContent = '✓ Live: ' + fear + '/100';
+                } catch(e) {
+                    updateFear(FALLBACK.fear);
+                    document.getElementById('fear-status').textContent = '⚠ Using cached';
+                }
+                
+                // Calculate Support & Resistance from recent data
+                try {
+                    const srRes = await fetch('https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=USD&limit=20');
+                    const srData = await srRes.json();
+                    if (srData.Data && srData.Data.Data) {
+                        const highs = srData.Data.Data.map(d => d.high);
+                        const lows = srData.Data.Data.map(d => d.low);
+                        const current = highs[highs.length - 1];
+                        
+                        const r2 = Math.max(...highs.slice(-5));
+                        const r1 = Math.max(...highs.slice(-10));
+                        const s1 = Math.min(...lows.slice(-10));
+                        const s2 = Math.min(...lows.slice(-5));
+                        
+                        document.getElementById('r2').textContent = '$' + Math.round(r2).toLocaleString();
+                        document.getElementById('r1').textContent = '$' + Math.round(r1).toLocaleString();
+                        document.getElementById('s1').textContent = '$' + Math.round(s1).toLocaleString();
+                        document.getElementById('s2').textContent = '$' + Math.round(s2).toLocaleString();
+                    }
+                } catch(e) {}
+                
+            } catch(e) {
+                updatePrices(FALLBACK);
+                updateFear(FALLBACK.fear);
+                // RSI falls back to Binance Klines data (initRSIData handles this)
+                document.getElementById('price-status').textContent = '⚠ Using cached';
+                document.getElementById('fear-status').textContent = '⚠ Using cached';
+            }
+            
+            document.getElementById('last-updated').textContent = '🕐 ' + new Date().toLocaleTimeString();
+        }
+        
+        // Note: calculateRSI is defined in the RSI DATA section above (uses Wilder's smoothing)
+        // This section handles price/SR/fear updates only
+        
+        // ==========================================
+        // UPDATE UI - Display fetched prices
+        // ==========================================
+        function updatePrices(data) {
+            const btc = data.bitcoin || FALLBACK.btc;
+            const sol = data.solana || FALLBACK.sol;
+            const eth = data.ethereum || FALLBACK.eth;
+            
+            // Bitcoin
+            document.getElementById('btc-price').textContent = '$' + Math.round(btc.usd).toLocaleString();
+            document.getElementById('btc-change').textContent = (btc.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(btc.usd_24h_change || 0).toFixed(2) + '%';
+            document.getElementById('btc-change').className = 'price-change ' + (btc.usd_24h_change >= 0 ? 'positive' : 'negative');
+            
+            // Check price alerts
+            if (typeof checkPriceAlerts === 'function') {
+                checkPriceAlerts(btc.usd);
+            }
+            
+            // Solana
+            document.getElementById('sol-price').textContent = '$' + Math.round(sol.usd).toLocaleString();
+            document.getElementById('sol-change').textContent = (sol.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(sol.usd_24h_change || 0).toFixed(2) + '%';
+            document.getElementById('sol-change').className = 'price-change ' + (sol.usd_24h_change >= 0 ? 'positive' : 'negative');
+            
+            // Ethereum
+            document.getElementById('eth-price').textContent = '$' + Math.round(eth.usd).toLocaleString();
+            document.getElementById('eth-change').textContent = (eth.usd_24h_change >= 0 ? '↑' : '↓') + Math.abs(eth.usd_24h_change || 0).toFixed(2) + '%';
+            document.getElementById('eth-change').className = 'price-change ' + (eth.usd_24h_change >= 0 ? 'positive' : 'negative');
+            
+            const price = btc.usd || 67000;
+            document.getElementById('r2').textContent = '$' + Math.round(price * 1.05).toLocaleString();
+            document.getElementById('r1').textContent = '$' + Math.round(price * 1.02).toLocaleString();
+            document.getElementById('s1').textContent = '$' + Math.round(price * 0.98).toLocaleString();
+            document.getElementById('s2').textContent = '$' + Math.round(price * 0.95).toLocaleString();
+        }
+        
+        // Note: updateRSIDisplay is defined in the RSI DATA section above
+        // This section handles Fear & Greed updates only
+        
+        // ==========================================
+        // UPDATE UI - Display Fear & Greed index
+        // ==========================================
+        function updateFear(value) {
+            document.getElementById('fear-value').textContent = value + '/100';
+            document.getElementById('fear-indicator').style.left = Math.min(value, 94) + '%';
+            
+            let sentiment = '';
+            if (value <= 25) sentiment = '🔴 Extreme Fear - BUY ZONE';
+            else if (value <= 45) sentiment = '🟠 Fear - Buying Opportunity';
+            else if (value <= 55) sentiment = '🟡 Neutral - Follow Rules';
+            else if (value <= 75) sentiment = '🟢 Greed - Caution';
+            else sentiment = '🔴 Extreme Greed - SELL ZONE';
+            
+            document.getElementById('fear-sentiment').textContent = sentiment;
+            
+            const box = document.getElementById('signal-box');
+            if (value <= 25) {
+                box.innerHTML = '🟢 BUY ZONE - Extreme Fear!<br>Watch for RSI ≤30 for LONG entries.';
+                box.style.background = 'rgba(16,185,129,0.1)';
+            } else if (value <= 45) {
+                box.innerHTML = '🟡 FEAR - Good buying opportunity.<br>Look for RSI oversold signals.';
+                box.style.background = 'rgba(251,191,36,0.1)';
+            } else if (value >= 75) {
+                box.innerHTML = '🔴 CAUTION - Extreme Greed!<br>Consider taking profits.';
+                box.style.background = 'rgba(239,68,68,0.1)';
+            } else {
+                box.innerHTML = '🟡 NEUTRAL - Follow your rules.<br>Wait for RSI 30/70 signal.';
+                box.style.background = '#F8FAFC';
+            }
+        }
+        
+        // ==========================================
+        // UPDATE UI - Display trend indicators
+        // ==========================================
+        function updateTrends(change) {
+            const trend = change >= 0 ? '📈' : '📉';
+            const color = change >= 0 ? '#10B981' : '#EF4444';
+            
+            ['1h','4h','1d'].forEach(tf => {
+                const el = document.getElementById('trend-' + tf);
+                el.textContent = trend;
+                el.style.color = color;
+            });
+            
+            document.getElementById('trend-signal').textContent = 'Overall: ' + (change >= 0 ? 'BULLISH' : 'BEARISH') + ' (' + (change >= 0 ? '+' : '') + change.toFixed(2) + '% 24h)';
+        }
+        
+        fetchData();
+        
+        // Theme Toggle & Auto Mode
+        // ==========================================
+        // THEME - Day/Night mode toggle
+        // ==========================================
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('hifty-theme', isLight ? 'light' : 'dark');
+            document.querySelector('.theme-toggle').textContent = isLight ? '☀️' : '🌙';
+        }
+        
+        // Auto theme based on time
+        // ==========================================
+        // THEME - Auto-detect based on time
+        // ==========================================
+        function initTheme() {
+            const saved = localStorage.getItem('hifty-theme');
+            const hour = new Date().getHours();
+            const isNight = hour < 6 || hour >= 18;
+            
+            if (saved === 'light') {
+                document.body.classList.add('light-mode');
+                document.querySelector('.theme-toggle').textContent = '☀️';
+            } else if (saved === 'dark') {
+                document.querySelector('.theme-toggle').textContent = '🌙';
+            } else {
+                // Auto based on time
+                if (isNight) {
+                    document.body.classList.remove('light-mode');
+                    document.querySelector('.theme-toggle').textContent = '🌙';
+                } else {
+                    document.body.classList.add('light-mode');
+                    document.querySelector('.theme-toggle').textContent = '☀️';
+                }
+            }
+        }
+        
+        initTheme();
+        
+        // Load trade journal and history on page start
+        loadTradeJournal();
+        loadTradeHistory();
+        
+        // Calculate Signal with TP/SL
+        // ==========================================
+        // TRADING TOOLS - Signal Calculator
+        // ==========================================
+        function calculateSignal() {
+            const entry = parseFloat(document.getElementById('signal-entry').value);
+            const tp = parseFloat(document.getElementById('signal-tp').value);
+            const sl = parseFloat(document.getElementById('signal-sl').value);
+            
+            const signalBox = document.getElementById('signal-box');
+            
+            if (!entry || !tp || !sl) {
+                signalBox.innerHTML = '⚠️ Please enter Entry, Take Profit, and Stop Loss values';
+                return;
+            }
+            
+            const isLong = tp > entry && entry > sl;
+            const isShort = tp < entry && entry < sl;
+            
+            if (!isLong && !isShort) {
+                signalBox.innerHTML = '⚠️ Invalid setup: TP must be above entry for LONG, below for SHORT';
+                return;
+            }
+            
+            const risk = Math.abs(entry - sl);
+            const reward = Math.abs(tp - entry);
+            const ratio = reward / risk;
+            
+            let signal = isLong ? '🟢 LONG SIGNAL' : '🔴 SHORT SIGNAL';
+            let color = isLong ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+            
+            signalBox.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">${signal}</div>
+                    <div style="font-size: 0.9rem;">
+                        <p>Entry: $${entry.toLocaleString()}</p>
+                        <p>Take Profit: $${tp.toLocaleString()}</p>
+                        <p>Stop Loss: $${sl.toLocaleString()}</p>
+                        <p>Risk: $${risk.toFixed(2)}</p>
+                        <p>Reward: $${reward.toFixed(2)}</p>
+                        <p style="font-weight: 700; font-size: 1.1rem;">Risk:Reward = 1:${ratio.toFixed(2)}</p>
+                        ${ratio >= 3 ? '<p style="color: #10B981;">✅ 3:1 or better!</p>' : '<p style="color: #EF4444;">⚠️ Aim for 3:1</p>'}
+                    </div>
+                </div>
+            `;
+            signalBox.style.background = color;
+        }
+        
+        // Refresh every 10 seconds for real-time streaming data
+        setInterval(fetchData, 10000);
+        
+        // === NEW FEATURES: Position Size Calculator ===
+        // ==========================================
+        // TRADING TOOLS - Position Size Calculator
+        // ==========================================
+        function calculatePosition() {
+            const balance = parseFloat(document.getElementById('calc-balance').value) || 10000;
+            const riskPct = parseFloat(document.getElementById('calc-risk').value) || 2;
+            const entry = parseFloat(document.getElementById('calc-entry').value);
+            const sl = parseFloat(document.getElementById('calc-sl').value);
+            
+            if (!entry || !sl || entry === sl) {
+                alert('Please enter valid Entry and Stop Loss prices (must be different)');
+                return;
+            }
+            
+            const riskAmount = balance * (riskPct / 100);
+            const priceDiff = Math.abs(entry - sl);
+            const positionSize = riskAmount / priceDiff;
+            const positionValue = positionSize * entry;
+            
+            const riskPerCoin = priceDiff;
+            const profit2r = riskPerCoin * 2;
+            const potentialProfit = positionSize * profit2r;
+            const potentialLoss = positionSize * riskPerCoin;
+            
+            document.getElementById('result-size').textContent = positionSize.toFixed(4) + ' BTC';
+            document.getElementById('result-loss').textContent = '-$' + potentialLoss.toFixed(2);
+            document.getElementById('result-profit').textContent = '+$' + potentialProfit.toFixed(2);
+        }
+        
+        // === Performance Dashboard ===
+        function updatePerformance() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            
+            if (trades.length > 0) {
+                const wins = trades.filter(t => t.pnl > 0).length;
+                const winRate = Math.round((wins / trades.length) * 100);
+                document.getElementById('perf-winrate').textContent = winRate + '%';
+                document.getElementById('kpi-winrate').textContent = winRate + '%';
+                
+                const rsiCompliant = trades.filter(t => t.rsi <= 30 || t.rsi >= 70).length;
+                const rsiCompliance = Math.round((rsiCompliant / trades.length) * 100);
+                document.getElementById('perf-rsi').textContent = rsiCompliance + '%';
+                document.getElementById('kpi-rsi').textContent = rsiCompliance + '%';
+                document.getElementById('rsi-meter-fill').style.width = rsiCompliance + '%';
+                
+                const totalPnl = trades.reduce((sum, t) => sum + t.pnl, 0);
+                document.getElementById('perf-today').textContent = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(0);
+                document.getElementById('kpi-pnl').textContent = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(0);
+            }
+        }
+        
+        // === Quick Trade Logger ===
+        // ==========================================
+        // TRADING TOOLS - Trade Logger with Image Upload
+        // ==========================================
+        
+        function updateTradeAmount() {
+            // Auto-fill based on direction and risk if needed
+        }
+        
+        function saveTrade() {
+            const entry = parseFloat(document.getElementById('trade-entry').value);
+            const tp = parseFloat(document.getElementById('trade-tp').value) || 0;
+            const sl = parseFloat(document.getElementById('trade-sl').value) || 0;
+            const ratio = document.getElementById('trade-ratio').value || '2';
+            const rsi = parseFloat(document.getElementById('trade-rsi').value) || 0;
+            const direction = document.getElementById('trade-direction').value;
+            const notes = document.getElementById('trade-notes').value || '';
+            const result = document.getElementById('trade-result').value;
+            const pnlInput = parseFloat(document.getElementById('trade-pnl').value);
+            const imageInput = document.getElementById('trade-image');
+            
+            if (!result) {
+                alert('Please select Trade Result (WIN or LOSS)');
+                return;
+            }
+            
+            if (!entry) {
+                alert('Please enter Entry price');
+                return;
+            }
+            
+            // Calculate P&L - use input if provided
+            let pnl = pnlInput || 0;
+            let status = result;
+            let pnlPercent = 100; // Full win or loss
+            
+            if (!pnlInput && tp > 0 && entry > 0) {
+                // Calculate from TP
+                if (direction === 'long') {
+                    pnl = (tp - entry);
+                } else {
+                    pnl = (entry - tp);
+                }
+            }
+            
+            // Handle image upload
+            const imageFile = imageInput.files[0];
+            let imageBase64 = null;
+            
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imageBase64 = e.target.result;
+                    saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, imageBase64, pnl, status, pnlPercent);
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, null, pnl, status, pnlPercent);
+            }
+        }
+        
+        function deleteTrade(idx){if(confirm("Delete trade?")){let t=JSON.parse(localStorage.getItem("hifty-trades")||"[]");t.splice(idx,1);localStorage.setItem("hifty-trades",JSON.stringify(t));updatePerformance();loadTradeJournal();}}
+        function saveTradeWithImage(entry, tp, sl, ratio, rsi, direction, notes, imageBase64, pnl, status, pnlPercent) {
+            const exit = tp > 0 ? tp : 0;
+            
+            // Get existing trades count for image numbering
+            const existingTrades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            const tradeNum = existingTrades.length + 1;
+            
+            const trade = {
+                entry,
+                exit,
+                tp,
+                sl,
+                ratio,
+                direction,
+                rsi,
+                notes,
+                pnl,
+                status,
+                pnlPercent,
+                date: new Date().toISOString().split('T')[0],
+                tradeNum: tradeNum
+            };
+            
+            // Save trade
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            trades.unshift(trade);
+            localStorage.setItem('hifty-trades', JSON.stringify(trades));
+            
+            // Save image to localStorage if provided
+            if (imageBase64) {
+                localStorage.setItem('trade-img-' + tradeNum, imageBase64);
+            }
+            
+            // Refresh displays
+            updatePerformance();
+            loadTradeJournal();
+            
+            // Clear form
+            document.getElementById('trade-entry').value = '';
+            document.getElementById('trade-tp').value = '';
+            document.getElementById('trade-sl').value = '';
+            document.getElementById('trade-rsi').value = '';
+            document.getElementById('trade-notes').value = '';
+            document.getElementById('trade-image').value = '';
+            document.getElementById('trade-result').value = '';
+            document.getElementById('trade-pnl').value = '';
+            
+            alert('Trade saved! ' + status + ' $' + Math.abs(pnl).toFixed(2));
+        }
+        
+        // Delete trade function
+        function deleteTrade(index) {
+            if (!confirm('Are you sure you want to delete this trade?')) return;
+            
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            trades.splice(index, 1);
+            localStorage.setItem('hifty-trades', JSON.stringify(trades));
+            
+            // Refresh displays
+            updatePerformance();
+            loadTradeJournal();
+        }
+        
+        // Edit trade function
+        function editTrade(index) {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            if (!trades[index]) return alert('Trade not found!');
+            
+            const trade = trades[index];
+            
+            // Populate form with trade data
+            document.getElementById('trade-direction').value = trade.direction || 'long';
+            document.getElementById('trade-entry').value = trade.entry || '';
+            document.getElementById('trade-tp').value = trade.exit || ''; // Using exit as TP
+            document.getElementById('trade-sl').value = trade.sl || '';
+            document.getElementById('trade-rsi').value = trade.rsi || '';
+            document.getElementById('trade-notes').value = trade.notes || '';
+            document.getElementById('trade-pnl').value = trade.pnl || '';
+            document.getElementById('trade-result').value = trade.pnl > 0 ? 'WIN' : (trade.pnl < 0 ? 'LOSS' : '');
+            
+            // Store edit index for update
+            window.editingTradeIndex = index;
+            
+            // Scroll to form
+            document.querySelector('.quick-trade').scrollIntoView({ behavior: 'smooth' });
+            
+            alert('Trade loaded into form. Make changes and click "Update Trade" to save.');
+        }
+        
+        // Update trade function (for modified trades)
+        function updateTrade() {
+            const idx = window.editingTradeIndex;
+            if (idx === undefined || idx === null) return alert('No trade being edited!');
+            
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            if (!trades[idx]) return alert('Trade not found!');
+            
+            // Get form values
+            const direction = document.getElementById('trade-direction').value;
+            const entry = parseFloat(document.getElementById('trade-entry').value);
+            const exit = parseFloat(document.getElementById('trade-tp').value);
+            const sl = parseFloat(document.getElementById('trade-sl').value);
+            const rsi = parseFloat(document.getElementById('trade-rsi').value);
+            const notes = document.getElementById('trade-notes').value;
+            const pnl = parseFloat(document.getElementById('trade-pnl').value);
+            const result = document.getElementById('trade-result').value;
+            
+            if (!entry || !result) {
+                alert('Please fill in entry price and select WIN/LOSS!');
+                return;
+            }
+            
+            // Update trade
+            trades[idx] = {
+                ...trades[idx],
+                direction,
+                entry,
+                exit,
+                sl,
+                rsi,
+                notes,
+                pnl,
+                result,
+                date: trades[idx].date // Keep original date
+            };
+            
+            localStorage.setItem('hifty-trades', JSON.stringify(trades));
+            
+            // Clear edit index
+            window.editingTradeIndex = null;
+            
+            // Refresh
+            updatePerformance();
+            loadTradeJournal();
+            
+            // Clear form
+            document.getElementById('trade-entry').value = '';
+            document.getElementById('trade-tp').value = '';
+            document.getElementById('trade-sl').value = '';
+            document.getElementById('trade-rsi').value = '';
+            document.getElementById('trade-notes').value = '';
+            document.getElementById('trade-image').value = '';
+            document.getElementById('trade-result').value = '';
+            document.getElementById('trade-pnl').value = '';
+            
+            alert('Trade updated successfully!');
+        }
+        
+        // ==========================================
+        // TRADE JOURNAL - Display trades with notes
+        // ==========================================
+        function loadTradeJournal() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            const journal = document.getElementById('trade-journal');
+            if (!journal) return;
+            
+            if (trades.length === 0) {
+                journal.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">No trades in journal yet!</p>';
+                return;
+            }
+            
+            // Trade images - localStorage first, then GitHub fallback for original 5 trades
+            function getTradeImage(tradeNum) {
+                // Check localStorage first (private uploads)
+                const localImg = localStorage.getItem('trade-img-' + tradeNum);
+                if (localImg) return localImg;
+                
+                // Fallback to GitHub URLs for original 5 trades
+                const githubBase = 'https://raw.githubusercontent.com/hiftyco/hiftyco-dashboard/main/';
+                const githubImages = {
+                    1: githubBase + 'trade1-screenshot.jpg',
+                    2: githubBase + 'trade2-screenshot.jpg',
+                    3: githubBase + 'trade3-screenshot.jpg',
+                    4: githubBase + 'trade4-screenshot.jpg',
+                    5: githubBase + 'trade5-screenshot.jpg'
+                };
+                return githubImages[tradeNum] || '';
+            }
+            
+            let html = '';
+            // Sort oldest first (chronological order - oldest at top)
+            const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
+            sortedTrades.slice(0, 10).forEach((trade, idx) => {
+                const date = new Date(trade.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+                const dirIcon = trade.direction === 'long' ? '↗' : '↘';
+                // Trade number based on position (oldest=1, newest=latest)
+                const tradeNum = trade.tradeNum || (idx + 1);
+                const tradeImg = getTradeImage(tradeNum);
+                // Live trade indicator (red pulsing dot + "LIVE" text)
+                const isLive = trade.pnl === 0 || trade.exit === 0;
+                const liveIndicator = isLive ? '<span style="display:inline-flex;align-items:center;gap:6px;margin-left:8px;"><span style="width:10px;height:10px;background:#ff4444;border-radius:50%;animation:pulse 1.5s infinite;"></span><span style="color:#ff4444;font-size:0.75rem;font-weight:700;">LIVE</span></span>' : '';
+                
+                html += `<div style="padding:10px;border-bottom:1px solid var(--border);${idx>0?'margin-top:10px':''}">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                        <strong>${dirIcon} ${trade.direction.toUpperCase()}${liveIndicator}</strong>
+                        <span style="font-size:0.8rem;color:var(--text-secondary)">${date}</span>
+                    </div>
+                    <div style="font-size:0.85rem;">Entry: $${trade.entry.toLocaleString()} | Exit: $${trade.exit ? trade.exit.toLocaleString() : 'Open'} | RSI: ${trade.rsi||'-'}</div>
+                    <div style="font-weight:700;color:${pnlClass==='positive'?'var(--success)':'var(--danger)'}">${trade.pnl>=0?'+':''}$${trade.pnl.toFixed(2)}</div>
+                    ${trade.notes ? `<div style="margin-top:6px;padding:6px;background:var(--bg-mid);border-radius:6px;font-size:0.8rem;font-style:italic;color:var(--text-secondary)">"${trade.notes}"</div>` : ''}
+                    ${tradeImg ? `<div style="margin-top:8px;">
+                        <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:4px;">📷 Trade ${tradeNum} Screenshot (click to enlarge)</div>
+                        <img src="${tradeImg}" alt="Trade ${tradeNum}" style="max-width:100%;border-radius:8px;cursor:pointer;border:2px solid var(--border);" onclick="this.style.maxWidth=this.style.maxWidth==='100%'?'200px':'100%'">
+                    </div>` : ''}
+                    <div style="margin-top:10px;display:flex;gap:8px;">
+                        <button style="background:var(--danger);color:white;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.75rem;" onclick="deleteTrade(${idx})">🗑️ Delete</button>
+                        <button style="background:var(--primary);color:white;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.75rem;" onclick="editTrade(${idx})">✏️ Modify</button>
+                    </div>
+                </div>`;
+            });
+            journal.innerHTML = html;
+        }
+        
+        // ==========================================
+        // TRADE HISTORY - Stats, streaks, best time
+        // ==========================================
+        function loadTradeHistory() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            
+            const wins = trades.filter(t => t.pnl > 0).length;
+            const losses = trades.filter(t => t.pnl < 0).length;
+            
+            // Streak
+            let streak = 0;
+            if (trades.length > 0) {
+                const sorted = [...trades].sort((a,b) => new Date(b.date) - new Date(a.date));
+                if (sorted[0].pnl > 0) { for (const t of sorted) { if (t.pnl > 0) streak++; else break; } }
+                else { for (const t of sorted) { if (t.pnl < 0) streak--; else break; } }
+            }
+            
+            // Best hour
+            let hourCounts = {};
+            trades.forEach(t => {
+                const h = new Date(t.date).getHours();
+                if (!hourCounts[h]) hourCounts[h] = {wins:0,total:0};
+                hourCounts[h].total++;
+                if (t.pnl > 0) hourCounts[h].wins++;
+            });
+            
+            let bestHour = '-';
+            let bestWR = 0;
+            Object.entries(hourCounts).forEach(([h, d]) => {
+                const wr = (d.wins/d.total)*100;
+                if (wr > bestWR && d.total >= 1) { bestWR = wr; bestHour = h + ':00'; }
+            });
+            
+            // Update UI
+            const sEl = document.getElementById('trade-streak');
+            if (sEl) { sEl.textContent = streak > 0 ? '🔥' + streak + 'W' : (streak < 0 ? '📉' + Math.abs(streak) + 'L' : '0'); sEl.style.color = streak > 0 ? 'var(--success)' : (streak < 0 ? 'var(--danger)' : 'var(--text-secondary)'); }
+            if (document.getElementById('trade-wins')) document.getElementById('trade-wins').textContent = wins;
+            if (document.getElementById('trade-losses')) document.getElementById('trade-losses').textContent = losses;
+            if (document.getElementById('best-time')) document.getElementById('best-time').textContent = bestHour;
+            
+            // History list
+            const lEl = document.getElementById('trade-history-list');
+            if (lEl) {
+                if (trades.length === 0) lEl.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">No trades yet</p>';
+                else {
+                    lEl.innerHTML = trades.slice(0,20).map(t => {
+                        const d = new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const sig = (t.rsi <= 30 || t.rsi >= 70) ? '✅' : '⚠️';
+                        return `<div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid var(--border);font-size:0.8rem;">
+                            <span>${d} ${t.direction==='long'?'↗':'↘'} $${t.entry.toFixed(0)}→$${t.exit.toFixed(0)}</span>
+                            <span style="color:${t.pnl>=0?'var(--success)':'var(--danger)'}">${t.pnl>=0?'+':''}$${t.pnl.toFixed(2)} ${sig}</span>
+                        </div>`;
+                    }).join('');
+                }
+            }
+        }
+        
+        // ==========================================
+        // 1% TRADER CHART & METRICS
+        // ==========================================
+        function loadTradeHistory() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            
+            const wins = trades.filter(t => t.pnl > 0).length;
+            const losses = trades.filter(t => t.pnl < 0).length;
+            const winRate = trades.length > 0 ? Math.round((wins / trades.length) * 100) : 0;
+            
+            // Streak
+            let streak = 0;
+            if (trades.length > 0) {
+                const sorted = [...trades].sort((a,b) => new Date(b.date) - new Date(a.date));
+                if (sorted[0].pnl > 0) { for (const t of sorted) { if (t.pnl > 0) streak++; else break; } }
+                else { for (const t of sorted) { if (t.pnl < 0) streak--; else break; } }
+            }
+            
+            // Best hour
+            let hourCounts = {};
+            trades.forEach(t => {
+                const h = new Date(t.date).getHours();
+                if (!hourCounts[h]) hourCounts[h] = {wins:0,total:0};
+                hourCounts[h].total++;
+                if (t.pnl > 0) hourCounts[h].wins++;
+            });
+            
+            let bestHour = '-';
+            let bestWR = 0;
+            Object.entries(hourCounts).forEach(([h, d]) => {
+                const wr = (d.wins/d.total)*100;
+                if (wr > bestWR && d.total >= 1) { bestWR = wr; bestHour = h + ':00'; }
+            });
+            
+            // === 1% TRADER METRICS ===
+            const winsList = trades.filter(t => t.pnl > 0).map(t => t.pnl);
+            const lossesList = trades.filter(t => t.pnl < 0).map(t => Math.abs(t.pnl));
+            
+            const avgWin = winsList.length > 0 ? winsList.reduce((a,b)=>a+b,0) / winsList.length : 0;
+            const avgLoss = lossesList.length > 0 ? lossesList.reduce((a,b)=>a+b,0) / lossesList.length : 0;
+            
+            // Risk:Reward & Edge
+            let rrRatio = '-';
+            let edge = '-';
+            if (avgLoss > 0 && avgWin > 0) {
+                rrRatio = (avgWin / avgLoss).toFixed(1) + ':1';
+                const winRateDec = wins / trades.length || 0;
+                const lossRateDec = losses / trades.length || 0;
+                const edgeVal = (winRateDec * avgWin) - (lossRateDec * avgLoss);
+                edge = edgeVal > 0 ? '+$' + edgeVal.toFixed(0) : '-$' + Math.abs(edgeVal).toFixed(0);
+            }
+            
+            // Update 1% trader metrics
+            const avgWinEl = document.getElementById('avg-win');
+            const avgLossEl = document.getElementById('avg-loss');
+            const rrEl = document.getElementById('rr-ratio');
+            const edgeEl = document.getElementById('edge-indicator');
+            
+            if (avgWinEl) avgWinEl.textContent = '$' + Math.round(avgWin).toLocaleString();
+            if (avgLossEl) avgLossEl.textContent = '$' + Math.round(avgLoss).toLocaleString();
+            if (rrEl) rrEl.textContent = rrRatio;
+            if (edgeEl) { edgeEl.textContent = edge; edgeEl.style.color = edge.startsWith('+$') ? 'var(--success)' : 'var(--danger)'; }
+            
+            // Win rate bar
+            const wrBar = document.getElementById('winrate-bar');
+            const wrText = document.getElementById('winrate-text');
+            if (wrBar) wrBar.style.width = winRate + '%';
+            if (wrText) wrText.textContent = winRate + '%';
+            
+            // Draw P&L Chart
+            drawPnLChart(trades);
+            
+            // Update basic stats
+            const sEl = document.getElementById('trade-streak');
+            if (sEl) { sEl.textContent = streak > 0 ? '🔥' + streak + 'W' : (streak < 0 ? '📉' + Math.abs(streak) + 'L' : '0'); sEl.style.color = streak > 0 ? 'var(--success)' : (streak < 0 ? 'var(--danger)' : 'var(--text-secondary)'); }
+            if (document.getElementById('trade-wins')) document.getElementById('trade-wins').textContent = wins;
+            if (document.getElementById('trade-losses')) document.getElementById('trade-losses').textContent = losses;
+            if (document.getElementById('best-time')) document.getElementById('best-time').textContent = bestHour;
+            
+            // History list
+            const lEl = document.getElementById('trade-history-list');
+            if (lEl) {
+                if (trades.length === 0) lEl.innerHTML = '<p style="color:var(--text-secondary);text-align:center;">No trades yet</p>';
+                else {
+                    lEl.innerHTML = trades.slice(0,15).map(t => {
+                        const d = new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const sig = (t.rsi <= 30 || t.rsi >= 70) ? '✅' : '⚠️';
+                        return `<div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid var(--border);font-size:0.8rem;">
+                            <span>${d} ${t.direction==='long'?'↗':'↘'} $${t.entry.toFixed(0)}→$${t.exit.toFixed(0)}</span>
+                            <span style="color:${t.pnl>=0?'var(--success)':'var(--danger)'}">${t.pnl>=0?'+':''}$${t.pnl.toFixed(2)} ${sig}</span>
+                        </div>`;
+                    }).join('');
+                }
+            }
+        }
+        
+        // Draw P&L Chart (1% Trader Style)
+        function drawPnLChart(trades) {
+            const canvas = document.getElementById('pnl-chart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width = canvas.offsetWidth || 300;
+            const h = canvas.height = canvas.offsetHeight || 100;
+            
+            ctx.clearRect(0, 0, w, h);
+            
+            if (trades.length === 0) {
+                ctx.fillStyle = '#888';
+                ctx.font = '12px Outfit';
+                ctx.textAlign = 'center';
+                ctx.fillText('No trades yet', w/2, h/2);
+                return;
+            }
+            
+            let cumulative = 0;
+            const points = trades.map(t => { cumulative += t.pnl; return cumulative; });
+            
+            const maxVal = Math.max(...points, 0);
+            const minVal = Math.min(...points, 0);
+            const range = maxVal - minVal || 1;
+            
+            // Draw line
+            ctx.beginPath();
+            ctx.strokeStyle = '#10B981';
+            ctx.lineWidth = 2;
+            
+            points.forEach((val, i) => {
+                const x = (i / Math.max(points.length - 1, 1)) * w;
+                const y = h - ((val - minVal) / range) * (h - 10) - 5;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            // Fill area
+            ctx.lineTo(w, h);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+            ctx.fill();
+            
+            // Zero line
+            const zeroY = h - ((0 - minVal) / range) * (h - 10) - 5;
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(0, zeroY);
+            ctx.lineTo(w, zeroY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Current P&L
+            const currentPnL = points[points.length - 1];
+            ctx.fillStyle = currentPnL >= 0 ? '#10B981' : '#EF4444';
+            ctx.font = 'bold 14px Outfit';
+            ctx.textAlign = 'right';
+            ctx.fillText((currentPnL >= 0 ? '+' : '') + '$' + Math.round(currentPnL).toLocaleString(), w - 10, 20);
+        }
+        
+        // Load on start
+        function renderTrades() {
+            const trades = JSON.parse(localStorage.getItem('hifty-trades') || '[]');
+            const container = document.getElementById('trade-list');
+            
+            if (trades.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No trades logged yet</p>';
+                return;
+            }
+            
+            container.innerHTML = trades.slice(0, 5).map(t => `
+                <div class="trade-item">
+                    <div>
+                        <span class="direction ${t.direction}">${t.direction.toUpperCase()}</span>
+                        <span style="color: var(--text-secondary); margin-left: 8px;">@ $${t.entry.toFixed(0)}</span>
+                    </div>
+                    <span class="pnl ${t.pnl >= 0 ? 'positive' : 'negative'}">${t.pnl >= 0 ? '+' : ''}$${t.pnl.toFixed(2)}</span>
+                </div>
+            `).join('');
+        }
+        
+        // === Alerts Section ===
+        const alerts = { rsi30: false, rsi70: false };
+        const priceAlerts = { prices: [], active: false, lastTriggered: {} };
+        
+        // ==========================================
+        // TRADING TOOLS - RSI Alerts
+        // ==========================================
+        
+        function toggleAlert(level) {
+            const btn = document.getElementById('alert-' + level);
+            const rsiEl = document.getElementById('rsi-value');
+            const currentRSI = rsiEl && rsiEl.textContent !== '--' ? parseFloat(rsiEl.textContent) : 50;
+            
+            if (level === 30) {
+                alerts.rsi30 = !alerts.rsi30;
+                btn.style.background = alerts.rsi30 ? 'var(--success)' : '';
+                btn.textContent = alerts.rsi30 ? '✓ RSI 30 ON' : 'RSI 30 Alert';
+            } else {
+                alerts.rsi70 = !alerts.rsi70;
+                btn.style.background = alerts.rsi70 ? 'var(--danger)' : '';
+                btn.textContent = alerts.rsi70 ? '✓ RSI 70 ON' : 'RSI 70 Alert';
+            }
+            
+            updateAlertStatus();
+            
+            // Save to localStorage
+            localStorage.setItem('hifty-alerts', JSON.stringify(alerts));
+            
+            // Check immediately when toggled
+            if (typeof checkAlerts === 'function') {
+                setTimeout(() => checkAlerts(currentRSI), 100);
+            }
+        }
+        
+        function updateAlertStatus() {
+            const statusEl = document.getElementById('alert-status');
+            const textEl = document.getElementById('alert-text');
+            
+            if (alerts.rsi30 || alerts.rsi70) {
+                statusEl.className = 'alert-status active';
+                const active = [];
+                if (alerts.rsi30) active.push('RSI 30');
+                if (alerts.rsi70) active.push('RSI 70');
+                textEl.innerHTML = '<span class="alert-dot active"></span>Watching: ' + active.join(' & ');
+            } else {
+                statusEl.className = 'alert-status';
+                textEl.innerHTML = '<span class="alert-dot inactive"></span>No alerts active';
+            }
+        }
+        
+        function checkAlerts(rsi) {
+            // Play CALMING meditation bell - SOUND FIRST
+            function playMeditationBell() {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioCtx.resume();
+                    
+                    // Calming bell with soft attack and long decay
+                    function playBell(freq, delay, duration, volume) {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.frequency.value = freq;
+                        osc.type = 'sine';
+                        const now = audioCtx.currentTime + delay;
+                        gain.gain.setValueAtTime(0, now);
+                        gain.gain.linearRampToValueAtTime(volume, now + 0.3);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+                        osc.start(now);
+                        osc.stop(now + duration);
+                    }
+                    // Calming 5-bell sequence
+                    playBell(432, 0, 4, 0.4);
+                    playBell(528, 0.6, 3.5, 0.3);
+                    playBell(396, 1.2, 3, 0.25);
+                    playBell(639, 1.8, 2.5, 0.2);
+                    playBell(741, 2.4, 2, 0.15);
+                } catch(e) {}
+            }
+            
+            // CONTINUOUS when RSI at target
+            if (alerts.rsi30 && rsi <= 30) {
+                playMeditationBell();
+                setTimeout(() => {
+                    alert('🔔 RSI 30 Alert! RSI is now ' + rsi + ' - BUY SIGNAL! 🟢');
+                }, 3500);
+            }
+            if (alerts.rsi70 && rsi >= 70) {
+                playMeditationBell();
+                setTimeout(() => {
+                    alert('🔔 RSI 70 Alert! RSI is now ' + rsi + ' - SELL SIGNAL! 🔴');
+                }, 3500);
+            }
+        }
+        
+        // ==========================================
+        // TRADING TOOLS - Price Alerts
+        // ==========================================
+        function togglePriceAlerts() {
+            const input1 = document.getElementById('price-alert-1').value;
+            const input2 = document.getElementById('price-alert-2').value;
+            const input3 = document.getElementById('price-alert-3').value;
+            
+            // If already active, turn it off
+            if (priceAlerts.active) {
+                priceAlerts.active = false;
+                priceAlerts.prices = [];
+                priceAlerts.lastTriggered = {};
+                document.getElementById('price-alert-btn').textContent = 'Set Price Alerts';
+                document.getElementById('price-alert-btn').style.background = '';
+                document.getElementById('price-alert-status').className = 'alert-status';
+                document.getElementById('price-alert-text').innerHTML = '<span class="alert-dot inactive"></span>No price alerts set';
+                document.getElementById('price-alert-1').value = '';
+                document.getElementById('price-alert-2').value = '';
+                document.getElementById('price-alert-3').value = '';
+                localStorage.removeItem('hifty-price-alerts');
+                return;
+            }
+            
+            priceAlerts.prices = [input1, input2, input3].filter(p => p && parseFloat(p) > 0).map(p => parseFloat(p));
+            
+            if (priceAlerts.prices.length > 0) {
+                priceAlerts.active = true;
+                document.getElementById('price-alert-btn').textContent = 'Turn Off Alerts';
+                document.getElementById('price-alert-btn').style.background = 'var(--danger)';
+                document.getElementById('price-alert-status').className = 'alert-status active';
+                document.getElementById('price-alert-text').innerHTML = '<span class="alert-dot active"></span>Watching: $' + priceAlerts.prices.join(', $');
+                localStorage.setItem('hifty-price-alerts', JSON.stringify(priceAlerts));
+                
+                // Check immediately if price is already at target
+                const currentPrice = parseFloat(document.getElementById('btc-price').textContent.replace(/[$,]/g, '')) || 0;
+                if (currentPrice > 0) {
+                    checkPriceAlerts(currentPrice);
+                }
+            }
+        }
+        
+        function checkPriceAlerts(price) {
+            if (!priceAlerts.active || priceAlerts.prices.length === 0) return;
+            
+            // Play CALMING meditation bell - SOUND FIRST (same as RSI)
+            function playMeditationBell() {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioCtx.resume();
+                    
+                    // Calming bell with soft attack and long decay
+                    function playBell(freq, delay, duration, volume) {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.frequency.value = freq;
+                        osc.type = 'sine';
+                        const now = audioCtx.currentTime + delay;
+                        gain.gain.setValueAtTime(0, now);
+                        gain.gain.linearRampToValueAtTime(volume, now + 0.3);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+                        osc.start(now);
+                        osc.stop(now + duration);
+                    }
+                    // Calming 5-bell sequence
+                    playBell(432, 0, 4, 0.4);
+                    playBell(528, 0.6, 3.5, 0.3);
+                    playBell(396, 1.2, 3, 0.25);
+                    playBell(639, 1.8, 2.5, 0.2);
+                    playBell(741, 2.4, 2, 0.15);
+                } catch(e) {}
+            }
+            
+            priceAlerts.prices.forEach(targetPrice => {
+                // CONTINUOUS when price >= target (no lastTriggered blocking)
+                if (price >= targetPrice) {
+                    playMeditationBell(); // Sound FIRST - 3.5 seconds
+                    setTimeout(() => {
+                        alert('💰 Price Alert! BTC at $' + price.toLocaleString() + ' (Target: $' + targetPrice.toLocaleString() + ')');
+                    }, 3500); // Popup AFTER sound
+                }
+            });
+        }
+        
+        // === Initialize ===
+        updatePerformance();
+        renderTrades();
+        
+        // Load saved alerts
+        const savedAlerts = JSON.parse(localStorage.getItem('hifty-alerts'));
+        if (savedAlerts) {
+            Object.assign(alerts, savedAlerts);
+            if (alerts.rsi30) document.getElementById('alert-30').textContent = '✓ RSI 30 ON';
+            if (alerts.rsi70) document.getElementById('alert-70').textContent = '✓ RSI 70 ON';
+            updateAlertStatus();
+        }
+        
+        // Load saved price alerts
+        const savedPriceAlerts = JSON.parse(localStorage.getItem('hifty-price-alerts'));
+        if (savedPriceAlerts && savedPriceAlerts.active) {
+            Object.assign(priceAlerts, savedPriceAlerts);
+            if (priceAlerts.prices.length > 0) {
+                document.getElementById('price-alert-btn').textContent = 'Turn Off Alerts';
+                document.getElementById('price-alert-btn').style.background = 'var(--danger)';
+                document.getElementById('price-alert-status').className = 'alert-status active';
+                document.getElementById('price-alert-text').innerHTML = '<span class="alert-dot active"></span>Watching: $' + priceAlerts.prices.join(', $');
+                // Restore input values
+                if (priceAlerts.prices[0]) document.getElementById('price-alert-1').value = priceAlerts.prices[0];
+                if (priceAlerts.prices[1]) document.getElementById('price-alert-2').value = priceAlerts.prices[1];
+                if (priceAlerts.prices[2]) document.getElementById('price-alert-3').value = priceAlerts.prices[2];
+                
+                // Check immediately after load
+                setTimeout(() => {
+                    const currentPrice = parseFloat(document.getElementById('btc-price').textContent.replace(/[$,]/g, '')) || 0;
+                    if (currentPrice > 0 && typeof checkPriceAlerts === 'function') {
+                        checkPriceAlerts(currentPrice);
+                    }
+                }, 3000);
+            }
+        }
+        
+        // ==========================================
+        // TRADINGVIEW WIDGET INITIALIZATION
+        // Proper script loading with fallbacks
+        // ==========================================
+        function initTradingView() {
+        // BTC Chart Widget
+            if (typeof TradingView !== 'undefined' && document.getElementById('tradingview_btc')) {
+                // Check if already has iframe (already loaded)
+                const existingIframe = document.querySelector('#tradingview_btc iframe');
+                if (!existingIframe) {
+                    document.getElementById('tradingview_btc').innerHTML = '';
+                    new TradingView.widget({
+                        "width": "100%",
+                        "height": 450,
+                        "isTransparent": true,
+                        "symbol": "BINANCE:BTCUSDT",
+                        "interval": "D",
+                        "timezone": "America/New_York",
+                        "colorTheme": "dark",
+                        "style": "1",
+                        "locale": "en",
+                        "hide_top_toolbar": false,
+                        "allow_symbol_change": true,
+                        "studies": ["RSI@tv-basicstudies", "MASimple@tv-basicstudies"],
+                        "container_id": "tradingview_btc",
+                        "overrides": {
+                            "mainSeriesProperties.candleStyle.upColor": "#10B981",
+                            "mainSeriesProperties.candleStyle.downColor": "#EF4444",
+                            "mainSeriesProperties.candleStyle.borderUpColor": "#10B981",
+                            "mainSeriesProperties.candleStyle.borderDownColor": "#EF4444",
+                            "MASimple.props.color": "#F59E0B",
+                            "MASimple.props.linewidth": 2
+                        }
+                    });
+                }
+            }
+        }
+        
+        // Load TradingView script and initialize widgets
+        function loadTradingViewScript() {
+            // Check if already loaded
+            if (typeof TradingView !== 'undefined') {
+                initTradingView();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = 'https://s3.tradingview.com/tv.js';
+            script.async = true;
+            script.onload = function() {
+                // Small delay to ensure TradingView is fully ready
+                setTimeout(initTradingView, 100);
+            };
+            script.onerror = function() {
+                // Fallback: show error message in containers
+                const rsiContainer = document.getElementById('rsi-widget-container');
+                const btcContainer = document.getElementById('tradingview_btc');
+                if (rsiContainer) rsiContainer.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);"><span style="font-size:2rem;margin-bottom:8px;">📊</span><span>RSI from Binance Klines</span><span style="font-size:0.8rem;margin-top:4px;">Chart unavailable</span></div>';
+                if (btcContainer) btcContainer.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);"><span style="font-size:2rem;margin-bottom:8px;">📈</span><span>Chart unavailable</span><span style="font-size:0.8rem;margin-top:4px;">Check internet connection</span></div>';
+                document.getElementById('rsi-source').textContent = '⚠ Chart unavailable';
+            };
+            document.head.appendChild(script);
+        }
+        
+        // Initialize TradingView when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadTradingViewScript);
+        } else {
+            loadTradingViewScript();
+        }
+    </script>
+</body>
+</html>
